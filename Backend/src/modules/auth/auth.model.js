@@ -28,6 +28,29 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    profilePicId: {
+      type: String,
+      default: '',
+    },
+    boardInfo: {
+      board: {
+        type: String,
+        enum: ['CBSE', 'WB', 'ICSE', 'NONE'],
+        default: 'NONE',
+      },
+      class: {
+        type: String,
+        default: '10',
+      },
+      subjects: [String],
+    },
+    devProfile: {
+      github: {
+        type: String,
+        default: '',
+      },
+      skills: [String],
+    },
   },
   {
     timestamps: true,
