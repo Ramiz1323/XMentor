@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Users, BookOpen, Settings, LayoutDashboard, X } from 'lucide-react';
+import { Users, BookOpen, Settings, LayoutDashboard, X, Target } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
 
 const Sidebar = ({ isOpen, onClose }) => {
@@ -56,20 +56,15 @@ const Sidebar = ({ isOpen, onClose }) => {
             <span>Communities</span>
           </NavLink>
 
-          <div className="sidebar-divider" role="presentation">Missions</div>
+          <div className="sidebar-divider" role="presentation">Tasks</div>
 
           <NavLink 
-            to="/tests" 
-            className={({ isActive }) => `sidebar-item disabled ${isActive ? 'active' : ''}`}
-            onClick={(e) => {
-              e.preventDefault();
-              handleLinkClick();
-            }}
-            aria-disabled="true"
-            tabIndex={-1}
+            to="/mcq-hub" 
+            onClick={handleLinkClick}
+            className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
           >
-            <BookOpen size={20} aria-hidden="true" />
-            <span>All Tests</span>
+            <Target size={20} aria-hidden="true" />
+            <span>MCQ Hub</span>
           </NavLink>
 
           <div className="sidebar-divider" role="presentation">Settings</div>

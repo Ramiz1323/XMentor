@@ -37,3 +37,16 @@ export const uploadProfilePic = asyncHandler(async (req, res) => {
     data: { url: imageUrl },
   });
 });
+
+export const addStudent = asyncHandler(async (req, res) => {
+  const { username } = req.body;
+  if (!username) throw new ErrorResponse('Student username is required', 400);
+
+  const result = await userService.linkStudentByUsername(req.user._id, username);
+
+  res.status(200).json({
+    success: true,
+    message: 'Student added successfully',
+    data: result,
+  });
+});

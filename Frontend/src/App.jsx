@@ -9,6 +9,9 @@ import RegisterPage from './pages/register/RegisterPage';
 import Dashboard from './pages/dashboard/Dashboard';
 import CommunityList from './pages/community/CommunityList';
 import MCQTest from './pages/mcq/MCQTest';
+import MCQDashboard from './pages/mcq/MCQDashboard';
+import MCQCreator from './pages/mcq/MCQCreator';
+import TaskResults from './pages/mcq/TaskResults';
 import ProfilePage from './pages/profile/ProfilePage';
 
 const ProtectedRoute = ({ children }) => {
@@ -64,7 +67,10 @@ function App() {
               
               <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/communities" element={<ProtectedRoute><CommunityList /></ProtectedRoute>} />
+              <Route path="/mcq-hub" element={<ProtectedRoute><MCQDashboard /></ProtectedRoute>} />
+              <Route path="/mcq/create" element={<ProtectedRoute><MCQCreator /></ProtectedRoute>} />
               <Route path="/mcq/:id" element={<ProtectedRoute><MCQTest /></ProtectedRoute>} />
+              <Route path="/mcq/:id/results" element={<ProtectedRoute><TaskResults /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             </Routes>
           </main>

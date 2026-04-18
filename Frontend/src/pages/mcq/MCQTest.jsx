@@ -14,6 +14,7 @@ const MCQTest = () => {
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
 
   // Refs to avoid stale closures in setInterval
   const answersRef = useRef([]);
@@ -62,11 +63,15 @@ const MCQTest = () => {
     try {
       setSubmitting(true);
       const currentAnswers = autoSubmit ? answersRef.current : answers;
-      const currentTimeLeft = autoSubmit ? (timeLeftRef.current || 0) : timeLeft;
+      
+      // Calculate time taken: use timeLeft if timer exists, otherwise use elapsedTime store
+      const timeTaken = testRef.current.hasTimer 
+        ? (testRef.current.duration * 60 - (timeLeftRef.current || 0))
+        : elapsedTime;
       
       const { data } = await api.post(`/mcq/${id}/submit`, {
         answers: currentAnswers,
-        timeTaken: testRef.current.duration * 60 - currentTimeLeft
+        timeTaken: Math.max(1, timeTaken)
       });
       setResult(data.data);
       const updated = await api.get(`/mcq/${id}`);
@@ -76,10 +81,11 @@ const MCQTest = () => {
     } finally {
       setSubmitting(false);
     }
-  }, [id, submitting, result, answers, timeLeft]);
+  }, [id, submitting, result, answers, elapsedTime]);
 
   useEffect(() => {
-    if (timeLeft === null || timeLeft <= 0 || result || test?.isSubmitted) return;
+    // Timer is only active if hasTimer is true and it's not submitted
+    if (!test?.hasTimer || timeLeft === null || timeLeft <= 0 || result || test?.isSubmitted) return;
     
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -93,7 +99,17 @@ const MCQTest = () => {
     }, 1000);
     
     return () => clearInterval(timer);
-  }, [timeLeft, result, test?.isSubmitted, handleSubmit]);
+  }, [timeLeft, result, test?.isSubmitted, test?.hasTimer, handleSubmit]);
+
+  // Handle Fluid missions (no timer): track elapsed time
+  useEffect(() => {
+    if (test?.hasTimer || result || test?.isSubmitted || loading) return;
+    
+    const ticker = setInterval(() => {
+      setElapsedTime(prev => prev + 1);
+    }, 1000);
+    return () => clearInterval(ticker);
+  }, [test?.hasTimer, result, test?.isSubmitted, loading]);
 
   const handleOptionSelect = (optionIdx) => {
     if (test?.isSubmitted || result) return;
@@ -102,17 +118,19 @@ const MCQTest = () => {
     setAnswers(newAnswers);
   };
 
-  if (loading) return <div className="loader" style={{ textAlign: 'center', color: 'white', padding: '10rem' }}>Initialising secure testing environment...</div>;
+  if (loading) return <div className="loader">Initialising secure testing environment...</div>;
 
   if (error || !test) {
     return (
-      <div className="error-container" style={{ textAlign: 'center', padding: '10rem 2rem' }}>
-        <AlertCircle size={48} color="#ef4444" style={{ marginBottom: '1.5rem' }} />
-        <h2 className="glow-text">Strategic Link Failure</h2>
-        <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '2rem' }}>{error || 'Testing node not found'}</p>
-        <button onClick={fetchTest} className="btn-primary" style={{ display: 'inline-flex', gap: '0.5rem' }}>
-          <RefreshCw size={18} /> Re-establish Uplink
-        </button>
+      <div className="mcq-page">
+        <div className="error-container">
+          <AlertCircle size={48} className="error-icon" />
+          <h2 className="glow-text">Strategic Link Failure</h2>
+          <p>{error || 'Task node not found'}</p>
+          <button onClick={fetchTest} className="btn-primary">
+            <RefreshCw size={18} /> Re-establish Uplink
+          </button>
+        </div>
       </div>
     );
   }
@@ -133,11 +151,18 @@ const MCQTest = () => {
           <h1 className="glow-text">{test.title}</h1>
           <p>{test.subject} • {test.totalQuestions} Questions</p>
         </div>
-        {!result && timeLeft !== null && (
-          <div className={`timer-box ${isCritical ? 'critical' : ''}`}>
-            <Timer size={18} />
-            <span>{formatTime(timeLeft)}</span>
-          </div>
+        {!result && (
+          test.hasTimer && timeLeft !== null ? (
+            <div className={`timer-box ${isCritical ? 'critical' : ''}`}>
+              <Timer size={18} />
+              <span>{formatTime(timeLeft)}</span>
+            </div>
+          ) : (
+            <div className="timer-box fluid">
+              <Timer size={18} />
+              <span>{formatTime(elapsedTime)}</span>
+            </div>
+          )
         )}
       </header>
 
@@ -145,7 +170,7 @@ const MCQTest = () => {
         <div className="result-banner">
           <div className="banner-content">
             <div className="result-status">
-              <CheckCircle size={32} color="#22d3ee" />
+              <CheckCircle size={32} className="complete-icon" />
               <div>
                 <h2>Test Completed</h2>
                 <p>Review your performance below</p>
@@ -190,7 +215,7 @@ const MCQTest = () => {
                 className={`option-btn ${statusClass}`}
               >
                 <span>{option}</span>
-                {isCorrect && <CheckCircle size={18} color="#22c55e" />}
+                {isCorrect && <CheckCircle size={18} className="success-icon" />}
               </button>
             );
           })}
@@ -214,7 +239,7 @@ const MCQTest = () => {
 
           {currentIdx === test.questions.length - 1 ? (
             !result && (
-              <button onClick={() => handleSubmit(false)} disabled={submitting} className="btn-primary" style={{ padding: '10px 30px' }}>
+              <button onClick={() => handleSubmit(false)} disabled={submitting} className="btn-primary">
                 {submitting ? 'Submitting...' : 'Finish Test'}
               </button>
             )
@@ -228,7 +253,7 @@ const MCQTest = () => {
           )}
 
           {result && currentIdx === test.questions.length - 1 && (
-             <button onClick={() => navigate('/')} className="btn-primary" style={{ padding: '10px 30px' }}>
+             <button onClick={() => navigate('/')} className="btn-primary">
                 Done
              </button>
           )}

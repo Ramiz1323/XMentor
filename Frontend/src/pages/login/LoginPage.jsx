@@ -27,13 +27,13 @@ const LoginPage = () => {
 
   return (
     <div className="auth-page">
-      <div className="auth-card glass-card">
+      <div className="auth-card glass-card login">
         <div className="auth-header">
           <div className="auth-icon-wrapper">
             <LogIn size={32} className="glow-icon" />
           </div>
-          <h1 className="glow-text">System Access</h1>
-          <p>Initialize your session to continue</p>
+          <h1 className="glow-text">Sign In</h1>
+          <p>Login to your account to continue</p>
         </div>
 
         {serverError && (
@@ -45,18 +45,19 @@ const LoginPage = () => {
 
         <form onSubmit={handleSubmit(onSubmit)} className="auth-form" noValidate>
           <div className="form-group">
-            <label htmlFor="email-input">Identity Email</label>
+            <label htmlFor="email-input">Email Address</label>
             <div className="input-wrapper">
               <Mail size={18} className="input-icon" aria-hidden="true" />
               <input
                 id="email-input"
                 type="email"
-                placeholder="commander@xmentor.space"
+                placeholder="name@example.com"
+                className="glass-input with-icon"
                 {...register('email', { 
-                  required: 'Identity email is required',
+                  required: 'Email is required',
                   pattern: {
                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: "Invalid transmission format"
+                    message: "Invalid email format"
                   }
                 })}
                 aria-invalid={errors.email ? "true" : "false"}
@@ -71,19 +72,18 @@ const LoginPage = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="password-input">Security Key</label>
+            <label htmlFor="password-input">Password</label>
             <div className="input-wrapper">
               <Lock size={18} className="input-icon" aria-hidden="true" />
               <input
                 id="password-input"
                 type="password"
                 placeholder="••••••••"
+                className="glass-input with-icon"
                 {...register('password', { 
-                  required: 'Security key is required',
-                  minLength: { value: 6, message: 'Key must be at least 6 characters' }
+                  required: 'Password is required',
+                  minLength: { value: 6, message: 'Password must be at least 6 characters' }
                 })}
-                aria-invalid={errors.password ? "true" : "false"}
-                aria-describedby={errors.password ? "password-error" : undefined}
               />
             </div>
             {errors.password && (
@@ -97,19 +97,19 @@ const LoginPage = () => {
             {loading ? (
               <>
                 <Loader2 size={20} className="animate-spin" />
-                <span>Authenticating...</span>
+                <span>Signing in...</span>
               </>
             ) : (
               <>
                 <LogIn size={20} />
-                <span>Access System</span>
+                <span>Sign In</span>
               </>
             )}
           </button>
         </form>
 
         <div className="auth-footer">
-          <p>New operative? <Link to="/register">Register Identity</Link></p>
+          <p>New to XMentor? <Link to="/register">Create Account</Link></p>
         </div>
       </div>
     </div>

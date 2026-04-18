@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
@@ -26,26 +26,25 @@ const RegisterPage = () => {
   };
 
   const boardOptions = [
-    { value: 'CBSE', label: 'CBSE Mainframe' },
-    { value: 'ICSE', label: 'ICSE Protocol' },
-    { value: 'WBCHSE', label: 'WBCHSE Node' },
+    { value: 'CBSE', label: 'CBSE' },
+    { value: 'ICSE', label: 'ICSE' },
+    { value: 'WB', label: 'WB Board' },
   ];
 
-  const interestOptions = [
-    { value: 'science', label: 'Scientific Research' },
-    { value: 'coding', label: 'Cyber Security & Coding' },
-    { value: 'creative', label: 'Creative Design' },
+  const roleOptions = [
+    { value: 'STUDENT', label: 'Student' },
+    { value: 'TEACHER', label: 'Teacher' },
   ];
 
   return (
     <div className="auth-page">
-      <div className="auth-card glass-card">
+      <div className="auth-card glass-card register">
         <div className="auth-header">
           <div className="auth-icon-wrapper">
             <UserPlus size={32} className="glow-icon" />
           </div>
-          <h1 className="glow-text">Identity Registration</h1>
-          <p>Create your operative profile to begin missions</p>
+          <h1 className="glow-text">Create Account</h1>
+          <p>Create your profile to join the learning community</p>
         </div>
 
         {serverError && (
@@ -57,54 +56,51 @@ const RegisterPage = () => {
 
         <form onSubmit={handleSubmit(onSubmit)} className="auth-form" noValidate>
           <div className="form-group">
-            <label htmlFor="name-input">Full Operative Name</label>
+            <label htmlFor="name-input">Full Name</label>
             <div className="input-wrapper">
               <User size={18} className="input-icon" aria-hidden="true" />
               <input
                 id="name-input"
                 type="text"
-                placeholder="Operative Name"
+                placeholder="Full Name"
+                className="glass-input with-icon"
                 {...register('name', { required: 'Name is required' })}
-                aria-invalid={errors.name ? "true" : "false"}
-                aria-describedby={errors.name ? "name-error" : undefined}
               />
             </div>
             {errors.name && <span id="name-error" className="error-msg" role="alert">{errors.name.message}</span>}
           </div>
 
           <div className="form-group">
-            <label htmlFor="email-input">Identity Email</label>
+            <label htmlFor="email-input">Email Address</label>
             <div className="input-wrapper">
               <Mail size={18} className="input-icon" aria-hidden="true" />
               <input
                 id="email-input"
                 type="email"
-                placeholder="commander@xmentor.space"
+                placeholder="name@example.com"
+                className="glass-input with-icon"
                 {...register('email', { 
                   required: 'Email is required',
-                  pattern: { value: /^\S+@\S+$/i, message: 'Invalid transmission format' }
+                  pattern: { value: /^\S+@\S+$/i, message: 'Invalid email format' }
                 })}
-                aria-invalid={errors.email ? "true" : "false"}
-                aria-describedby={errors.email ? "email-error" : undefined}
               />
             </div>
             {errors.email && <span id="email-error" className="error-msg" role="alert">{errors.email.message}</span>}
           </div>
 
           <div className="form-group">
-            <label htmlFor="password-input">Security Key</label>
+            <label htmlFor="password-input">Password</label>
             <div className="input-wrapper">
               <Lock size={18} className="input-icon" aria-hidden="true" />
               <input
                 id="password-input"
                 type="password"
                 placeholder="••••••••"
+                className="glass-input with-icon"
                 {...register('password', { 
                   required: 'Password is required',
                   minLength: { value: 6, message: 'Min 6 characters required' }
                 })}
-                aria-invalid={errors.password ? "true" : "false"}
-                aria-describedby={errors.password ? "password-error" : undefined}
               />
             </div>
             {errors.password && <span id="password-error" className="error-msg" role="alert">{errors.password.message}</span>}
@@ -113,40 +109,40 @@ const RegisterPage = () => {
           <div className="form-grid">
             <div className="form-group">
               <Controller
+                name="role"
+                control={control}
+                rules={{ required: 'Role selection required' }}
+                render={({ field }) => (
+                  <GlassDropdown
+                    label="User Role"
+                    options={roleOptions}
+                    value={field.value}
+                    onChange={field.onChange}
+                    icon={User}
+                    placeholder="Student / Teacher"
+                  />
+                )}
+              />
+              {errors.role && <span className="error-msg" role="alert">{errors.role.message}</span>}
+            </div>
+
+            <div className="form-group">
+              <Controller
                 name="board"
                 control={control}
                 rules={{ required: 'Board selection required' }}
                 render={({ field }) => (
                   <GlassDropdown
-                    label="Education Board"
+                    label="Board"
                     options={boardOptions}
                     value={field.value}
                     onChange={field.onChange}
                     icon={GraduationCap}
-                    placeholder="Select Node"
+                    placeholder="Select Board"
                   />
                 )}
               />
               {errors.board && <span className="error-msg" role="alert">{errors.board.message}</span>}
-            </div>
-
-            <div className="form-group">
-              <Controller
-                name="interest"
-                control={control}
-                rules={{ required: 'Major interest required' }}
-                render={({ field }) => (
-                  <GlassDropdown
-                    label="Primary Directive"
-                    options={interestOptions}
-                    value={field.value}
-                    onChange={field.onChange}
-                    icon={Sparkles}
-                    placeholder="Select Path"
-                  />
-                )}
-              />
-              {errors.interest && <span className="error-msg" role="alert">{errors.interest.message}</span>}
             </div>
           </div>
 
@@ -154,19 +150,19 @@ const RegisterPage = () => {
             {loading ? (
               <>
                 <Loader2 size={20} className="animate-spin" />
-                <span>Registeringoperatieve...</span>
+                <span>Creating Account...</span>
               </>
             ) : (
               <>
                 <UserPlus size={20} />
-                <span>Initiate Identity</span>
+                <span>Sign Up</span>
               </>
             )}
           </button>
         </form>
 
         <div className="auth-footer">
-          <p>Already registered? <Link to="/login">Access Mainframe</Link></p>
+          <p>Already registered? <Link to="/login">Sign In</Link></p>
         </div>
       </div>
     </div>

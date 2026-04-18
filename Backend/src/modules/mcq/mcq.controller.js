@@ -41,3 +41,23 @@ export const getByCommunity = asyncHandler(async (req, res) => {
     data: tests,
   });
 });
+
+export const getMine = asyncHandler(async (req, res) => {
+  const tests = await mcqService.getAssignedTests(req.user._id);
+  
+  res.status(200).json({
+    success: true,
+    message: 'Personal tests retrieved successfully',
+    data: tests,
+  });
+});
+
+export const getAnalytics = asyncHandler(async (req, res) => {
+  const analytics = await mcqService.getTestAnalytics(req.params.id, req.user._id);
+  
+  res.status(200).json({
+    success: true,
+    message: 'Analytics retrieved successfully',
+    data: analytics,
+  });
+});

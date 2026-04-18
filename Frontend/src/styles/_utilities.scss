@@ -25,19 +25,39 @@
 
 @mixin glass-input {
   width: 100%;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.05);
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.05) !important;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  color: white;
+  color: white !important;
   outline: none;
   font-family: $font-family-base;
   transition: $transition-smooth;
+  font-size: 0.95rem;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+  }
 
   &:focus {
-    border-color: rgba($accent-primary, 0.5);
-    background: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 0 0 2px rgba($accent-primary, 0.2);
+    border-color: $accent-primary;
+    background: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 0 10px rgba($accent-primary, 0.2);
+  }
+
+  // Handle Chrome Autofill white backgrounds
+  &:-webkit-autofill,
+  &:-webkit-autofill:hover, 
+  &:-webkit-autofill:focus, 
+  &:-webkit-autofill:active {
+    -webkit-text-fill-color: white !important;
+    -webkit-box-shadow: 0 0 0px 1000px $bg-primary inset !important;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
+  // Variant for when an icon is present
+  &.with-icon {
+    padding-left: 44px !important;
   }
 }
 
@@ -71,12 +91,21 @@
   }
 }
 
+@mixin input-wrapper {
+  position: relative;
+  width: 100%;
+  @include flex-column;
+}
+
 @mixin input-icon {
   position: absolute;
-  left: 12px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  opacity: 0.5;
+  opacity: 0.4;
+  color: $accent-primary;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
 }
 
 @mixin error-text {
@@ -103,17 +132,22 @@
 }
 
 @mixin btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
   font-family: $font-family-display;
   letter-spacing: $letter-spacing-hud;
   background: linear-gradient(135deg, $accent-primary, $accent-secondary);
   border: none;
-  padding: 10px 20px;
+  padding: 12px 24px;
   border-radius: 8px;
   color: white;
   font-weight: 600;
   cursor: pointer;
   transition: $transition-smooth;
   box-shadow: 0 4px 15px rgba($accent-primary, 0.3);
+  text-decoration: none;
 
   &:hover:not(:disabled) {
     opacity: 0.9;
@@ -139,10 +173,14 @@
 .flex-between { @include flex-between; }
 .flex-column { @include flex-column; }
 .container { @include container; }
-.glass-input { @include glass-input; }
+.glass-input { 
+  @include glass-input; 
+  &.with-icon { padding-left: 44px !important; }
+}
 .glass-card { @include glass-card; }
 .page-center { @include page-center; }
 .input-group { @include input-group; }
+.input-wrapper { @include input-wrapper; }
 .input-icon { @include input-icon; }
 .error-text { @include error-text; }
 .alert-error { @include alert-error; }
@@ -158,8 +196,12 @@
   gap: 0.5rem;
 
   .dropdown-label {
-    font-size: 0.875rem;
-    font-weight: 500;
+    font-family: $font-family-display;
+    font-size: 0.8rem;
+    color: rgba($accent-secondary, 0.9);
+    text-transform: uppercase;
+    letter-spacing: 0.1rem;
+    font-weight: 600;
   }
 }
 
@@ -197,7 +239,8 @@
     gap: 0.75rem;
 
     .trigger-icon {
-      opacity: 0.5;
+      opacity: 0.4;
+      color: $accent-primary;
     }
 
     .placeholder {

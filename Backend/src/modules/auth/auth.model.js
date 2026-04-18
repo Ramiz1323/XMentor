@@ -44,6 +44,20 @@ const userSchema = new mongoose.Schema(
       },
       subjects: [String],
     },
+    username: {
+      type: String,
+      unique: true,
+      trim: true,
+      lowercase: true,
+    },
+    students: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    }],
+    teachers: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    }],
     devProfile: {
       github: {
         type: String,

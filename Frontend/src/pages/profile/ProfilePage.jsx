@@ -83,7 +83,20 @@ const ProfilePage = () => {
             </label>
           </div>
           <div className="user-meta">
-            <h2>{user?.name}</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <h2>{user?.name}</h2>
+              <span style={{ 
+                background: 'rgba(59, 130, 246, 0.15)', 
+                color: '#60a5fa', 
+                padding: '2px 10px', 
+                borderRadius: '12px', 
+                fontSize: '0.75rem',
+                fontFamily: 'Orbitron, sans-serif',
+                letterSpacing: '1px'
+              }}>
+                @{user?.username}
+              </span>
+            </div>
             <p className="email-text">
               <Mail size={14} /> {user?.email}
             </p>
@@ -127,6 +140,72 @@ const ProfilePage = () => {
             {loading ? 'Saving...' : <><Save size={18} /> Save Changes</>}
           </button>
         </form>
+      </div>
+
+      <div className="profile-card" style={{ marginTop: '2rem' }}>
+        <header style={{ marginBottom: '1.5rem' }}>
+          <h3 className="glow-text">{user?.role === 'TEACHER' ? 'My Student Cohort' : 'My Academic Mentors'}</h3>
+          <p style={{ fontSize: '0.8rem', opacity: 0.6 }}>
+            {user?.role === 'TEACHER' 
+              ? 'Add and manage students recruited to your network.' 
+              : 'Teachers who have added you to their tasks.'}
+          </p>
+        </header>
+
+        {user?.role === 'TEACHER' && (
+          <div className="add-student-form" style={{ marginBottom: '2rem' }}>
+            <div className="input-group">
+              <label>Recruit Student by Username</label>
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <input 
+                  placeholder="e.g. ramiz123" 
+                  id="studentUsername"
+                  className="glass-input" 
+                />
+                <button 
+                  onClick={async () => {
+                    const input = document.getElementById('studentUsername');
+                    const username = input.value;
+                    if (!username) return;
+                    try {
+                      setLoading(true);
+                      await api.post('/user/add-student', { username });
+                      alert('Student recruited successfully!');
+                      input.value = '';
+                      window.location.reload(); // Refresh to show new student (simple approach)
+                    } catch (err) {
+                      alert(err.response?.data?.message || err.message);
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  className="btn-primary" 
+                  style={{ whiteSpace: 'nowrap' }}
+                >
+                  Recruit
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="network-list" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+          {user?.role === 'TEACHER' ? (
+            user?.students?.length > 0 ? user.students.map(s => (
+              <div key={s._id} className="glass-card" style={{ padding: '1rem', background: 'rgba(255,255,255,0.03)' }}>
+                <p style={{ fontWeight: 600 }}>{s.name}</p>
+                <p style={{ fontSize: '0.75rem', opacity: 0.6 }}>@{s.username}</p>
+              </div>
+            )) : <p style={{ opacity: 0.5 }}>No students in cohort yet.</p>
+          ) : (
+            user?.teachers?.length > 0 ? user.teachers.map(t => (
+              <div key={t._id} className="glass-card" style={{ padding: '1rem', background: 'rgba(255,255,255,0.03)' }}>
+                <p style={{ fontWeight: 600 }}>{t.name}</p>
+                <p style={{ fontSize: '0.75rem', opacity: 0.6 }}>@{t.username}</p>
+              </div>
+            )) : <p style={{ opacity: 0.5 }}>No linked mentors yet.</p>
+          )}
+        </div>
       </div>
     </div>
   );

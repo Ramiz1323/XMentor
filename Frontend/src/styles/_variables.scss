@@ -4,8 +4,13 @@ $bg-secondary: #0f172a;
 $accent-primary: #3b82f6;
 $accent-secondary: #22d3ee;
 $color-danger: #ff4d4d;
+$color-success: #22c55e;
 $text-primary: #ffffff;
 $text-secondary: rgba(255, 255, 255, 0.7);
+
+// Gradients
+$gradient-primary: linear-gradient(135deg, $accent-primary, $accent-secondary);
+$gradient-dark: linear-gradient(135deg, $bg-primary, $bg-secondary);
 
 // Typography
 $font-family-base: 'Inter', sans-serif;

@@ -1,247 +1,680 @@
 @import 'variables';
 @import 'utilities';
 
-.mcq-page {
-  @include container;
-  max-width: 800px;
-  padding-top: 2rem;
-  padding-bottom: 2rem;
-  
-  @media (max-width: 768px) {
-    padding-top: 1rem;
-  }
+// MCQ HUB / DASHBOARD
+.mcq-dashboard-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
 
   header {
     @include flex-between;
-    margin-bottom: 2rem;
-    gap: 1rem;
-
+    margin-bottom: 3rem;
+    
     @media (max-width: 640px) {
       flex-direction: column;
       align-items: flex-start;
+      gap: 1.5rem;
+    }
+  }
+
+  .hub-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2rem;
+  }
+
+  .task-card {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: relative;
+    overflow: hidden;
+    transition: $transition-smooth;
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.4), 0 0 20px rgba($accent-primary, 0.15);
+      border-color: rgba($accent-primary, 0.4);
     }
 
-    .test-info {
-      h1 { 
-        font-size: 1.5rem; 
-        @media (max-width: 640px) { font-size: 1.25rem; }
-      }
-      p { font-size: 0.875rem; opacity: 0.6; }
+    .card-header {
+      @include flex-between;
+      align-items: flex-start;
     }
 
-    .timer-box {
-      @include flex-center;
-      gap: 0.5rem;
-      padding: 8px 16px;
-      border-radius: 20px;
-      border: 1px solid rgba($accent-secondary, 0.3);
-      background: rgba(255, 255, 255, 0.05);
+    .subject-tag {
+      font-size: 0.7rem;
+      background: rgba($accent-primary, 0.15);
       color: $accent-secondary;
+      padding: 4px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05rem;
+    }
 
-      @media (max-width: 640px) {
-        width: 100%;
-        justify-content: flex-start;
+    .card-meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.85rem;
+      opacity: 0.8;
+    }
+
+    .card-footer {
+      margin-top: auto;
+      padding-top: 1.25rem;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .creator-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.8rem;
+      opacity: 0.8;
+      min-width: 0;
+      flex: 1;
+
+      .avatar {
+        width: 32px;
+        height: 32px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        background: $gradient-primary;
+        @include flex-center;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: white;
+        border: 1px solid rgba(255,255,255,0.1);
       }
 
-      &.critical {
-        color: $color-danger;
-        border-color: rgba($color-danger, 0.3);
+      .name {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+    
+    .owner-indicator {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 4px;
+      height: 100%;
+      background: $accent-secondary;
+    }
+
+    .title-group {
+      h3 { margin-top: 0.5rem; }
+    }
+
+    .duration-box {
+      text-align: right;
+      .label { font-size: 0.75rem; opacity: 0.6; }
+      .value { fontWeight: 600; color: $accent-primary; }
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 0.75rem;
+      width: 100%;
+      
+      .results-btn { 
+        flex: 1;
+        height: 42px;
+        gap: 0.5rem;
+        font-size: 0.85rem;
       }
 
-      span {
-        font-family: $font-family-display; 
-        font-weight: bold;
-        letter-spacing: $letter-spacing-hud;
-        font-size: 1.25rem;
-        @media (max-width: 480px) { font-size: 1.1rem; }
+      .btn-primary {
+        flex: 2;
+        height: 42px;
+        @include flex-center;
+        font-size: 0.9rem;
+        font-weight: 600;
       }
     }
   }
 
-  .result-banner {
-    @include glass-card;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    border: 1px solid rgba($accent-secondary, 0.3);
-    background: rgba($accent-secondary, 0.05);
+  .btn-sec {
+    @include flex-center;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: white;
+    font-family: $font-family-display;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: $transition-smooth;
+    text-decoration: none;
 
-    @media (max-width: 640px) {
-      padding: 1.25rem;
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    &.full-width { width: 100%; }
+    &.dashed { border-style: dashed; }
+    &.icon-only { padding: 4px; }
+  }
+
+  .empty-state {
+    grid-column: 1 / -1;
+    padding: 4rem;
+    @include flex-column;
+    align-items: center;
+    gap: 1.5rem;
+    text-align: center;
+    background: rgba(255,255,255,0.02);
+    @include glass-card;
+    
+    .empty-icon { opacity: 0.2; }
+    h3 { opacity: 0.5; }
+    p { opacity: 0.4; margin-top: 0.5rem; font-size: 0.9rem; }
+  }
+}
+
+// Icon Helpers
+.error-icon { color: $color-danger; }
+.success-icon { color: $color-success; }
+.complete-icon { color: $accent-secondary; }
+.step-icon { color: $accent-primary; }
+
+// Global MCQ UI Helpers
+.meta-tag {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.score-high { color: $color-success; }
+.score-mid { color: #f59e0b; }
+.score-low { color: $color-danger; }
+
+.date-cell { opacity: 0.6; font-size: 0.8rem; }
+.empty-table-cell { padding: 4rem; text-align: center; opacity: 0.5; }
+
+.cohort-alert {
+  margin-top: 3rem;
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: rgba(251, 191, 36, 0.05);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  color: #fbbf24;
+
+  .alert-content {
+    h4 { color: #fbbf24; margin-bottom: 0.25rem; }
+    p { color: white; font-size: 0.85rem; opacity: 0.7; }
+  }
+}
+
+// TASK ANALYTICS / RESULTS
+.task-results-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  header {
+    margin-bottom: 2.5rem;
+    
+    .back-link {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: $accent-secondary;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      text-decoration: none;
+      transition: $transition-smooth;
+      &:hover { opacity: 0.8; }
     }
 
-    .banner-content {
+    .header-main {
       @include flex-between;
-      @media (max-width: 480px) {
+      align-items: flex-end;
+      @media (max-width: 768px) {
         flex-direction: column;
         align-items: flex-start;
         gap: 1.5rem;
       }
     }
 
-    .result-status {
-      @include flex-center;
-      gap: 1rem;
-      h2 { @include glow-text; font-size: 1.25rem; }
-      p { font-size: 0.875rem; opacity: 0.7; }
+    .meta-row {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 0.5rem;
+      opacity: 0.7;
+      font-size: 0.9rem;
+      @media (max-width: 480px) { flex-wrap: wrap; gap: 0.75rem; }
     }
 
-    .score-display {
+    .avg-score-box {
       text-align: right;
-      @media (max-width: 480px) { text-align: left; }
-      .score { 
-        font-family: $font-family-display; 
-        font-size: 2.5rem; 
-        font-weight: bold; 
-        color: $accent-secondary;
-        letter-spacing: $letter-spacing-hud;
-        @media (max-width: 480px) { font-size: 2rem; }
+      @media (max-width: 768px) { text-align: left; }
+      .score { font-size: 2rem; font-weight: 800; color: $accent-secondary; }
+      .label { font-size: 0.75rem; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; }
+    }
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+    @media (max-width: 768px) { grid-template-columns: 1fr; }
+
+    .stat-card {
+      @include glass-card;
+      padding: 1.5rem;
+      @include flex-column;
+      align-items: center;
+      gap: 0.5rem;
+
+      svg { margin-bottom: 0.25rem; }
+      .value { font-size: 1.5rem; font-weight: 700; }
+      .label { font-size: 0.7rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.05rem; }
+      
+      &.completion svg { color: $accent-primary; }
+      &.perfect svg { color: $color-success; }
+      &.time svg { color: #f59e0b; }
+    }
+  }
+
+  .mt-2 { margin-top: 0.5rem; }
+  .mt-6 { margin-top: 1.5rem; }
+  .mt-8 { margin-top: 2.5rem; }
+  .full-width { width: 100%; }
+
+  .error-container {
+    padding: 10rem 2rem;
+    text-align: center;
+    @include flex-column;
+    align-items: center;
+    gap: 1.5rem;
+    
+    h2 { @include glow-text; }
+    p { color: rgba(255,255,255,0.6); margin-bottom: 2rem; }
+  }
+
+  .results-section {
+    @include glass-card;
+    padding: 0;
+    overflow: hidden;
+
+    .section-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      @include flex-between;
+      @media (max-width: 640px) {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
       }
-      .label { 
-        font-family: $font-family-display; 
-        font-size: 0.75rem; 
-        opacity: 0.6; 
+    }
+
+    .search-box {
+      position: relative;
+      @media (max-width: 640px) { width: 100%; }
+      input { padding-left: 36px; width: 240px; font-size: 0.85rem; @media (max-width: 640px) { width: 100%; } }
+      .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.5; }
+    }
+
+    .results-table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+
+      thead {
+        background: rgba(255,255,255,0.02);
+        font-size: 0.75rem;
         text-transform: uppercase;
+        opacity: 0.6;
+        th { padding: 1rem 1.5rem; }
+      }
+
+      tbody {
+        tr { 
+          border-bottom: 1px solid rgba(255,255,255,0.03); 
+          font-size: 0.9rem;
+          &:last-child { border: none; }
+        }
+        td { padding: 1rem 1.5rem; }
+      }
+    }
+
+    .student-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      .avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: $gradient-primary;
+        @include flex-center;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: white;
+      }
+      .name { font-weight: 600; }
+      .username { font-size: 0.75rem; opacity: 0.5; }
+    }
+
+    .status-pill {
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(34, 197, 94, 0.1);
+      color: #22c55e;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+  }
+}
+
+// TASK ARCHITECT / CREATOR
+.task-creator-container {
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+
+  .creator-header {
+    margin-bottom: 3rem;
+    @include flex-between;
+    @media (max-width: 640px) { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    
+    h1 { @include glow-text; }
+    .subtitle { opacity: 0.7; font-size: 0.95rem; }
+  }
+
+  .step-dots {
+    display: flex;
+    gap: 0.5rem;
+    
+    .step-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      @include flex-center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      transition: $transition-smooth;
+      
+      &.active {
+        background: $accent-primary;
+        border-color: $accent-primary;
+        box-shadow: 0 0 15px rgba($accent-primary, 0.3);
       }
     }
   }
 
-  .question-container {
+  .creator-card {
     @include glass-card;
     padding: 2.5rem;
-    position: relative;
     
-    @media (max-width: 768px) {
-      padding: 1.5rem;
-    }
-
-    @media (max-width: 480px) {
-      padding: 1.25rem;
-    }
-
-    .progress-bar {
+    .section-title {
+      @include flex-center;
+      justify-content: flex-start;
+      gap: 0.75rem;
       margin-bottom: 1.5rem;
+    }
+
+    .input-stack {
       display: flex;
-      gap: 0.5rem;
-      
-      @media (max-width: 480px) { gap: 0.25rem; }
-      
-      .segment {
-        height: 4px;
-        flex: 1;
-        border-radius: 2px;
-        background: rgba(255, 255, 255, 0.1);
-        &.active { background: $accent-primary; }
-        &.completed { background: rgba($accent-primary, 0.3); }
-      }
+      flex-direction: column;
+      gap: 1.5rem;
     }
 
-    .question-base {
-      font-family: $font-family-base; 
-      font-size: 1.25rem;
-      margin-bottom: 2rem;
-      line-height: 1.6;
-      font-weight: 500;
-      @media (max-width: 640px) { font-size: 1.1rem; margin-bottom: 1.5rem; }
-      
-      .q-num { 
-        font-family: $font-family-display; 
-        opacity: 0.4; 
-        margin-right: 0.5rem; 
-      }
+    .input-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      @media (max-width: 640px) { grid-template-columns: 1fr; }
     }
+  }
 
-    .options-list {
-      @include flex-column;
-      gap: 1rem;
-    }
+  .question-editor-card {
+    @include glass-card;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(255,255,255,0.05);
+    position: relative;
 
-    .option-btn {
-      text-align: left;
-      padding: 1rem 1.5rem;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      color: white;
-      font-family: $font-family-base;
-      cursor: pointer;
-      transition: all 0.2s ease;
+    .q-header {
       @include flex-between;
-      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
 
-      @media (max-width: 480px) {
-        padding: 0.875rem 1rem;
+    .option-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      @media (max-width: 640px) { grid-template-columns: 1fr; }
+
+      .option-item {
+        position: relative;
+        input { padding-left: 48px; }
+        .option-label {
+          position: absolute;
+          left: 1rem;
+          top: 50%;
+          transform: translateY(-50%);
+          font-weight: 700;
+          opacity: 0.3;
+        }
+      }
+    }
+  }
+
+  .targeting-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+
+    .student-select-card {
+      padding: 1rem;
+      @include glass-card;
+      @include flex-center;
+      justify-content: flex-start;
+      gap: 0.75rem;
+      cursor: pointer;
+      transition: $transition-smooth;
+      border: 1px solid rgba(255,255,255,0.05);
+
+      &:hover { border-color: rgba($accent-secondary, 0.3); }
+
+      &.selected {
+        background: rgba($accent-secondary, 0.1);
+        border-color: $accent-secondary;
+      }
+
+    .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: $gradient-primary;
+        @include flex-center;
+        font-weight: 700;
         font-size: 0.9rem;
       }
+    }
+  }
 
-      &:hover:not(:disabled) {
-        border-color: rgba($accent-primary, 0.5);
-        background: rgba(255, 255, 255, 0.08);
-      }
+  .action-row {
+    display: flex;
+    gap: 1rem;
+    button { flex: 1; &.btn-primary { flex: 2; } }
+  }
 
-      &.selected { border-color: $accent-primary; }
-      
-      &.correct {
-        border-color: #22c55e;
-        background: rgba(34, 197, 94, 0.1);
-      }
-      
-      &.wrong {
-        border-color: #ef4444;
-        background: rgba(239, 68, 68, 0.1);
-      }
+  .mt-2 { margin-top: 0.5rem; }
+  .mt-6 { margin-top: 1.5rem; }
+  .mt-8 { margin-top: 2.5rem; }
+  .full-width { width: 100%; }
 
-      &:disabled { cursor: default; }
+  .task-summary {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.8rem;
+    opacity: 0.5;
+  }
+
+  .abort-btn {
+    margin-top: 2.5rem;
+    background: none;
+    border: none;
+    color: $color-danger;
+    cursor: pointer;
+    font-size: 0.85rem;
+    @include flex-center;
+    gap: 0.5rem;
+    opacity: 0.7;
+    transition: $transition-smooth;
+    &:hover { opacity: 1; }
+  }
+}
+
+// TEST PAGE (MCQTest.jsx)
+.mcq-page {
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+  @media (max-width: 640px) { padding: 1rem; }
+
+  header {
+    @include flex-between;
+    margin-bottom: 2rem;
+    @media (max-width: 640px) { flex-direction: column; align-items: flex-start; gap: 1rem; }
+
+    .test-info {
+      h1 { @include glow-text; margin-bottom: 0.25rem; font-size: 1.5rem; }
+      p { opacity: 0.6; font-size: 0.9rem; }
+    }
+
+    .timer-box {
+      padding: 0.75rem 1.25rem;
+      @include glass-card;
+      @include flex-center;
+      gap: 0.75rem;
+      font-weight: 700;
+      color: $accent-secondary;
+      border: 1px solid rgba($accent-secondary, 0.3);
+
+      &.critical { color: $color-danger; border-color: rgba($color-danger, 0.3); }
+      &.fluid { background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.6); border-color: rgba(255, 255, 255, 0.1); }
+    }
+  }
+
+  .result-banner {
+    @include glass-card;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: rgba($accent-secondary, 0.1);
+    border: 1px solid rgba($accent-secondary, 0.2);
+
+    .banner-content {
+      @include flex-between;
+      @media (max-width: 640px) { flex-direction: column; gap: 1rem; text-align: center; }
+    }
+
+    .result-status { @include flex-center; gap: 1rem; h2 { font-size: 1.25rem; } p { font-size: 0.85rem; opacity: 0.7; } }
+    .score-display { text-align: right; .score { font-size: 1.75rem; font-weight: 800; color: $accent-secondary; } .label { font-size: 0.7rem; opacity: 0.6; text-transform: uppercase; } }
+  }
+
+  .question-container {
+    @include glass-card;
+    padding: 2rem;
+    @media (max-width: 640px) { padding: 1.5rem; }
+
+    .progress-bar {
+      display: flex;
+      gap: 0.4rem;
+      margin-bottom: 2rem;
+      .segment {
+        flex: 1;
+        height: 4px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 2px;
+        transition: $transition-smooth;
+        &.active { background: $accent-secondary; box-shadow: 0 0 10px rgba($accent-secondary, 0.3); }
+        &.completed { background: rgba($accent-secondary, 0.4); }
+      }
+    }
+
+    .question-base { font-size: 1.3rem; line-height: 1.6; margin-bottom: 2rem; .q-num { color: $accent-secondary; margin-right: 0.75rem; } }
+
+    .options-list {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+
+      .option-btn {
+        padding: 1.25rem;
+        @include glass-card;
+        @include flex-between;
+        text-align: left;
+        cursor: pointer;
+        transition: $transition-smooth;
+        border: 1px solid rgba(255,255,255,0.05);
+        font-size: 1rem;
+
+        &:hover:not(:disabled) { border-color: rgba($accent-secondary, 0.3); background: rgba(255,255,255,0.02); }
+        &.selected { border-color: $accent-secondary; background: rgba($accent-secondary, 0.05); }
+        &.correct { border-color: $color-success; background: rgba($color-success, 0.1); color: $color-success; font-weight: 600; }
+        &.wrong { border-color: $color-danger; background: rgba($color-danger, 0.1); color: $color-danger; }
+        &:disabled { cursor: default; }
+      }
     }
 
     .explanation-box {
-      margin-top: 2rem;
-      padding: 1rem;
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 8px;
-      border-left: 4px solid $accent-primary;
-
-      h4 {
-        font-family: $font-family-display;
-        font-size: 0.875rem;
-        color: $accent-primary;
-        margin-bottom: 0.5rem;
-        @include flex-center;
-        justify-content: flex-start;
-        gap: 0.5rem;
-        text-transform: uppercase;
-      }
-      
-      p { font-size: 0.875rem; opacity: 0.8; line-height: 1.5; }
+      background: rgba(255,255,255,0.03);
+      padding: 1.25rem;
+      border-radius: 12px;
+      margin-bottom: 2.5rem;
+      h4 { @include flex-center; justify-content: flex-start; gap: 0.5rem; font-size: 0.9rem; margin-bottom: 0.5rem; color: $accent-secondary; }
+      p { font-size: 0.9rem; opacity: 0.8; line-height: 1.5; }
     }
 
     .navigation-footer {
-      margin-top: 2.5rem;
       @include flex-between;
-      gap: 1rem;
-
-      @media (max-width: 480px) {
-        margin-top: 1.5rem;
-      }
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255,255,255,0.05);
 
       .nav-btn {
         background: none;
-        border: none;
+        border: 1px solid rgba(255,255,255,0.1);
         color: white;
-        font-family: $font-family-display;
-        text-transform: uppercase;
-        font-size: 0.75rem;
-        letter-spacing: $letter-spacing-hud;
-        opacity: 0.7;
-        cursor: pointer;
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
         @include flex-center;
         gap: 0.5rem;
+        cursor: pointer;
         transition: $transition-smooth;
-
-        span {
-          @media (max-width: 400px) { display: none; }
-        }
-
-        &:hover:not(:disabled) { opacity: 1; color: $accent-primary; }
+        &:hover:not(:disabled) { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); }
         &:disabled { opacity: 0.3; cursor: not-allowed; }
       }
     }

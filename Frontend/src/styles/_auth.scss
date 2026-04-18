@@ -7,9 +7,9 @@
   padding: 1rem;
 
   @media (max-width: 480px) {
-    padding: 0;
-    align-items: flex-start;
-    padding-top: 2rem;
+    padding: 0.75rem;
+    align-items: center; // Keep it centered if possible
+    padding-top: 1rem;
   }
 
   .auth-card {
@@ -17,19 +17,17 @@
     padding: 2.5rem;
     width: 100%;
     @include flex-column;
-    gap: 1.5rem;
+    gap: 1.75rem;
 
     @media (max-width: 640px) {
-      padding: 1.5rem;
+      padding: 1.75rem;
       gap: 1.25rem;
-      border-radius: 0;
-      border-left: none;
-      border-right: none;
+      border-radius: 1rem; // Keep some radius for premium feel
     }
 
-    &.login { max-width: 400px; }
+    &.login { max-width: 440px; }
     &.register { 
-      max-width: 500px; 
+      max-width: 540px; 
       @media (max-width: 640px) { max-width: 100%; }
     }
   }
@@ -37,16 +35,15 @@
   .auth-header {
     text-align: center;
     .auth-icon-wrapper {
-      margin-bottom: 1rem;
-      @media (max-width: 480px) { transform: scale(0.8); }
+      margin-bottom: 0.75rem;
+      @media (max-width: 480px) { transform: scale(0.9); }
     }
     h1 { 
       font-family: $font-family-display; 
       font-size: 2rem; 
       margin-bottom: 0.5rem; 
-      text-transform: uppercase; 
-      letter-spacing: $letter-spacing-hud; 
-      @media (max-width: 480px) { font-size: 1.5rem; }
+      // Removed uppercase/letter-spacing for cleaner standard look
+      @media (max-width: 480px) { font-size: 1.75rem; }
     }
     p { 
       font-family: $font-family-base; 
@@ -71,7 +68,30 @@
 
     .form-group {
       @include flex-column;
-      gap: 0.5rem;
+      gap: 0.65rem;
+
+      label {
+        font-family: $font-family-display;
+        font-size: 0.8rem;
+        color: rgba($accent-secondary, 0.9);
+        text-transform: uppercase;
+        letter-spacing: 0.1rem;
+        font-weight: 600;
+        margin-left: 2px;
+        text-shadow: 0 0 10px rgba($accent-secondary, 0.2);
+      }
+    }
+
+    // Global specificity override for all inputs in the auth form
+    input {
+      background: rgba(15, 23, 42, 0.6) !important; // Deeper blue-black background
+      border: 1px solid rgba($accent-primary, 0.2) !important;
+      
+      &:focus {
+        background: rgba(15, 23, 42, 0.8) !important;
+        border-color: $accent-secondary !important;
+        box-shadow: 0 0 20px rgba($accent-secondary, 0.15) !important;
+      }
     }
   }
 

@@ -2,9 +2,16 @@ import { MCQTest, MCQResult } from './mcq.model.js';
 import ErrorResponse from '../../utils/errorResponse.js';
 
 export const createTest = async (testData, teacherId) => {
-  const { title, subject, communityId, duration, questions: inputQuestions } = testData;
+  const { 
+    title, 
+    subject, 
+    communityId, 
+    duration, 
+    hasTimer = true, 
+    assignedStudents = [], 
+    questions: inputQuestions 
+  } = testData;
 
-  // Safe check for questions array
   const questions = Array.isArray(inputQuestions) ? inputQuestions : [];
 
   const test = await MCQTest.create({
@@ -12,6 +19,8 @@ export const createTest = async (testData, teacherId) => {
     subject,
     communityId,
     duration,
+    hasTimer,
+    assignedStudents,
     questions,
     totalQuestions: questions.length,
     createdBy: teacherId,
@@ -84,6 +93,46 @@ export const submitTest = async (testId, studentId, studentAnswers, timeTaken) =
 
 export const getTestsByCommunity = async (communityId) => {
   return await MCQTest.find({ communityId })
-    .select('title subject totalQuestions duration createdAt')
+    .select('title subject totalQuestions duration hasTimer createdAt')
     .lean();
+};
+
+export const getAssignedTests = async (userId) => {
+  // Find tests created by teacher OR tests where student is in assignedStudents
+  return await MCQTest.find({
+    $or: [
+      { createdBy: userId },
+      { assignedStudents: userId }
+    ]
+  })
+  .select('title subject totalQuestions duration hasTimer createdAt createdBy')
+  .populate('createdBy', 'name')
+  .sort({ createdAt: -1 })
+  .lean();
+};
+
+export const getTestAnalytics = async (testId, teacherId) => {
+  const test = await MCQTest.findById(testId);
+  if (!test) throw new ErrorResponse('Mission not found', 404);
+
+  // Verification: Only the creator can see full analytics
+  if (test.createdBy.toString() !== teacherId.toString()) {
+    throw new ErrorResponse('Unauthorized: High-level access required', 403);
+  }
+
+  const results = await MCQResult.find({ testId })
+    .populate('studentId', 'name username profilePic email')
+    .sort({ score: -1, timeTaken: 1 })
+    .lean();
+
+  return {
+    test,
+    results,
+    stats: {
+      totalAttempts: results.length,
+      avgScore: results.length > 0 
+        ? (results.reduce((acc, curr) => acc + curr.score, 0) / results.length).toFixed(1) 
+        : 0
+    }
+  };
 };

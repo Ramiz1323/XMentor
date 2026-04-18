@@ -46,7 +46,15 @@ const mcqTestSchema = new mongoose.Schema(
     communityId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Community',
-      required: true,
+      required: false,
+    },
+    assignedStudents: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    }],
+    hasTimer: {
+      type: Boolean,
+      default: true,
     },
     questions: [questionSchema],
     duration: {

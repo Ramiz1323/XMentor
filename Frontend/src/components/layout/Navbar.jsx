@@ -33,8 +33,8 @@ const Navbar = ({ onMenuClick }) => {
             <Search size={16} aria-hidden="true" />
             <input 
               type="text" 
-              placeholder="Search mission..." 
-              aria-label="Search missions"
+              placeholder="Search task..." 
+              aria-label="Search tasks"
             />
           </div>
           
