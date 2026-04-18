@@ -7,6 +7,8 @@ import GlassDropdown from '../../components/ui/GlassDropdown';
 const MCQCreator = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [students, setStudents] = useState([]);
+  const [fetchingStudents, setFetchingStudents] = useState(false);
   
   const [testData, setTestData] = useState({
     title: '',
@@ -30,9 +32,27 @@ const MCQCreator = () => {
     { value: 'OTHERS', label: 'Others' }
   ];
 
+  useState(() => {
+    const fetchStudents = async () => {
+      try {
+        setFetchingStudents(true);
+        const { data } = await api.get('/user/profile');
+        setStudents(data.data.students || []);
+      } catch (err) {
+        console.error('Failed to load cohort intel', err);
+      } finally {
+        setFetchingStudents(false);
+      }
+    };
+    fetchStudents();
+  }, []);
+
   const handleCreate = async () => {
     if (!testData.title) return alert('Task title is required');
     if (testData.questions.some(q => !q.q)) return alert('All questions must have text');
+    if (testData.questions.some(q => q.options.some(opt => !opt.trim()))) {
+      return alert('All options must be filled before task deployment');
+    }
     
     try {
       setLoading(true);
@@ -79,7 +99,6 @@ const MCQCreator = () => {
     setStep(next);
   };
 
-  const students = []; // Added to prevent crash, assuming students are fetched or passed
 
   return (
     <div className="task-creator-container">
@@ -124,7 +143,10 @@ const MCQCreator = () => {
                   <input 
                     type="number"
                     value={testData.duration}
-                    onChange={(e) => setTestData({...testData, duration: parseInt(e.target.value)})}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      setTestData({...testData, duration: isNaN(val) ? 0 : val});
+                    }}
                     className="glass-input" 
                   />
                 </div>
@@ -220,23 +242,31 @@ const MCQCreator = () => {
             <h2 className="section-title"><Users size={24} className="step-icon" /> Task Targeting</h2>
             <p className="section-desc">Deploy this task to specific students in your cohort. Leave unselected for a Public Curriculum Task.</p>
             
-            <div className="targeting-grid">
-              {students.map(student => (
-                <div 
-                  key={student._id} 
-                  className={`student-select-card ${testData.assignedStudents.includes(student._id) ? 'selected' : ''}`}
-                  onClick={() => toggleStudent(student._id)}
-                >
-                  <div className="avatar">
-                    {student.name.charAt(0)}
+            {fetchingStudents ? (
+              <div className="loader">Analyzing cohort database...</div>
+            ) : students.length === 0 ? (
+              <div className="empty-cohort-msg">
+                <p>No students detected in your network. Use <strong>Profile</strong> to recruit participants.</p>
+              </div>
+            ) : (
+              <div className="targeting-grid">
+                {students.map(student => (
+                  <div 
+                    key={student._id} 
+                    className={`student-select-card ${testData.assignedStudents.includes(student._id) ? 'selected' : ''}`}
+                    onClick={() => toggleStudent(student._id)}
+                  >
+                    <div className="avatar">
+                      {student.name.charAt(0)}
+                    </div>
+                    <div className="student-info">
+                      <div className="student-name">{student.name}</div>
+                      <div className="student-handle">@{student.username}</div>
+                    </div>
                   </div>
-                  <div className="student-info">
-                    <div className="student-name">{student.name}</div>
-                    <div className="student-handle">@{student.username}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             <div className="action-row mt-8">
               <button className="btn-sec" onClick={() => setStep(2)}>Adjust Intel</button>

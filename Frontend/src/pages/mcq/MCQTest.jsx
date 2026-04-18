@@ -103,13 +103,13 @@ const MCQTest = () => {
 
   // Handle Fluid missions (no timer): track elapsed time
   useEffect(() => {
-    if (test?.hasTimer || result || test?.isSubmitted || loading) return;
+    if (test?.hasTimer || result || test?.isSubmitted || loading || !test) return;
     
     const ticker = setInterval(() => {
       setElapsedTime(prev => prev + 1);
     }, 1000);
     return () => clearInterval(ticker);
-  }, [test?.hasTimer, result, test?.isSubmitted, loading]);
+  }, [test?.hasTimer, result, test?.isSubmitted, loading, test]);
 
   const handleOptionSelect = (optionIdx) => {
     if (test?.isSubmitted || result) return;

@@ -6,7 +6,7 @@ export const handleImageUpload = async (userId, fileBuffer, fileName) => {
   const user = await User.findById(userId);
   if (!user) throw new ErrorResponse('User not found', 404);
 
-  const uploadResponse = await imagekit.upload({
+  const uploadResponse = await imagekit.files.upload({
     file: fileBuffer.toString('base64'),
     fileName: `profile_${userId}_${Date.now()}`,
     folder: '/xmentor/profiles',
@@ -14,7 +14,7 @@ export const handleImageUpload = async (userId, fileBuffer, fileName) => {
 
   if (user.profilePicId) {
     try {
-      await imagekit.deleteFile(user.profilePicId);
+      await imagekit.files.delete(user.profilePicId);
     } catch (error) {
       console.error('Failed to delete old profile pic:', error.message);
     }
@@ -24,7 +24,7 @@ export const handleImageUpload = async (userId, fileBuffer, fileName) => {
   user.profilePicId = uploadResponse.fileId;
   await user.save();
 
-  return uploadResponse.url;
+  return user;
 };
 
 export const updateProfile = async (userId, updateData) => {
@@ -64,15 +64,32 @@ export const getProfile = async (userId) => {
     
   if (!profile) throw new ErrorResponse('Profile not found', 404);
 
-  // Retroactive username generation for legacy users
   if (!profile.username) {
     let baseUsername = profile.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
     if (baseUsername.length < 3) baseUsername = 'user' + Math.floor(Math.random() * 1000);
     
-    // Safety check for collisions
-    const collision = await User.findOne({ username: baseUsername });
-    profile.username = collision ? (baseUsername + Math.floor(Math.random() * 900) + 100) : baseUsername;
-    await profile.save();
+    // Atomic attempt to claim username via retry
+    let attempts = 0;
+    while (attempts < 5) {
+      let candidate = attempts === 0 ? baseUsername : `${baseUsername}${Math.floor(Math.random() * 9000) + 1000}`;
+      try {
+        const updated = await User.findOneAndUpdate(
+          { _id: profile._id, username: { $exists: false } },
+          { $set: { username: candidate } },
+          { new: true, runValidators: true }
+        );
+        if (updated) {
+          profile.username = candidate;
+          break;
+        }
+      } catch (error) {
+        if (error.code === 11000) {
+          attempts++;
+        } else {
+          throw error;
+        }
+      }
+    }
   }
 
   return profile.toObject ? profile.toObject() : profile;
@@ -80,6 +97,7 @@ export const getProfile = async (userId) => {
 
 export const linkStudentByUsername = async (teacherId, studentUsername) => {
   const teacher = await User.findById(teacherId);
+  if (!teacher) throw new ErrorResponse('Teacher profile not found', 404);
   if (teacher.role !== 'TEACHER') throw new ErrorResponse('Only teachers can add students', 403);
 
   const student = await User.findOne({ username: studentUsername.toLowerCase() });
@@ -90,16 +108,16 @@ export const linkStudentByUsername = async (teacherId, studentUsername) => {
     throw new ErrorResponse('You cannot add yourself', 400);
   }
 
-  // Add mutual references
-  if (!teacher.students.includes(student._id)) {
-    teacher.students.push(student._id);
-    await teacher.save();
-  }
+  // Atomic mutual update using $addToSet
+  await User.updateOne(
+    { _id: teacherId },
+    { $addToSet: { students: student._id } }
+  );
 
-  if (!student.teachers.includes(teacher._id)) {
-    student.teachers.push(teacher._id);
-    await student.save();
-  }
+  await User.updateOne(
+    { _id: student._id },
+    { $addToSet: { teachers: teacherId } }
+  );
 
   return { studentId: student._id, name: student.name, username: student.username };
 };

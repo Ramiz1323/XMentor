@@ -8,18 +8,22 @@ const MCQDashboard = () => {
   const { user } = useAuthStore();
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchTests = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const { data } = await api.get('/mcq/my-tests');
+      setTests(data.data);
+    } catch (err) {
+      setError(err.message || 'Signal lost with task distribution center');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchTests = async () => {
-      try {
-        const { data } = await api.get('/mcq/my-tests');
-        setTests(data.data);
-      } catch (err) {
-        console.error('Failed to fetch tests', err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchTests();
   }, []);
 
@@ -50,7 +54,11 @@ const MCQDashboard = () => {
       <div className="card-footer">
         <div className="creator-badge">
           <div className="avatar">
-             {test.createdBy?.name?.charAt(0)}
+             {test.createdBy?.profilePic ? (
+               <img src={test.createdBy.profilePic} alt="" />
+             ) : (
+               test.createdBy?.name?.charAt(0)
+             )}
           </div>
           <span className="name">Mentor: {test.createdBy?.name}</span>
         </div>
@@ -96,6 +104,11 @@ const MCQDashboard = () => {
       <div className="hub-grid">
         {loading ? (
           <div className="loader">Initializing Tactical Link...</div>
+        ) : error ? (
+          <div className="error-state" style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem' }}>
+            <p className="error-text" style={{ color: '#ef4444', marginBottom: '1.5rem' }}>{error}</p>
+            <button onClick={fetchTests} className="btn-primary">Retry Sync</button>
+          </div>
         ) : tests.length > 0 ? (
           tests.map(test => <TaskCard key={test._id} test={test} />)
         ) : (
@@ -107,7 +120,7 @@ const MCQDashboard = () => {
         )}
       </div>
 
-      {user.role === 'TEACHER' && user.students?.length === 0 && (
+      {user.role === 'TEACHER' && (!user.students || user.students.length === 0) && (
         <div className="cohort-alert">
            <Users size={32} />
            <div className="alert-content">

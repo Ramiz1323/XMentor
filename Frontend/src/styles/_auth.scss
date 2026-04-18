@@ -82,15 +82,15 @@
       }
     }
 
-    // Global specificity override for all inputs in the auth form
+    // Scoped input overrides for auth form consistency
     input {
-      background: rgba(15, 23, 42, 0.6) !important; // Deeper blue-black background
-      border: 1px solid rgba($accent-primary, 0.2) !important;
+      background: rgba(15, 23, 42, 0.6); // Deeper blue-black background
+      border: 1px solid rgba($accent-primary, 0.2);
       
       &:focus {
-        background: rgba(15, 23, 42, 0.8) !important;
-        border-color: $accent-secondary !important;
-        box-shadow: 0 0 20px rgba($accent-secondary, 0.15) !important;
+        background: rgba(15, 23, 42, 0.8);
+        border-color: $accent-secondary;
+        box-shadow: 0 0 20px rgba($accent-secondary, 0.15);
       }
     }
   }

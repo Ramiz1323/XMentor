@@ -29,8 +29,8 @@ const TaskResults = () => {
   const { test, results, stats } = data;
 
   const filteredResults = results.filter(r => 
-    r.studentId.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    r.studentId.username.toLowerCase().includes(searchTerm.toLowerCase())
+    r.studentId?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    r.studentId?.username?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -63,7 +63,7 @@ const TaskResults = () => {
          </div>
          <div className="stat-card perfect">
             <Award size={24} />
-            <div className="value">{filteredResults.filter(r => r.score === test.totalQuestions).length}</div>
+            <div className="value">{results.filter(r => r.score === test.totalQuestions).length}</div>
             <div className="label">Perfect Scores</div>
          </div>
          <div className="stat-card time">
@@ -106,16 +106,20 @@ const TaskResults = () => {
                   <td>
                     <div className="student-info">
                       <div className="avatar">
-                        {res.studentId.name.charAt(0)}
+                        {res.studentId?.profilePic ? (
+                          <img src={res.studentId.profilePic} alt="" />
+                        ) : (
+                          res.studentId?.name?.charAt(0) || '?'
+                        )}
                       </div>
                       <div>
-                        <div className="name">{res.studentId.name}</div>
-                        <div className="username">@{res.studentId.username}</div>
+                        <div className="name">{res.studentId?.name || 'Unknown Participant'}</div>
+                        <div className="username">@{res.studentId?.username || 'unknown'}</div>
                       </div>
                     </div>
                   </td>
                   <td>
-                     <span className={`score-pill ${res.score / test.totalQuestions >= 0.8 ? 'score-high' : res.score / test.totalQuestions >= 0.5 ? 'score-mid' : 'score-low'}`}>
+                     <span className={`score-pill ${test.totalQuestions > 0 && res.score / test.totalQuestions >= 0.8 ? 'score-high' : test.totalQuestions > 0 && res.score / test.totalQuestions >= 0.5 ? 'score-mid' : 'score-low'}`}>
                        {res.score} / {test.totalQuestions}
                      </span>
                   </td>

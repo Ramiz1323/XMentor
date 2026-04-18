@@ -17,7 +17,10 @@ const Navbar = ({ onMenuClick }) => {
         <div className="brand-section">
           <button 
             className="menu-toggle" 
-            onClick={onMenuClick}
+            onClick={(e) => {
+              e.stopPropagation();
+              onMenuClick();
+            }}
             aria-label="Toggle navigation menu"
           >
             <Menu size={24} />
@@ -32,7 +35,7 @@ const Navbar = ({ onMenuClick }) => {
             <Search size={16} aria-hidden="true" />
             <input 
               type="text" 
-              placeholder="Search task..." 
+              placeholder="Search tasks..." 
               aria-label="Search tasks"
             />
           </div>

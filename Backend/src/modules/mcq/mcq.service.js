@@ -106,14 +106,14 @@ export const getAssignedTests = async (userId) => {
     ]
   })
   .select('title subject totalQuestions duration hasTimer createdAt createdBy')
-  .populate('createdBy', 'name')
+  .populate('createdBy', 'name profilePic')
   .sort({ createdAt: -1 })
   .lean();
 };
 
 export const getTestAnalytics = async (testId, teacherId) => {
   const test = await MCQTest.findById(testId);
-  if (!test) throw new ErrorResponse('Mission not found', 404);
+  if (!test) throw new ErrorResponse('Test not found', 404);
 
   // Verification: Only the creator can see full analytics
   if (test.createdBy.toString() !== teacherId.toString()) {
@@ -121,7 +121,7 @@ export const getTestAnalytics = async (testId, teacherId) => {
   }
 
   const results = await MCQResult.find({ testId })
-    .populate('studentId', 'name username profilePic email')
+    .populate('studentId', 'name username profilePic')
     .sort({ score: -1, timeTaken: 1 })
     .lean();
 
@@ -131,7 +131,7 @@ export const getTestAnalytics = async (testId, teacherId) => {
     stats: {
       totalAttempts: results.length,
       avgScore: results.length > 0 
-        ? (results.reduce((acc, curr) => acc + curr.score, 0) / results.length).toFixed(1) 
+        ? parseFloat((results.reduce((acc, curr) => acc + curr.score, 0) / results.length).toFixed(1)) 
         : 0
     }
   };

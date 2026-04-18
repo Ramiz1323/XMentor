@@ -24,13 +24,25 @@ export const registerUser = async (userData) => {
   // Ensure basic username is valid
   if (username.length < 3) username = 'user' + Math.floor(Math.random() * 1000);
 
-  // Check for collision and append random if needed
-  const usernameTaken = await User.findOne({ username });
-  if (usernameTaken) {
-    username += Math.floor(Math.random() * 9000 + 1000);
-  }
+  let user;
+  let attempts = 0;
+  const maxAttempts = 5;
 
-  const user = await User.create({ name, email, password, role, username });
+  while (attempts < maxAttempts) {
+    try {
+      user = await User.create({ name, email, password, role, username });
+      break; // Success
+    } catch (error) {
+      if (error.code === 11000 && (error.message.includes('username') || JSON.stringify(error.keyValue).includes('username'))) {
+        attempts++;
+        // Append fresh 4-digit random suffix
+        username = username.replace(/\d{4}$/, '') + (Math.floor(Math.random() * 9000) + 1000);
+        if (attempts === maxAttempts) throw new ErrorResponse('Failed to generate unique username. Please try again.', 500);
+      } else {
+        throw error;
+      }
+    }
+  }
 
   return {
     _id: user._id,
@@ -54,10 +66,28 @@ export const loginUser = async (email, password) => {
     let baseUsername = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
     if (baseUsername.length < 3) baseUsername = 'user' + Math.floor(Math.random() * 1000);
     
-    // Safety check for collisions
-    const collision = await User.findOne({ username: baseUsername });
-    user.username = collision ? (baseUsername + Math.floor(Math.random() * 900) + 100) : baseUsername;
-    await user.save();
+    // Atomic attempt to claim username
+    let attempts = 0;
+    while (attempts < 5) {
+      let candidate = attempts === 0 ? baseUsername : `${baseUsername}${Math.floor(Math.random() * 9000) + 1000}`;
+      try {
+        const updated = await User.findOneAndUpdate(
+          { _id: user._id, username: { $exists: false } },
+          { $set: { username: candidate } },
+          { new: true, runValidators: true }
+        );
+        if (updated) {
+          user.username = candidate;
+          break;
+        }
+      } catch (error) {
+        if (error.code === 11000) {
+          attempts++;
+        } else {
+          throw error;
+        }
+      }
+    }
   }
 
   return {

@@ -35,7 +35,7 @@ const CommunityList = () => {
       await api.post(`/community/${id}/join`);
       await fetchCommunities();
     } catch (err) {
-      alert(err.message || 'Task join failed');
+      alert(err.message || 'Community join failed');
     } finally {
       setActionLoading(prev => ({ ...prev, [id]: false }));
     }
@@ -48,7 +48,7 @@ const CommunityList = () => {
       await api.post(`/community/${id}/leave`);
       await fetchCommunities();
     } catch (err) {
-      alert(err.message || 'Task exit failed');
+      alert(err.message || 'Community exit failed');
     } finally {
       setActionLoading(prev => ({ ...prev, [id]: false }));
     }
@@ -98,7 +98,7 @@ const CommunityList = () => {
       ) : (
         <div className="community-grid">
           {filtered.length === 0 ? (
-            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem', opacity: 0.5 }}>No tasks found in this sector.</div>
+            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem', opacity: 0.5 }}>No communities found in this sector.</div>
           ) : (
             filtered.map(community => {
               const isMember = community.members?.includes(user?._id);

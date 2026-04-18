@@ -46,7 +46,6 @@ const userSchema = new mongoose.Schema(
     },
     username: {
       type: String,
-      unique: true,
       trim: true,
       lowercase: true,
     },
@@ -82,5 +81,7 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
+
+userSchema.index({ username: 1 }, { unique: true, sparse: true });
 
 export default mongoose.model('User', userSchema);

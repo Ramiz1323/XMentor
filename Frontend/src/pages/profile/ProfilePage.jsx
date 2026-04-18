@@ -13,6 +13,7 @@ const ProfilePage = () => {
     board: user?.boardInfo?.board || 'NONE',
     class: user?.boardInfo?.class || '10',
   });
+  const [studentUsername, setStudentUsername] = useState('');
 
   const boardOptions = [
     { value: 'CBSE', label: 'CBSE' },
@@ -45,6 +46,11 @@ const ProfilePage = () => {
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Client-side validation: 10MB limit
+    if (file.size > 10 * 1024 * 1024) {
+      return alert('Transmission error: Image exceeds tactical 10MB limit.');
+    }
 
     const uploadData = new FormData();
     uploadData.append('image', file);
@@ -100,6 +106,7 @@ const ProfilePage = () => {
             <p className="email-text">
               <Mail size={14} /> {user?.email}
             </p>
+            <p style={{ fontSize: '0.7rem', opacity: 0.4, marginTop: '0.25rem' }}>Image should be under 10MB</p>
           </div>
         </div>
 
@@ -159,20 +166,21 @@ const ProfilePage = () => {
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <input 
                   placeholder="e.g. ramiz123" 
-                  id="studentUsername"
+                  value={studentUsername}
+                  onChange={(e) => setStudentUsername(e.target.value)}
                   className="glass-input" 
                 />
                 <button 
                   onClick={async () => {
-                    const input = document.getElementById('studentUsername');
-                    const username = input.value;
-                    if (!username) return;
+                    if (!studentUsername) return;
                     try {
                       setLoading(true);
-                      await api.post('/user/add-student', { username });
-                      alert('Student recruited successfully!');
-                      input.value = '';
-                      window.location.reload(); // Refresh to show new student (simple approach)
+                      await api.post('/user/add-student', { username: studentUsername });
+                      setSuccess('Student recruited successfully!');
+                      setStudentUsername('');
+                      // Reactive refresh: fetch latest profile data
+                      const { data } = await api.get('/user/profile');
+                      setUser(data.data);
                     } catch (err) {
                       alert(err.response?.data?.message || err.message);
                     } finally {

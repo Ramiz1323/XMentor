@@ -25,7 +25,7 @@ export const uploadProfilePic = asyncHandler(async (req, res) => {
     throw new ErrorResponse('Please upload an image', 400);
   }
 
-  const imageUrl = await userService.handleImageUpload(
+  const updatedUser = await userService.handleImageUpload(
     req.user._id,
     req.file.buffer,
     req.file.originalname
@@ -34,7 +34,7 @@ export const uploadProfilePic = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: 'Profile picture updated',
-    data: { url: imageUrl },
+    data: updatedUser,
   });
 });
 

@@ -28,7 +28,11 @@ const Sidebar = ({ isOpen, onClose }) => {
           
           <div className="user-info">
             <div className="avatar-mini">
-              {user?.name?.charAt(0) || 'U'}
+              {user?.profilePic ? (
+                <img src={user.profilePic} alt="" />
+              ) : (
+                user?.name?.charAt(0) || 'U'
+              )}
             </div>
             <div className="user-details">
               <span className="user-name">{user?.name}</span>
