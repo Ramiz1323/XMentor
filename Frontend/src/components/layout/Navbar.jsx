@@ -23,7 +23,6 @@ const Navbar = ({ onMenuClick }) => {
             <Menu size={24} />
           </button>
           <Link to="/" className="nav-logo" aria-label="XMentor Home">
-            <img src={logo} alt="XMentor" />
             <span className="glow-text">XMentor</span>
           </Link>
         </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../lib/api';
-import { Timer, ArrowRight, ArrowLeft, CheckCircle, HelpCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { Timer, ArrowRight, ArrowLeft, CheckCircle, XCircle, HelpCircle, AlertCircle, RefreshCw } from 'lucide-react';
 
 const MCQTest = () => {
   const { id } = useParams();
@@ -214,8 +214,12 @@ const MCQTest = () => {
                 onClick={() => handleOptionSelect(idx)}
                 className={`option-btn ${statusClass}`}
               >
-                <span>{option}</span>
-                {isCorrect && <CheckCircle size={18} className="success-icon" />}
+                <div className="option-main">
+                  <span className="option-badge">{String.fromCharCode(65 + idx)}</span>
+                  <span className="option-text">{option}</span>
+                </div>
+                {isCorrect && <CheckCircle size={20} className="success-icon" />}
+                {isWrong && <XCircle size={20} className="error-icon" />}
               </button>
             );
           })}
@@ -253,7 +257,7 @@ const MCQTest = () => {
           )}
 
           {result && currentIdx === test.questions.length - 1 && (
-             <button onClick={() => navigate('/')} className="btn-primary">
+             <button onClick={() => navigate('/mcq-hub')} className="btn-primary">
                 Done
              </button>
           )}
