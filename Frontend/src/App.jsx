@@ -12,29 +12,33 @@ import MCQTest from './pages/mcq/MCQTest';
 import ProfilePage from './pages/profile/ProfilePage';
 
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuthStore();
+  const { isAuthenticated, authChecked } = useAuthStore();
   
-  if (isLoading) return <div className="loader">Verifying session...</div>;
+  if (!authChecked) return <div className="loader">Verifying Access...</div>;
   if (!isAuthenticated) return <Navigate to="/login" />;
   
   return children;
 };
 
 const AuthRoute = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuthStore();
+  const { isAuthenticated, authChecked } = useAuthStore();
   
-  if (isLoading) return null;
+  if (!authChecked) return null;
   if (isAuthenticated) return <Navigate to="/" />;
   
   return children;
 };
 
 function App() {
-  const { isAuthenticated, checkAuth } = useAuthStore();
+  const { isAuthenticated, authChecked, checkAuth } = useAuthStore();
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, [checkAuth]);
+
+  if (!authChecked) {
+    return <div className="loader">Initialising Tactical HUD...</div>;
+  }
 
   return (
     <Router>

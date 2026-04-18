@@ -5,12 +5,21 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// Intercept responses to handle errors globally
+// Intercept responses to handle errors globally while preserving context
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const message = error.response?.data?.message || 'Something went wrong';
-    return Promise.reject(new Error(message));
+    // Preserve full axios error context while surfacing the friendly message
+    const message = error.response?.data?.message || error.message || 'Something went wrong';
+    
+    const enrichedError = new Error(message);
+    enrichedError.status = error.response?.status;
+    enrichedError.data = error.response?.data;
+    enrichedError.config = error.config;
+    enrichedError.code = error.code;
+    enrichedError.originalError = error;
+
+    return Promise.reject(enrichedError);
   }
 );
 

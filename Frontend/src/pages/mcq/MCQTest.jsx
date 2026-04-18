@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../lib/api';
-import { Timer, ArrowRight, ArrowLeft, CheckCircle, HelpCircle } from 'lucide-react';
+import { Timer, ArrowRight, ArrowLeft, CheckCircle, HelpCircle, AlertCircle, RefreshCw } from 'lucide-react';
 
 const MCQTest = () => {
   const { id } = useParams();
@@ -11,70 +11,111 @@ const MCQTest = () => {
   const [answers, setAnswers] = useState([]);
   const [timeLeft, setTimeLeft] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
 
+  // Refs to avoid stale closures in setInterval
+  const answersRef = useRef([]);
+  const timeLeftRef = useRef(null);
+  const testRef = useRef(null);
+
   useEffect(() => {
-    const fetchTest = async () => {
-      try {
-        const { data } = await api.get(`/mcq/${id}`);
-        setTest(data.data);
-        setAnswers(new Array(data.data.questions.length).fill(-1));
-        if (!data.data.isSubmitted) {
-          setTimeLeft(data.data.duration * 60);
-        } else {
-          setResult(data.data.result);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+    answersRef.current = answers;
+  }, [answers]);
+
+  useEffect(() => {
+    timeLeftRef.current = timeLeft;
+  }, [timeLeft]);
+
+  useEffect(() => {
+    testRef.current = test;
+  }, [test]);
+
+  const fetchTest = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const { data } = await api.get(`/mcq/${id}`);
+      const testData = data.data;
+      setTest(testData);
+      setAnswers(new Array(testData.questions.length).fill(-1));
+      
+      if (!testData.isSubmitted) {
+        setTimeLeft(testData.duration * 60);
+      } else {
+        setResult(testData.result);
       }
-    };
-    fetchTest();
+    } catch (err) {
+      setError(err.message || 'Transmission lost with testing module');
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
 
   useEffect(() => {
-    if (timeLeft === null || timeLeft <= 0 || result) return;
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          handleSubmit();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [timeLeft, result]);
+    fetchTest();
+  }, [fetchTest]);
 
-  const handleOptionSelect = (optionIdx) => {
-    if (test.isSubmitted || result) return;
-    const newAnswers = [...answers];
-    newAnswers[currentIdx] = optionIdx;
-    setAnswers(newAnswers);
-  };
-
-  const handleSubmit = async () => {
-    if (submitting || result) return;
+  const handleSubmit = useCallback(async (autoSubmit = false) => {
+    if (submitting || result || !testRef.current) return;
     try {
       setSubmitting(true);
+      const currentAnswers = autoSubmit ? answersRef.current : answers;
+      const currentTimeLeft = autoSubmit ? (timeLeftRef.current || 0) : timeLeft;
+      
       const { data } = await api.post(`/mcq/${id}/submit`, {
-        answers,
-        timeTaken: test.duration * 60 - timeLeft
+        answers: currentAnswers,
+        timeTaken: testRef.current.duration * 60 - currentTimeLeft
       });
       setResult(data.data);
       const updated = await api.get(`/mcq/${id}`);
       setTest(updated.data.data);
     } catch (err) {
-      alert(err.message);
+      if (!autoSubmit) alert(err.message || 'Submission failed');
     } finally {
       setSubmitting(false);
     }
+  }, [id, submitting, result, answers, timeLeft]);
+
+  useEffect(() => {
+    if (timeLeft === null || timeLeft <= 0 || result || test?.isSubmitted) return;
+    
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          handleSubmit(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    return () => clearInterval(timer);
+  }, [timeLeft, result, test?.isSubmitted, handleSubmit]);
+
+  const handleOptionSelect = (optionIdx) => {
+    if (test?.isSubmitted || result) return;
+    const newAnswers = [...answers];
+    newAnswers[currentIdx] = optionIdx;
+    setAnswers(newAnswers);
   };
 
   if (loading) return <div className="loader" style={{ textAlign: 'center', color: 'white', padding: '10rem' }}>Initialising secure testing environment...</div>;
+
+  if (error || !test) {
+    return (
+      <div className="error-container" style={{ textAlign: 'center', padding: '10rem 2rem' }}>
+        <AlertCircle size={48} color="#ef4444" style={{ marginBottom: '1.5rem' }} />
+        <h2 className="glow-text">Strategic Link Failure</h2>
+        <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '2rem' }}>{error || 'Testing node not found'}</p>
+        <button onClick={fetchTest} className="btn-primary" style={{ display: 'inline-flex', gap: '0.5rem' }}>
+          <RefreshCw size={18} /> Re-establish Uplink
+        </button>
+      </div>
+    );
+  }
 
   const currentQuestion = test.questions[currentIdx];
   const formatTime = (seconds) => {
@@ -92,7 +133,7 @@ const MCQTest = () => {
           <h1 className="glow-text">{test.title}</h1>
           <p>{test.subject} • {test.totalQuestions} Questions</p>
         </div>
-        {!result && (
+        {!result && timeLeft !== null && (
           <div className={`timer-box ${isCritical ? 'critical' : ''}`}>
             <Timer size={18} />
             <span>{formatTime(timeLeft)}</span>
@@ -127,11 +168,11 @@ const MCQTest = () => {
 
         <h3 className="question-base">
           <span className="q-num">{currentIdx + 1}.</span>
-          {currentQuestion.q}
+          {currentQuestion?.q}
         </h3>
 
         <div className="options-list">
-          {currentQuestion.options.map((option, idx) => {
+          {currentQuestion?.options.map((option, idx) => {
             const isSelected = result ? result.answers[currentIdx] === idx : answers[currentIdx] === idx;
             const isCorrect = result && currentQuestion.correct === idx;
             const isWrong = result && isSelected && !isCorrect;
@@ -155,7 +196,7 @@ const MCQTest = () => {
           })}
         </div>
 
-        {result && currentQuestion.explanation && (
+        {result && currentQuestion?.explanation && (
           <div className="explanation-box">
             <h4><HelpCircle size={14} /> Explanation</h4>
             <p>{currentQuestion.explanation}</p>
@@ -173,7 +214,7 @@ const MCQTest = () => {
 
           {currentIdx === test.questions.length - 1 ? (
             !result && (
-              <button onClick={handleSubmit} disabled={submitting} className="btn-primary" style={{ padding: '10px 30px' }}>
+              <button onClick={() => handleSubmit(false)} disabled={submitting} className="btn-primary" style={{ padding: '10px 30px' }}>
                 {submitting ? 'Submitting...' : 'Finish Test'}
               </button>
             )

@@ -1,24 +1,25 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
-import { Mail, Lock, LogIn } from 'lucide-react';
-import { useState } from 'react';
+import { LogIn, Mail, Lock, AlertCircle, Loader2 } from 'lucide-react';
+import GlassDropdown from '../../components/ui/GlassDropdown';
 
 const LoginPage = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
-  const { login } = useAuthStore();
-  const [error, setError] = useState('');
+  const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { login } = useAuthStore();
   const navigate = useNavigate();
 
   const onSubmit = async (data) => {
     try {
       setLoading(true);
-      setError('');
+      setServerError('');
       await login(data.email, data.password);
       navigate('/');
     } catch (err) {
-      setError(err.message);
+      setServerError(err.message || 'Identity verification failed');
     } finally {
       setLoading(false);
     }
@@ -26,51 +27,90 @@ const LoginPage = () => {
 
   return (
     <div className="auth-page">
-      <div className="auth-card login">
+      <div className="auth-card glass-card">
         <div className="auth-header">
-          <h2 className="glow-text">Login</h2>
-          <p>Welcome back to XMentor</p>
+          <div className="auth-icon-wrapper">
+            <LogIn size={32} className="glow-icon" />
+          </div>
+          <h1 className="glow-text">System Access</h1>
+          <p>Initialize your session to continue</p>
         </div>
 
-        {error && <div className="alert-error">{error}</div>}
+        {serverError && (
+          <div className="auth-error" role="alert">
+            <AlertCircle size={18} />
+            <span>{serverError}</span>
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
-          <div className="input-group">
-            <label>Email</label>
-            <div style={{ position: 'relative' }}>
-              <Mail size={18} className="input-icon" />
+        <form onSubmit={handleSubmit(onSubmit)} className="auth-form" noValidate>
+          <div className="form-group">
+            <label htmlFor="email-input">Identity Email</label>
+            <div className="input-wrapper">
+              <Mail size={18} className="input-icon" aria-hidden="true" />
               <input
-                {...register('email', { required: 'Email is required' })}
+                id="email-input"
                 type="email"
-                placeholder="email@example.com"
-                className="glass-input with-icon"
+                placeholder="commander@xmentor.space"
+                {...register('email', { 
+                  required: 'Identity email is required',
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: "Invalid transmission format"
+                  }
+                })}
+                aria-invalid={errors.email ? "true" : "false"}
+                aria-describedby={errors.email ? "email-error" : undefined}
               />
             </div>
-            {errors.email && <span className="error-text">{errors.email.message}</span>}
+            {errors.email && (
+              <span id="email-error" className="error-msg" role="alert">
+                {errors.email.message}
+              </span>
+            )}
           </div>
 
-          <div className="input-group">
-            <label>Password</label>
-            <div style={{ position: 'relative' }}>
-              <Lock size={18} className="input-icon" />
+          <div className="form-group">
+            <label htmlFor="password-input">Security Key</label>
+            <div className="input-wrapper">
+              <Lock size={18} className="input-icon" aria-hidden="true" />
               <input
-                {...register('password', { required: 'Password is required' })}
+                id="password-input"
                 type="password"
                 placeholder="••••••••"
-                className="glass-input with-icon"
+                {...register('password', { 
+                  required: 'Security key is required',
+                  minLength: { value: 6, message: 'Key must be at least 6 characters' }
+                })}
+                aria-invalid={errors.password ? "true" : "false"}
+                aria-describedby={errors.password ? "password-error" : undefined}
               />
             </div>
-            {errors.password && <span className="error-text">{errors.password.message}</span>}
+            {errors.password && (
+              <span id="password-error" className="error-msg" role="alert">
+                {errors.password.message}
+              </span>
+            )}
           </div>
 
-          <button type="submit" className="btn-primary flex-center" disabled={loading} style={{ gap: '0.5rem', marginTop: '1rem' }}>
-            {loading ? 'Logging in...' : <><LogIn size={18} /> Sign In</>}
+          <button type="submit" className="auth-btn btn-primary" disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 size={20} className="animate-spin" />
+                <span>Authenticating...</span>
+              </>
+            ) : (
+              <>
+                <LogIn size={20} />
+                <span>Access System</span>
+              </>
+            )}
           </button>
         </form>
 
-        <p className="auth-footer">
-          Don't have an account? <Link to="/register">Register here</Link>
-        </p>
+        <div className="auth-footer">
+          <p>New operative? <Link to="/register">Register Identity</Link></p>
+        </div>
       </div>
     </div>
   );

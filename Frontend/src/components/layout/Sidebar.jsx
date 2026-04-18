@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Users, BookOpen, Settings, LayoutDashboard } from 'lucide-react';
+import { Users, BookOpen, Settings, LayoutDashboard } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
 
 const Sidebar = () => {
@@ -21,26 +21,32 @@ const Sidebar = () => {
 
       <nav className="sidebar-nav">
         <NavLink to="/" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
-          <LayoutDashboard size={20} />
+          <LayoutDashboard size={20} aria-hidden="true" />
           <span>Dashboard</span>
         </NavLink>
 
         <NavLink to="/communities" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
-          <Users size={20} />
+          <Users size={20} aria-hidden="true" />
           <span>Communities</span>
         </NavLink>
 
-        <div className="sidebar-divider">Missions</div>
+        <div className="sidebar-divider" role="presentation">Missions</div>
 
-        <NavLink to="/tests" className={({ isActive }) => `sidebar-item disabled ${isActive ? 'active' : ''}`}>
-          <BookOpen size={20} />
+        <NavLink 
+          to="/tests" 
+          className={({ isActive }) => `sidebar-item disabled ${isActive ? 'active' : ''}`}
+          onClick={(e) => e.preventDefault()}
+          aria-disabled="true"
+          tabIndex={-1}
+        >
+          <BookOpen size={20} aria-hidden="true" />
           <span>All Tests</span>
         </NavLink>
 
-        <div className="sidebar-divider">Settings</div>
+        <div className="sidebar-divider" role="presentation">Settings</div>
 
         <NavLink to="/profile" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
-          <Settings size={20} />
+          <Settings size={20} aria-hidden="true" />
           <span>Profile Settings</span>
         </NavLink>
       </nav>

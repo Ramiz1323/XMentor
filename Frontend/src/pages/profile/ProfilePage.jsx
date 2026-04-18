@@ -51,9 +51,8 @@ const ProfilePage = () => {
 
     try {
       setLoading(true);
-      const { data } = await api.post('/user/upload-profile-pic', uploadData);
-      const userRes = await api.get('/user/profile');
-      setUser(userRes.data.data);
+      const { data: uploadRes } = await api.post('/user/upload-profile-pic', uploadData);
+      setUser(uploadRes.data);
     } catch (err) {
       alert(err.message);
     } finally {

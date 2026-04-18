@@ -57,9 +57,9 @@
     }
 
     .user-meta {
-      h2 { fontSize: 1.25rem; }
+      h2 { font-size: 1.25rem; }
       .email-text { 
-        fontSize: 0.875rem; 
+        font-size: 0.875rem; 
         opacity: 0.6; 
         @extend .flex-center; 
         justify-content: flex-start; 

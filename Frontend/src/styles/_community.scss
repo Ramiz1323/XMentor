@@ -20,9 +20,9 @@
     position: relative;
     input {
       @extend .glass-input;
-      @extend .glass-input; // Fixing: removed compound extend
-      padding-left: 40px; // Manual class inclusion for compound logic
-      width: 300px;
+      padding-left: 40px; 
+      width: 100%;
+      max-width: 300px;
       border-radius: 20px;
     }
     .search-icon { @extend .input-icon; }
@@ -89,10 +89,10 @@
        }
 
        .leave-btn {
-        background: rgba(255, 77, 77, 0.1);
-        border: 1px solid rgba(255, 77, 77, 0.3);
-        color: #ff4d4d;
-        &:hover { background: rgba(255, 77, 77, 0.2); }
+        background: rgba($color-danger, 0.1);
+        border: 1px solid rgba($color-danger, 0.3);
+        color: $color-danger;
+        &:hover { background: rgba($color-danger, 0.2); }
        }
     }
   }
