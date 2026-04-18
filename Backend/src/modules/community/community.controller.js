@@ -1,85 +1,95 @@
+import asyncHandler from '../../utils/asyncHandler.js';
 import * as communityService from './community.service.js';
 
-export const create = async (req, res) => {
-  try {
-    const community = await communityService.createCommunity(req.body, req.user.id);
-    res.status(201).json({
-      success: true,
-      message: 'Community created successfully',
-      data: community,
-    });
-  } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
-  }
-};
+/**
+ * @desc    Create new community
+ * @route   POST /api/community
+ * @access  Private/Teacher
+ */
+export const create = asyncHandler(async (req, res) => {
+  const result = await communityService.createCommunity(req.body, req.user._id);
+  
+  res.status(201).json({
+    success: true,
+    message: 'Community created successfully',
+    data: result,
+  });
+});
 
-export const getAll = async (req, res) => {
-  try {
-    const filters = {};
-    if (req.query.type) filters.type = req.query.type;
+/**
+ * @desc    Get all communities
+ * @route   GET /api/community
+ * @access  Private
+ */
+export const getAll = asyncHandler(async (req, res) => {
+  const filters = {};
+  if (req.query.type) filters.type = req.query.type;
 
-    const communities = await communityService.getAllCommunities(filters);
-    res.status(200).json({
-      success: true,
-      message: 'Communities retrieved successfully',
-      data: communities,
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
+  const communities = await communityService.getAllCommunities(filters);
+  
+  res.status(200).json({
+    success: true,
+    message: 'Communities retrieved successfully',
+    data: communities,
+  });
+});
 
-export const getById = async (req, res) => {
-  try {
-    const community = await communityService.getCommunityById(req.params.id);
-    if (!community) {
-      return res.status(404).json({ success: false, message: 'Community not found' });
-    }
-    res.status(200).json({
-      success: true,
-      message: 'Community details retrieved',
-      data: community,
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
+/**
+ * @desc    Get single community (Hybrid view)
+ * @route   GET /api/community/:id
+ * @access  Private
+ */
+export const getById = asyncHandler(async (req, res) => {
+  const result = await communityService.getCommunityById(req.params.id, req.user._id);
+  
+  res.status(200).json({
+    success: true,
+    message: 'Community details retrieved',
+    data: result,
+  });
+});
 
-export const join = async (req, res) => {
-  try {
-    const community = await communityService.joinCommunity(req.params.id, req.user.id);
-    res.status(200).json({
-      success: true,
-      message: 'Joined community successfully',
-      data: community,
-    });
-  } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
-  }
-};
+/**
+ * @desc    Join a community
+ * @route   POST /api/community/:id/join
+ * @access  Private
+ */
+export const join = asyncHandler(async (req, res) => {
+  const result = await communityService.joinCommunity(req.params.id, req.user._id);
+  
+  res.status(200).json({
+    success: true,
+    message: result.alreadyMember ? 'You are already a member' : 'Joined community successfully',
+    data: result.community,
+  });
+});
 
-export const leave = async (req, res) => {
-  try {
-    await communityService.leaveCommunity(req.params.id, req.user.id);
-    res.status(200).json({
-      success: true,
-      message: 'Left community successfully',
-      data: null,
-    });
-  } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
-  }
-};
+/**
+ * @desc    Leave a community
+ * @route   POST /api/community/:id/leave
+ * @access  Private
+ */
+export const leave = asyncHandler(async (req, res) => {
+  await communityService.leaveCommunity(req.params.id, req.user._id);
+  
+  res.status(200).json({
+    success: true,
+    message: 'Left community successfully',
+    data: null,
+  });
+});
 
-export const getMembers = async (req, res) => {
-  try {
-    const members = await communityService.getCommunityMembers(req.params.id);
-    res.status(200).json({
-      success: true,
-      message: 'Members retrieved successfully',
-      data: members,
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
+/**
+ * @desc    Get community members (Privacy applied)
+ * @route   GET /api/community/:id/members
+ * @access  Private/MemberOnly
+ */
+export const getMembers = asyncHandler(async (req, res) => {
+  const members = await communityService.getCommunityMembers(req.params.id, req.user.role);
+  
+  res.status(200).json({
+    success: true,
+    message: 'Members retrieved successfully',
+    data: members,
+  });
+});
