@@ -1,0 +1,64 @@
+@use 'variables' as *;
+@use 'utilities';
+@use 'navbar';
+@use 'sidebar';
+@use 'auth';
+@use 'dashboard';
+@use 'community';
+@use 'mcq';
+@use 'profile';
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: $font-family-base;
+  background-color: $bg-primary;
+  color: $text-primary;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app-container {
+  display: flex;
+  min-height: 100vh;
+
+  &.with-sidebar {
+    .main-layout {
+      flex: 1;
+      margin-left: 260px; // Sidebar width
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+  }
+
+  &.auth-mode {
+    justify-content: center;
+    align-items: center;
+    .main-layout {
+      width: 100%;
+    }
+  }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: $font-family-display;
+  letter-spacing: $letter-spacing-hud;
+}
+
+.loader {
+  @extend .flex-center;
+  height: 100vh;
+  font-family: $font-family-display;
+  color: $accent-secondary;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}

@@ -1,0 +1,21 @@
+// Colors
+$bg-primary: #0b0f1a;
+$bg-secondary: #0f172a;
+$accent-primary: #3b82f6;
+$accent-secondary: #22d3ee;
+$text-primary: #ffffff;
+$text-secondary: rgba(255, 255, 255, 0.7);
+
+// Typography
+$font-family-base: 'Inter', sans-serif;
+$font-family-display: 'Space Grotesk', sans-serif;
+$letter-spacing-hud: 0.05rem;
+
+// Glassmorphism
+$glass-bg: rgba(255, 255, 255, 0.05);
+$glass-border: rgba(255, 255, 255, 0.1);
+$glass-blur: blur(16px);
+$glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+
+// Transitions
+$transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

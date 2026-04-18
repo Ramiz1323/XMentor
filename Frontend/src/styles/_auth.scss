@@ -1,0 +1,48 @@
+@import 'variables';
+@import 'utilities';
+
+.auth-page {
+  @extend .page-center;
+
+  .auth-card {
+    @extend .glass-card;
+    padding: 2.5rem;
+    width: 100%;
+    @extend .flex-column;
+    gap: 1.5rem;
+
+    &.login { max-width: 400px; }
+    &.register { max-width: 500px; }
+  }
+
+  .auth-header {
+    text-align: center;
+    h2 { font-family: $font-family-display; font-size: 2rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: $letter-spacing-hud; }
+    p { font-family: $font-family-base; color: $text-secondary; }
+  }
+
+  .auth-form {
+    display: grid;
+    gap: 1.25rem;
+
+    &.grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .auth-footer {
+    text-align: center;
+    font-size: 0.875rem;
+    color: $text-secondary;
+
+    a {
+      color: $accent-primary;
+      text-decoration: none;
+      &:hover { text-decoration: underline; }
+    }
+  }
+}

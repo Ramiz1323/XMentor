@@ -1,6 +1,7 @@
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import authRoutes from './modules/auth/auth.routes.js';
 import userRoutes from './modules/user/user.routes.js';
@@ -10,8 +11,12 @@ import mcqRoutes from './modules/mcq/mcq.routes.js';
 const app = express();
 
 app.use(express.json()); 
+app.use(cookieParser());
 app.use(helmet()); 
-app.use(cors()); 
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true,
+})); 
 app.use(compression()); 
 
 app.use('/api/auth', authRoutes);

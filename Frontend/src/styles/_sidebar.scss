@@ -1,0 +1,161 @@
+@import 'variables';
+
+.glass-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0; // Starts from top, we'll offset content later
+  width: 260px;
+  height: 100vh;
+  background: rgba($bg-primary, 0.8);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  z-index: 900;
+  transition: $transition-smooth;
+
+  .sidebar-header {
+    margin-bottom: 2.5rem;
+    padding-top: 5rem; // Leave space for top navbar if needed, or logo
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+
+      .avatar-mini {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, $accent-primary, $accent-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-family: $font-family-display;
+        color: white;
+      }
+
+      .user-details {
+        display: flex;
+        flex-direction: column;
+        
+        .user-name {
+          font-size: 0.9rem;
+          font-weight: 600;
+          color: white;
+        }
+
+        .user-role {
+          font-size: 0.7rem;
+          color: $text-secondary;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+      }
+    }
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .sidebar-divider {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin: 1.5rem 0 0.5rem 0.75rem;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.875rem 1rem;
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: none;
+      border-radius: 10px;
+      font-family: $font-family-display;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.2s ease;
+
+      svg {
+        opacity: 0.7;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        
+        svg { opacity: 1; }
+      }
+
+      &.active {
+        background: rgba($accent-primary, 0.1);
+        border: 1px solid rgba($accent-primary, 0.2);
+        color: $accent-secondary;
+        box-shadow: 0 0 15px rgba($accent-primary, 0.1);
+
+        svg {
+          color: $accent-secondary;
+          opacity: 1;
+        }
+      }
+
+      &.disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        &:hover { background: none; color: inherit; }
+      }
+    }
+  }
+
+  .sidebar-footer {
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+
+    .rank-badge {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: rgba($accent-secondary, 0.05);
+      border: 1px dashed rgba($accent-secondary, 0.3);
+      border-radius: 8px;
+
+      .label {
+        font-size: 0.7rem;
+        color: rgba(255, 255, 255, 0.5);
+        text-transform: uppercase;
+      }
+
+      .value {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: $accent-secondary;
+        font-family: $font-family-display;
+      }
+    }
+  }
+}
+
+// Mobile sidebar adjustments (Optional, typically hidden or drawer)
+@media (max-width: 768px) {
+  .glass-sidebar {
+    transform: translateX(-100%);
+    &.mobile-open {
+      transform: translateX(0);
+    }
+  }
+}
