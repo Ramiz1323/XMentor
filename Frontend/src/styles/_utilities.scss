@@ -1,45 +1,29 @@
 @import 'variables';
 
-.flex-center {
+@mixin flex-center {
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.flex-between {
+@mixin flex-between {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.flex-column {
+@mixin flex-column {
   display: flex;
   flex-direction: column;
 }
 
-.container {
+@mixin container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem;
 }
 
-.page-center {
-  min-height: calc(100vh - 64px);
-  @extend .flex-center;
-  padding: 2rem;
-}
-
-.input-group {
-  @extend .flex-column;
-  gap: 0.5rem;
-  
-  label {
-    font-size: 0.875rem;
-    font-weight: 500;
-  }
-}
-
-.glass-input {
+@mixin glass-input {
   width: 100%;
   padding: 12px;
   background: rgba(255, 255, 255, 0.05);
@@ -55,35 +39,9 @@
     background: rgba(255, 255, 255, 0.08);
     box-shadow: 0 0 0 2px rgba($accent-primary, 0.2);
   }
-
-  &.with-icon {
-    padding-left: 40px;
-  }
 }
 
-.input-icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  opacity: 0.5;
-}
-
-.error-text {
-  color: $color-danger;
-  font-size: 0.75rem;
-}
-
-.alert-error {
-  background: rgba($color-danger, 0.1);
-  border: 1px solid rgba($color-danger, 0.3);
-  color: $color-danger;
-  padding: 0.75rem;
-  border-radius: 8px;
-  font-size: 0.875rem;
-}
-
-.glass-card {
+@mixin glass-card {
   background: $glass-bg;
   backdrop-filter: $glass-blur;
   border: 1px solid $glass-border;
@@ -97,7 +55,45 @@
   }
 }
 
-.glow-text {
+@mixin page-center {
+  min-height: calc(100vh - 64px);
+  @include flex-center;
+  padding: 2rem;
+}
+
+@mixin input-group {
+  @include flex-column;
+  gap: 0.5rem;
+  
+  label {
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+}
+
+@mixin input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.5;
+}
+
+@mixin error-text {
+  color: $color-danger;
+  font-size: 0.75rem;
+}
+
+@mixin alert-error {
+  background: rgba($color-danger, 0.1);
+  border: 1px solid rgba($color-danger, 0.3);
+  color: $color-danger;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+}
+
+@mixin glow-text {
   font-family: $font-family-display;
   letter-spacing: $letter-spacing-hud;
   background: linear-gradient(135deg, $text-primary, $accent-secondary);
@@ -106,7 +102,7 @@
   filter: drop-shadow(0 0 10px rgba($accent-secondary, 0.3));
 }
 
-.btn-primary {
+@mixin btn-primary {
   font-family: $font-family-display;
   letter-spacing: $letter-spacing-hud;
   background: linear-gradient(135deg, $accent-primary, $accent-secondary);
@@ -137,6 +133,21 @@
     box-shadow: none;
   }
 }
+
+// Global Classes (for standard usage outside complex blocks)
+.flex-center { @include flex-center; }
+.flex-between { @include flex-between; }
+.flex-column { @include flex-column; }
+.container { @include container; }
+.glass-input { @include glass-input; }
+.glass-card { @include glass-card; }
+.page-center { @include page-center; }
+.input-group { @include input-group; }
+.input-icon { @include input-icon; }
+.error-text { @include error-text; }
+.alert-error { @include alert-error; }
+.glow-text { @include glow-text; }
+.btn-primary { @include btn-primary; }
 
 // Custom Glass Dropdown
 .glass-dropdown-wrapper {

@@ -1,12 +1,33 @@
 @import 'variables';
+@import 'utilities';
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 850;
+  opacity: 0;
+  visibility: hidden;
+  transition: $transition-smooth;
+
+  &.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  @media (min-width: 769px) {
+    display: none;
+  }
+}
 
 .glass-sidebar {
   position: fixed;
   left: 0;
-  top: 0; // Starts from top, we'll offset content later
+  top: 0;
   width: 260px;
   height: 100vh;
-  background: rgba($bg-primary, 0.8);
+  background: rgba($bg-primary, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-right: 1px solid rgba(255, 255, 255, 0.1);
@@ -14,11 +35,25 @@
   flex-direction: column;
   padding: 1.5rem;
   z-index: 900;
-  transition: $transition-smooth;
+  transition: transform $transition-smooth;
+
+  .mobile-close {
+    display: none;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    
+    @media (max-width: 768px) {
+      display: block;
+      align-self: flex-end;
+    }
+  }
 
   .sidebar-header {
-    margin-bottom: 2.5rem;
-    padding-top: 5rem; // Leave space for top navbar if needed, or logo
+    margin-bottom: 2rem;
+    padding-top: 1rem;
 
     .user-info {
       display: flex;
@@ -34,9 +69,7 @@
         height: 40px;
         border-radius: 50%;
         background: linear-gradient(135deg, $accent-primary, $accent-secondary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        @include flex-center;
         font-weight: 700;
         font-family: $font-family-display;
         color: white;
@@ -50,13 +83,16 @@
           font-size: 0.9rem;
           font-weight: 600;
           color: white;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 120px;
         }
 
         .user-role {
           font-size: 0.7rem;
           color: $text-secondary;
           text-transform: uppercase;
-          letter-spacing: 1px;
         }
       }
     }
@@ -74,26 +110,22 @@
       color: rgba(255, 255, 255, 0.3);
       text-transform: uppercase;
       letter-spacing: 2px;
-      margin: 1.5rem 0 0.5rem 0.75rem;
+      margin: 1rem 0 0.5rem 0.75rem;
     }
 
     .sidebar-item {
       display: flex;
       align-items: center;
       gap: 1rem;
-      padding: 0.875rem 1rem;
+      padding: 0.75rem 1rem;
       color: rgba(255, 255, 255, 0.6);
       text-decoration: none;
       border-radius: 10px;
       font-family: $font-family-display;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       text-transform: uppercase;
       letter-spacing: 1px;
       transition: all 0.2s ease;
-
-      svg {
-        opacity: 0.7;
-      }
 
       &:hover,
       &:focus-visible {
@@ -101,65 +133,29 @@
         color: white;
         outline: none;
         box-shadow: 0 0 0 2px rgba($accent-primary, 0.5);
-        
-        svg { opacity: 1; }
       }
 
       &.active {
         background: rgba($accent-primary, 0.1);
         border: 1px solid rgba($accent-primary, 0.2);
         color: $accent-secondary;
-        box-shadow: 0 0 15px rgba($accent-primary, 0.1);
-
-        svg {
-          color: $accent-secondary;
-          opacity: 1;
-        }
       }
 
       &.disabled {
         opacity: 0.4;
         cursor: not-allowed;
-        &:hover { background: none; color: inherit; }
       }
     }
   }
 
-  .sidebar-footer {
-    padding-top: 2rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-
-    .rank-badge {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.75rem 1rem;
-      background: rgba($accent-secondary, 0.05);
-      border: 1px dashed rgba($accent-secondary, 0.3);
-      border-radius: 8px;
-
-      .label {
-        font-size: 0.7rem;
-        color: rgba(255, 255, 255, 0.5);
-        text-transform: uppercase;
-      }
-
-      .value {
-        font-size: 0.8rem;
-        font-weight: 700;
-        color: $accent-secondary;
-        font-family: $font-family-display;
-      }
-    }
-  }
-}
-
-// Mobile sidebar adjustments (Optional, typically hidden or drawer)
-@media (max-width: 768px) {
-  .glass-sidebar {
+  // Mobile Drawer State
+  @media (max-width: 768px) {
     transform: translateX(-100%);
+    z-index: 1100;
+
     &.mobile-open {
       transform: translateX(0);
+      box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
     }
   }
 }

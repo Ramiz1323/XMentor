@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import useAuthStore from './store/useAuthStore';
 import Navbar from './components/layout/Navbar';
@@ -31,22 +31,32 @@ const AuthRoute = ({ children }) => {
 
 function App() {
   const { isAuthenticated, authChecked, checkAuth } = useAuthStore();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
 
+  // Close sidebar on route change for mobile
+  useEffect(() => {
+    setIsSidebarOpen(false);
+  }, [window.location.pathname]);
+
   if (!authChecked) {
     return <div className="loader">Initialising Tactical HUD...</div>;
   }
 
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
   return (
     <Router>
-      <div className={`app-container ${isAuthenticated ? 'with-sidebar' : 'auth-mode'}`}>
-        {isAuthenticated && <Sidebar />}
+      <div className={`app-container ${isAuthenticated ? 'with-sidebar' : 'auth-mode'} ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+        {isAuthenticated && (
+          <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+        )}
         
         <div className="main-layout">
-          <Navbar />
+          <Navbar onMenuClick={toggleSidebar} />
           <main className="content">
             <Routes>
               <Route path="/login" element={<AuthRoute><LoginPage /></AuthRoute>} />

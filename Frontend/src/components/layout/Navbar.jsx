@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
 import logo from '../../assets/logo.png';
-import { LogOut, Bell, Search } from 'lucide-react';
+import { LogOut, Bell, Search, Menu } from 'lucide-react';
 
-const Navbar = () => {
+const Navbar = ({ onMenuClick }) => {
   const { isAuthenticated, logout } = useAuthStore();
   // Mock notification state - in a real app this would come from a notification store or API
   const [hasNotifications] = useState(true);
@@ -14,13 +14,22 @@ const Navbar = () => {
   return (
     <nav className="glass-navbar">
       <div className="nav-content">
-        <Link to="/" className="nav-logo" aria-label="XMentor Home">
-          <img src={logo} alt="XMentor" />
-          <span className="glow-text">XMentor</span>
-        </Link>
+        <div className="brand-section">
+          <button 
+            className="menu-toggle" 
+            onClick={onMenuClick}
+            aria-label="Toggle navigation menu"
+          >
+            <Menu size={24} />
+          </button>
+          <Link to="/" className="nav-logo" aria-label="XMentor Home">
+            <img src={logo} alt="XMentor" />
+            <span className="glow-text">XMentor</span>
+          </Link>
+        </div>
 
         <div className="nav-actions">
-          <div className="search-bar">
+          <div className="search-bar desktop-only">
             <Search size={16} aria-hidden="true" />
             <input 
               type="text" 
@@ -44,7 +53,7 @@ const Navbar = () => {
             aria-label="Terminate current session"
           >
             <LogOut size={18} />
-            <span>Log Out</span>
+            <span className="btn-text">Log Out</span>
           </button>
         </div>
       </div>

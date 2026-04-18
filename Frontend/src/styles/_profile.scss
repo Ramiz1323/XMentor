@@ -2,27 +2,53 @@
 @import 'utilities';
 
 .profile-page {
-  @extend .container;
+  @include container;
   max-width: 600px;
   padding-top: 2rem;
   padding-bottom: 2rem;
+  
+  @media (max-width: 768px) {
+    padding-top: 1rem;
+  }
 
   header {
     margin-bottom: 2rem;
-    h1 { font-family: $font-family-display; font-size: 2rem; text-transform: uppercase; letter-spacing: $letter-spacing-hud; }
-    p { font-family: $font-family-base; color: $text-secondary; }
+    h1 { 
+      font-family: $font-family-display; 
+      font-size: 2rem; 
+      text-transform: uppercase; 
+      letter-spacing: $letter-spacing-hud;
+      @media (max-width: 480px) { font-size: 1.5rem; }
+    }
+    p { 
+      font-family: $font-family-base; 
+      color: $text-secondary; 
+      @media (max-width: 480px) { font-size: 0.85rem; }
+    }
   }
 
   .profile-card {
-    @extend .glass-card;
+    @include glass-card;
     padding: 2.5rem;
-    @extend .flex-column;
+    @include flex-column;
     gap: 2.5rem;
 
+    @media (max-width: 640px) {
+      padding: 1.5rem;
+      gap: 1.5rem;
+    }
+
     .avatar-section {
-      @extend .flex-center;
+      @include flex-center;
       justify-content: flex-start;
       gap: 2rem;
+
+      @media (max-width: 480px) {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1.5rem;
+      }
     }
 
     .avatar-wrapper {
@@ -35,7 +61,12 @@
         overflow: hidden;
         border: 2px solid $accent-primary;
         background: rgba(255, 255, 255, 0.05);
-        @extend .flex-center;
+        @include flex-center;
+
+        @media (max-width: 480px) {
+          width: 80px;
+          height: 80px;
+        }
 
         img { width: 100%; height: 100%; object-fit: cover; }
       }
@@ -49,7 +80,7 @@
         border-radius: 50%;
         cursor: pointer;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        @extend .flex-center;
+        @include flex-center;
         transition: $transition-smooth;
 
         &:hover { transform: scale(1.1); background: $accent-secondary; }
@@ -61,24 +92,30 @@
       .email-text { 
         font-size: 0.875rem; 
         opacity: 0.6; 
-        @extend .flex-center; 
+        @include flex-center; 
         justify-content: flex-start; 
         gap: 0.5rem; 
+        @media (max-width: 480px) { justify-content: center; }
       }
     }
 
     .settings-form {
-      @extend .flex-column;
+      @include flex-column;
       gap: 1.5rem;
 
       .form-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 1.5rem;
+
+        @media (max-width: 480px) {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+        }
       }
 
       select, input {
-        @extend .glass-input;
+        @include glass-input;
       }
 
       select option {

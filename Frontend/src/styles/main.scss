@@ -1,12 +1,12 @@
-@use 'variables' as *;
-@use 'utilities';
-@use 'navbar';
-@use 'sidebar';
-@use 'auth';
-@use 'dashboard';
-@use 'community';
-@use 'mcq';
-@use 'profile';
+@import 'variables';
+@import 'utilities';
+@import 'navbar';
+@import 'sidebar';
+@import 'auth';
+@import 'dashboard';
+@import 'community';
+@import 'mcq';
+@import 'profile';
 
 * {
   margin: 0;
@@ -29,14 +29,20 @@ body {
 .app-container {
   display: flex;
   min-height: 100vh;
+  width: 100%;
 
   &.with-sidebar {
     .main-layout {
       flex: 1;
-      margin-left: 260px; // Sidebar width
+      margin-left: 260px; // Sidebar width on desktop
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      transition: margin-left $transition-smooth;
+
+      @media (max-width: 768px) {
+        margin-left: 0;
+      }
     }
   }
 
@@ -55,10 +61,16 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .loader {
-  @extend .flex-center;
+  @include flex-center;
   height: 100vh;
   font-family: $font-family-display;
   color: $accent-secondary;
   text-transform: uppercase;
   letter-spacing: 2px;
+}
+
+// Global responsive helpers
+@media (max-width: 768px) {
+  .section-title { font-size: 1.5rem; }
+  .container { padding: 0 1rem; }
 }

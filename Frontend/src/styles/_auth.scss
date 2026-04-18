@@ -2,35 +2,76 @@
 @import 'utilities';
 
 .auth-page {
-  @extend .page-center;
+  @include flex-center;
+  min-height: calc(100vh - 64px);
+  padding: 1rem;
+
+  @media (max-width: 480px) {
+    padding: 0;
+    align-items: flex-start;
+    padding-top: 2rem;
+  }
 
   .auth-card {
-    @extend .glass-card;
+    @include glass-card;
     padding: 2.5rem;
     width: 100%;
-    @extend .flex-column;
+    @include flex-column;
     gap: 1.5rem;
 
+    @media (max-width: 640px) {
+      padding: 1.5rem;
+      gap: 1.25rem;
+      border-radius: 0;
+      border-left: none;
+      border-right: none;
+    }
+
     &.login { max-width: 400px; }
-    &.register { max-width: 500px; }
+    &.register { 
+      max-width: 500px; 
+      @media (max-width: 640px) { max-width: 100%; }
+    }
   }
 
   .auth-header {
     text-align: center;
-    h2 { font-family: $font-family-display; font-size: 2rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: $letter-spacing-hud; }
-    p { font-family: $font-family-base; color: $text-secondary; }
+    .auth-icon-wrapper {
+      margin-bottom: 1rem;
+      @media (max-width: 480px) { transform: scale(0.8); }
+    }
+    h1 { 
+      font-family: $font-family-display; 
+      font-size: 2rem; 
+      margin-bottom: 0.5rem; 
+      text-transform: uppercase; 
+      letter-spacing: $letter-spacing-hud; 
+      @media (max-width: 480px) { font-size: 1.5rem; }
+    }
+    p { 
+      font-family: $font-family-base; 
+      color: $text-secondary; 
+      @media (max-width: 480px) { font-size: 0.85rem; }
+    }
   }
 
   .auth-form {
     display: grid;
     gap: 1.25rem;
 
-    &.grid {
+    .form-grid {
+      display: grid;
       grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      
+      @media (max-width: 640px) {
+        grid-template-columns: 1fr;
+      }
     }
 
-    .full-width {
-      grid-column: 1 / -1;
+    .form-group {
+      @include flex-column;
+      gap: 0.5rem;
     }
   }
 
