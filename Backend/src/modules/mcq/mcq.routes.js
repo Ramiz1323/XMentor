@@ -9,8 +9,8 @@ const router = express.Router();
 router.use(protect);
 
 router.post('/', authorize('TEACHER'), validate(createTestSchema), mcqController.create);
+router.get('/community/:communityId', mcqController.getByCommunity); // Moved above :id
 router.get('/:id', mcqController.getById);
 router.post('/:id/submit', validate(submitTestSchema), mcqController.submit);
-router.get('/community/:communityId', mcqController.getByCommunity);
 
 export default router;
