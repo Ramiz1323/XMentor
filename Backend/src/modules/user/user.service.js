@@ -1,9 +1,10 @@
 import User from '../auth/auth.model.js';
 import imagekit from '../../config/imagekit.js';
+import ErrorResponse from '../../utils/errorResponse.js';
 
 export const handleImageUpload = async (userId, fileBuffer, fileName) => {
   const user = await User.findById(userId);
-  if (!user) throw new Error('User not found');
+  if (!user) throw new ErrorResponse('User not found', 404);
 
   const uploadResponse = await imagekit.upload({
     file: fileBuffer.toString('base64'),
@@ -30,28 +31,34 @@ export const updateProfile = async (userId, updateData) => {
   const flattenedData = {};
   
   const flatten = (obj, prefix = '') => {
-    for (const key in obj) {
-      if (typeof obj[key] === 'object' && !Array.isArray(obj[key]) && obj[key] !== null) {
-        flatten(obj[key], `${prefix}${key}.`);
+    Object.keys(obj).forEach(key => {
+      const value = obj[key];
+      const newKey = prefix ? `${prefix}${key}` : key;
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        flatten(value, `${newKey}.`);
       } else {
-        flattenData[`${prefix}${key}`] = obj[key];
+        flattenData[newKey] = value;
       }
-    }
+    });
   };
 
   flatten(updateData);
 
-  delete flattenedData.email;
-  delete flattenedData.password;
-  delete flattenedData.role;
+  const sensitiveFields = ['email', 'password', 'role', '_id'];
+  sensitiveFields.forEach(field => delete flattenedData[field]);
 
-  return await User.findByIdAndUpdate(
+  const updatedUser = await User.findByIdAndUpdate(
     userId,
     { $set: flattenedData },
     { new: true, runValidators: true }
-  ).select('-password');
+  ).select('-password').lean();
+
+  if (!updatedUser) throw new ErrorResponse('User not found', 404);
+  return updatedUser;
 };
 
 export const getProfile = async (userId) => {
-  return await User.findById(userId).select('-password');
+  const profile = await User.findById(userId).select('-password').lean();
+  if (!profile) throw new ErrorResponse('Profile not found', 404);
+  return profile;
 };
