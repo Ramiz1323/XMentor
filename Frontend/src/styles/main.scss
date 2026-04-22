@@ -1,12 +1,12 @@
-@import 'variables';
-@import 'utilities';
-@import 'navbar';
-@import 'sidebar';
-@import 'auth';
-@import 'dashboard';
-@import 'community';
-@import 'mcq';
-@import 'profile';
+@use 'variables' as *;
+@use 'utilities' as *;
+@use 'navbar';
+@use 'sidebar';
+@use 'auth';
+@use 'dashboard';
+@use 'community';
+@use 'mcq';
+@use 'profile';
 
 * {
   margin: 0;

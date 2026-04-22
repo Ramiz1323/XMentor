@@ -1,5 +1,5 @@
-@import 'variables';
-@import 'utilities';
+@use 'variables' as *;
+@use 'utilities' as *;
 
 .glass-navbar {
   background: rgba($bg-primary, 0.7);

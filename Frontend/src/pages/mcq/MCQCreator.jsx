@@ -191,17 +191,19 @@ const MCQCreator = () => {
                 <div className="option-grid">
                   {q.options.map((opt, oIdx) => (
                     <div key={oIdx} className="option-item">
-                      <span className="option-label">{String.fromCharCode(65 + oIdx)}</span>
-                      <input 
-                        className={`glass-input ${q.correct === oIdx ? 'selected' : ''}`}
-                        placeholder={`Option ${oIdx + 1}`}
-                        value={opt}
-                        onChange={(e) => {
-                          const newOpts = [...q.options];
-                          newOpts[oIdx] = e.target.value;
-                          updateQuestion(idx, 'options', newOpts);
-                        }}
-                      />
+                      <div className="input-wrapper">
+                        <span className="option-label">{String.fromCharCode(65 + oIdx)}</span>
+                        <input 
+                          className={`glass-input ${q.correct === oIdx ? 'selected' : ''}`}
+                          placeholder={`Option ${oIdx + 1}`}
+                          value={opt}
+                          onChange={(e) => {
+                            const newOpts = [...q.options];
+                            newOpts[oIdx] = e.target.value;
+                            updateQuestion(idx, 'options', newOpts);
+                          }}
+                        />
+                      </div>
                       <div 
                         onClick={() => updateQuestion(idx, 'correct', oIdx)}
                         className={`correct-toggle ${q.correct === oIdx ? 'active' : ''}`}

@@ -1,5 +1,5 @@
-@import 'variables';
-@import 'utilities';
+@use 'variables' as *;
+@use 'utilities' as *;
 
 .auth-page {
   @include flex-center;

@@ -1,5 +1,5 @@
-@import 'variables';
-@import 'utilities';
+@use 'variables' as *;
+@use 'utilities' as *;
 
 .sidebar-overlay {
   position: fixed;

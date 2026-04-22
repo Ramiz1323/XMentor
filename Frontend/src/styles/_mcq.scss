@@ -1,5 +1,5 @@
-@import 'variables';
-@import 'utilities';
+@use 'variables' as *;
+@use 'utilities' as *;
 
 // MCQ HUB / DASHBOARD
 .mcq-dashboard-container {
@@ -511,17 +511,31 @@
   max-width: 900px;
   margin: 0 auto;
 
+  @media (max-width: 768px) { padding: 1.5rem; }
+  @media (max-width: 480px) { padding: 1rem 0.75rem; }
+
   .creator-header {
     margin-bottom: 3rem;
     @include flex-between;
-    @media (max-width: 640px) { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    
+    @media (max-width: 640px) { 
+      flex-direction: column; 
+      align-items: center; 
+      text-align: center;
+      gap: 1.5rem; 
+      margin-bottom: 2rem;
+    }
     
     h1 { 
       @include glow-text; 
       font-size: 2rem;
       @media (max-width: 640px) { font-size: 1.5rem; }
     }
-    .subtitle { opacity: 0.7; font-size: 0.95rem; @media (max-width: 640px) { font-size: 0.85rem; } }
+    .subtitle { 
+      opacity: 0.7; 
+      font-size: 0.95rem; 
+      @media (max-width: 640px) { font-size: 0.85rem; line-height: 1.4; } 
+    }
   }
 
   .step-dots {
@@ -551,9 +565,8 @@
     @include glass-card;
     padding: 2.5rem;
     
-    @media (max-width: 768px) {
-      padding: 1.5rem;
-    }
+    @media (max-width: 768px) { padding: 1.5rem; }
+    @media (max-width: 480px) { padding: 1rem; }
     
     .section-title {
       @include flex-center;
@@ -583,9 +596,8 @@
     border: 1px solid rgba(255,255,255,0.05);
     position: relative;
     
-    @media (max-width: 640px) {
-      padding: 1.25rem;
-    }
+    @media (max-width: 768px) { padding: 1.5rem; }
+    @media (max-width: 480px) { padding: 1rem; }
 
     .q-header {
       @include flex-between;
@@ -595,29 +607,103 @@
     .option-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1rem;
+      gap: 1.25rem;
       margin: 1.5rem 0;
       @media (max-width: 640px) { grid-template-columns: 1fr; }
 
       .option-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
         position: relative;
-        input { padding-left: 48px; }
+
+        .input-wrapper {
+          position: relative;
+          width: 100%;
+        }
+
         .option-label {
           position: absolute;
           left: 1rem;
           top: 50%;
           transform: translateY(-50%);
+          font-weight: 800;
+          font-family: $font-family-display;
+          font-size: 0.9rem;
+          color: $accent-secondary;
+          opacity: 0.5;
+          pointer-events: none;
+          transition: $transition-smooth;
+        }
+
+        input.glass-input {
+          padding-left: 3rem !important;
+          
+          &.selected {
+            border-color: rgba($accent-secondary, 0.4);
+            background: rgba($accent-secondary, 0.05) !important;
+          }
+
+          &:focus + .option-label {
+            opacity: 1;
+            color: $accent-primary;
+          }
+        }
+
+        .correct-toggle {
+          align-self: flex-end;
+          font-size: 0.7rem;
           font-weight: 700;
-          opacity: 0.3;
+          text-transform: uppercase;
+          letter-spacing: 0.05rem;
+          padding: 4px 10px;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: $transition-smooth;
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          color: rgba(255, 255, 255, 0.4);
+          user-select: none;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.7);
+          }
+
+          &.active {
+            background: rgba($color-success, 0.15);
+            border-color: rgba($color-success, 0.4);
+            color: $color-success;
+            box-shadow: 0 0 15px rgba($color-success, 0.1);
+          }
         }
       }
     }
   }
 
+  .btn-sec.dashed {
+    border: 2px dashed rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.02);
+    padding: 1.25rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 600;
+    letter-spacing: 0.05rem;
+    margin: 1.5rem 0;
+    transition: $transition-smooth;
+
+    &:hover {
+      background: rgba($accent-primary, 0.05);
+      border-color: rgba($accent-primary, 0.3);
+      color: white;
+      box-shadow: inset 0 0 20px rgba($accent-primary, 0.05);
+    }
+  }
+
+
   .targeting-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.75rem;
     margin-top: 1.5rem;
 
     .student-select-card {
