@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import useAuthStore from '../../store/useAuthStore';
 import useCommunityStore from '../../store/useCommunityStore';
 import { Users, LogIn, LogOut, RefreshCw, AlertCircle } from 'lucide-react';
-import Skeleton from '../../components/ui/Skeleton';
+import CommunitySkeleton from '../../components/skeletons/CommunitySkeleton';
 
 const CommunityList = () => {
   const { communities, fetchAllCommunities, joinCommunity, leaveCommunity, isLoading, error } = useCommunityStore();
@@ -38,22 +38,6 @@ const CommunityList = () => {
       setActionLoading(prev => ({ ...prev, [id]: false }));
     }
   };
-
-  const CommunitySkeleton = () => (
-    <div className="community-card skeleton-card">
-      <div className="card-top" style={{ marginBottom: '1rem' }}>
-        <div style={{ flex: 1 }}>
-          <Skeleton width="120px" height="24px" className="mb-2" />
-          <Skeleton width="60px" height="18px" />
-        </div>
-        <Skeleton width="40px" height="16px" />
-      </div>
-      <Skeleton width="100%" height="60px" className="mb-4" />
-      <div className="card-footer">
-        <Skeleton width="100%" height="44px" />
-      </div>
-    </div>
-  );
 
   if (error) {
     return (

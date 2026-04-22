@@ -1,17 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import useAuthStore from '../../store/useAuthStore';
+import useUserStore from '../../store/useUserStore';
 import api from '../../lib/api';
 import { User, Camera, Save, Mail, GraduationCap } from 'lucide-react';
 import GlassDropdown from '../../components/ui/GlassDropdown';
+import ProfileSkeleton from '../../components/skeletons/ProfileSkeleton';
 
 const ProfilePage = () => {
   const { user, setUser } = useAuthStore();
-  const [loading, setLoading] = useState(false);
+  const { profile, fetchProfile, isLoading, uploadAvatar, updateProfile } = useUserStore();
   const [success, setSuccess] = useState('');
   const [formData, setFormData] = useState({
-    name: user?.name || '',
-    board: user?.boardInfo?.board || 'NONE',
-    class: user?.boardInfo?.class || '10',
+    name: '',
+    board: 'NONE',
+    class: '10',
   });
   const [studentUsername, setStudentUsername] = useState('');
 
@@ -22,24 +24,42 @@ const ProfilePage = () => {
     { value: 'NONE', label: 'None' }
   ];
 
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        name: profile.name || '',
+        board: profile.boardInfo?.board || 'NONE',
+        class: profile.boardInfo?.class || '10',
+      });
+    }
+  }, [profile]);
+
+  if (isLoading && !profile) {
+    return <ProfileSkeleton />;
+  }
+
+  // Fallback to use either profile or auth user for immediate display
+  const currentUser = profile || user;
+
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
-      setLoading(true);
       setSuccess('');
-      const { data } = await api.put('/user/profile', {
+      const data = await updateProfile({
         name: formData.name,
         boardInfo: {
           board: formData.board,
           class: formData.class
         }
       });
-      setUser(data.data);
+      setUser(data.data); // Keep auth store synced
       setSuccess('Profile updated successfully!');
     } catch (err) {
       alert(err.message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -47,7 +67,6 @@ const ProfilePage = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Client-side validation: 10MB limit
     if (file.size > 10 * 1024 * 1024) {
       return alert('Transmission error: Image exceeds tactical 10MB limit.');
     }
@@ -56,13 +75,10 @@ const ProfilePage = () => {
     uploadData.append('image', file);
 
     try {
-      setLoading(true);
-      const { data: uploadRes } = await api.post('/user/upload-profile-pic', uploadData);
-      setUser(uploadRes.data);
+      const res = await uploadAvatar(uploadData);
+      setUser(res.data); // Keep auth store synced
     } catch (err) {
       alert(err.message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -77,8 +93,8 @@ const ProfilePage = () => {
         <div className="avatar-section">
           <div className="avatar-wrapper">
             <div className="avatar-circle">
-              {user?.profilePic ? (
-                <img src={user.profilePic} alt="Profile" />
+              {currentUser?.profilePic ? (
+                <img src={currentUser.profilePic} alt="Profile" />
               ) : (
                 <User size={40} opacity={0.3} />
               )}
@@ -90,7 +106,7 @@ const ProfilePage = () => {
           </div>
           <div className="user-meta">
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <h2>{user?.name}</h2>
+              <h2>{currentUser?.name}</h2>
               <span style={{ 
                 background: 'rgba(59, 130, 246, 0.15)', 
                 color: '#60a5fa', 
@@ -100,11 +116,11 @@ const ProfilePage = () => {
                 fontFamily: 'Orbitron, sans-serif',
                 letterSpacing: '1px'
               }}>
-                @{user?.username}
+                @{currentUser?.username}
               </span>
             </div>
             <p className="email-text">
-              <Mail size={14} /> {user?.email}
+              <Mail size={14} /> {currentUser?.email}
             </p>
             <p style={{ fontSize: '0.7rem', opacity: 0.4, marginTop: '0.25rem' }}>Image should be under 10MB</p>
           </div>
@@ -143,23 +159,23 @@ const ProfilePage = () => {
             </div>
           </div>
 
-          <button type="submit" disabled={loading} className="btn-primary flex-center" style={{ marginTop: '1rem', gap: '0.5rem' }}>
-            {loading ? 'Saving...' : <><Save size={18} /> Save Changes</>}
+          <button type="submit" disabled={isLoading} className="btn-primary flex-center" style={{ marginTop: '1rem', gap: '0.5rem' }}>
+            {isLoading ? 'Saving...' : <><Save size={18} /> Save Changes</>}
           </button>
         </form>
       </div>
 
       <div className="profile-card" style={{ marginTop: '2rem' }}>
         <header style={{ marginBottom: '1.5rem' }}>
-          <h3 className="glow-text">{user?.role === 'TEACHER' ? 'My Student Cohort' : 'My Academic Mentors'}</h3>
+          <h3 className="glow-text">{currentUser?.role === 'TEACHER' ? 'My Student Cohort' : 'My Academic Mentors'}</h3>
           <p style={{ fontSize: '0.8rem', opacity: 0.6 }}>
-            {user?.role === 'TEACHER' 
+            {currentUser?.role === 'TEACHER' 
               ? 'Add and manage students recruited to your network.' 
               : 'Teachers who have added you to their tasks.'}
           </p>
         </header>
 
-        {user?.role === 'TEACHER' && (
+        {currentUser?.role === 'TEACHER' && (
           <div className="add-student-form" style={{ marginBottom: '2rem' }}>
             <div className="input-group">
               <label>Recruit Student by Username</label>
@@ -174,23 +190,19 @@ const ProfilePage = () => {
                   onClick={async () => {
                     if (!studentUsername) return;
                     try {
-                      setLoading(true);
                       await api.post('/user/add-student', { username: studentUsername });
                       setSuccess('Student recruited successfully!');
                       setStudentUsername('');
-                      // Reactive refresh: fetch latest profile data
-                      const { data } = await api.get('/user/profile');
-                      setUser(data.data);
+                      fetchProfile(); // Refresh profile via store
                     } catch (err) {
                       alert(err.response?.data?.message || err.message);
-                    } finally {
-                      setLoading(false);
                     }
                   }}
+                  disabled={isLoading}
                   className="btn-primary" 
                   style={{ whiteSpace: 'nowrap' }}
                 >
-                  Recruit
+                  {isLoading ? '...' : 'Recruit'}
                 </button>
               </div>
             </div>
@@ -198,15 +210,15 @@ const ProfilePage = () => {
         )}
 
         <div className="network-list" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
-          {user?.role === 'TEACHER' ? (
-            user?.students?.length > 0 ? user.students.map(s => (
+          {currentUser?.role === 'TEACHER' ? (
+            currentUser?.students?.length > 0 ? currentUser.students.map(s => (
               <div key={s._id} className="glass-card" style={{ padding: '1rem', background: 'rgba(255,255,255,0.03)' }}>
                 <p style={{ fontWeight: 600 }}>{s.name}</p>
                 <p style={{ fontSize: '0.75rem', opacity: 0.6 }}>@{s.username}</p>
               </div>
             )) : <p style={{ opacity: 0.5 }}>No students in cohort yet.</p>
           ) : (
-            user?.teachers?.length > 0 ? user.teachers.map(t => (
+            currentUser?.teachers?.length > 0 ? currentUser.teachers.map(t => (
               <div key={t._id} className="glass-card" style={{ padding: '1rem', background: 'rgba(255,255,255,0.03)' }}>
                 <p style={{ fontWeight: 600 }}>{t.name}</p>
                 <p style={{ fontSize: '0.75rem', opacity: 0.6 }}>@{t.username}</p>
