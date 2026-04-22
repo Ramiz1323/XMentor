@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import api from '../lib/api';
+import authService from '../services/auth.service';
+import userService from '../services/user.service';
 
 const getInitialUser = () => {
   try {
@@ -17,8 +18,9 @@ const useAuthStore = create((set) => {
   return {
     user: initialUser,
     isAuthenticated: !!initialUser,
-    isLoading: true, // Start with loading true for initial check
-    authChecked: false, // Specific flag for initial check completion
+    isLoading: false,
+    authChecked: false,
+    error: null,
     
     setUser: (userData) => {
       if (userData) {
@@ -32,8 +34,8 @@ const useAuthStore = create((set) => {
 
     checkAuth: async () => {
       try {
-        set({ isLoading: true });
-        const { data } = await api.get('/user/profile');
+        set({ isLoading: true, error: null });
+        const data = await userService.getProfile();
         localStorage.setItem('user', JSON.stringify(data.data));
         set({ user: data.data, isAuthenticated: true, authChecked: true });
       } catch (err) {
@@ -46,34 +48,45 @@ const useAuthStore = create((set) => {
 
     login: async (email, password) => {
       try {
-        const { data } = await api.post('/auth/login', { email, password });
+        set({ isLoading: true, error: null });
+        const data = await authService.login(email, password);
         localStorage.setItem('user', JSON.stringify(data.data));
         set({ user: data.data, isAuthenticated: true });
         return data;
       } catch (err) {
-        throw err.response?.data || { message: 'Login failed' };
+        const errorMsg = err.message || 'Login failed';
+        set({ error: errorMsg });
+        throw err;
+      } finally {
+        set({ isLoading: false });
       }
     },
 
     register: async (userData) => {
       try {
-        const { data } = await api.post('/auth/register', userData);
+        set({ isLoading: true, error: null });
+        const data = await authService.register(userData);
         localStorage.setItem('user', JSON.stringify(data.data));
         set({ user: data.data, isAuthenticated: true });
         return data;
       } catch (err) {
-        throw err.response?.data || { message: 'Registration failed' };
+        const errorMsg = err.message || 'Registration failed';
+        set({ error: errorMsg });
+        throw err;
+      } finally {
+        set({ isLoading: false });
       }
     },
 
     logout: async () => {
       try {
-        await api.post('/auth/logout'); // Changed to POST to match secondary backend update
+        set({ isLoading: true });
+        await authService.logout();
       } catch (err) {
         console.error('Logout failed on server', err);
       } finally {
         localStorage.removeItem('user');
-        set({ user: null, isAuthenticated: false });
+        set({ user: null, isAuthenticated: false, isLoading: false });
       }
     },
   };

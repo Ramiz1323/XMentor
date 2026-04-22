@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
 import logo from '../../assets/logo.png';
-import { LogOut, Bell, Search, Menu } from 'lucide-react';
+import { LogOut, Bell, Menu } from 'lucide-react';
 
 const Navbar = ({ onMenuClick }) => {
   const { isAuthenticated, logout } = useAuthStore();
@@ -31,15 +31,6 @@ const Navbar = ({ onMenuClick }) => {
         </div>
 
         <div className="nav-actions">
-          <div className="search-bar desktop-only">
-            <Search size={16} aria-hidden="true" />
-            <input 
-              type="text" 
-              placeholder="Search tasks..." 
-              aria-label="Search tasks"
-            />
-          </div>
-          
           <button 
             className="icon-btn" 
             aria-label={hasNotifications ? "Notifications (new items available)" : "Notifications (none)"}

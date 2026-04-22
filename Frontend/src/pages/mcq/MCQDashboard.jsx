@@ -1,31 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
-import api from '../../lib/api';
-import { Plus, BookOpen, Clock, CheckCircle, Target, Users } from 'lucide-react';
+import useMCQStore from '../../store/useMCQStore';
+import { Plus, BookOpen, Clock, Target, Users } from 'lucide-react';
+import Skeleton from '../../components/ui/Skeleton';
 
 const MCQDashboard = () => {
   const { user } = useAuthStore();
-  const [tests, setTests] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const fetchTests = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const { data } = await api.get('/mcq/my-tests');
-      setTests(data.data);
-    } catch (err) {
-      setError(err.message || 'Signal lost with task distribution center');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { tests, fetchMyTests, isLoading, error } = useMCQStore();
 
   useEffect(() => {
-    fetchTests();
-  }, []);
+    fetchMyTests();
+  }, [fetchMyTests]);
 
   const TaskCard = ({ test }) => (
     <div className={`glass-card task-card ${test.createdBy?._id === user._id ? 'owned' : ''}`}>
@@ -87,6 +73,29 @@ const MCQDashboard = () => {
     </div>
   );
 
+  const TaskCardSkeleton = () => (
+    <div className="glass-card task-card skeleton-card">
+      <div className="card-header" style={{ marginBottom: '1.5rem' }}>
+        <div className="title-group">
+          <Skeleton width="60px" height="18px" className="mb-2" />
+          <Skeleton width="180px" height="24px" />
+        </div>
+        <Skeleton width="50px" height="50px" variant="circle" />
+      </div>
+      <div className="card-meta" style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
+        <Skeleton width="100px" height="16px" />
+        <Skeleton width="100px" height="16px" />
+      </div>
+      <div className="card-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Skeleton width="32px" height="32px" variant="circle" />
+          <Skeleton width="100px" height="14px" />
+        </div>
+        <Skeleton width="120px" height="40px" />
+      </div>
+    </div>
+  );
+
   return (
     <div className="mcq-dashboard-container">
       <header>
@@ -102,12 +111,12 @@ const MCQDashboard = () => {
       </header>
 
       <div className="hub-grid">
-        {loading ? (
-          <div className="loader">Initializing Tactical Link...</div>
+        {isLoading ? (
+          [...Array(6)].map((_, i) => <TaskCardSkeleton key={i} />)
         ) : error ? (
           <div className="error-state" style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem' }}>
             <p className="error-text" style={{ color: '#ef4444', marginBottom: '1.5rem' }}>{error}</p>
-            <button onClick={fetchTests} className="btn-primary">Retry Sync</button>
+            <button onClick={fetchMyTests} className="btn-primary">Retry Sync</button>
           </div>
         ) : tests.length > 0 ? (
           tests.map(test => <TaskCard key={test._id} test={test} />)

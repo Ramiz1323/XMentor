@@ -1,42 +1,63 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import api from '../../lib/api';
-import { Users, Target, Clock, ArrowLeft, Search, GraduationCap, Award, Calendar } from 'lucide-react';
+import useMCQStore from '../../store/useMCQStore';
+import { Users, Target, Clock, ArrowLeft, Award, Calendar } from 'lucide-react';
+import Skeleton from '../../components/ui/Skeleton';
 
 const TaskResults = () => {
   const { id } = useParams();
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const { analytics: data, fetchAnalytics, isLoading, error } = useMCQStore();
 
   useEffect(() => {
-    const fetchAnalytics = async () => {
-      try {
-        const { data: res } = await api.get(`/mcq/${id}/analytics`);
-        setData(res.data);
-      } catch (err) {
-        console.error('Failed to fetch analytics', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAnalytics();
-  }, [id]);
+    fetchAnalytics(id);
+  }, [id, fetchAnalytics]);
 
-  if (loading) return <div className="loader">Decoding Task Intelligence...</div>;
-  if (!data) return <div className="error-page">Task data corrupted or unauthorized.</div>;
+  const ResultsSkeleton = () => (
+    <div className="task-results-container">
+      <header>
+        <Skeleton width="100px" height="20px" className="mb-4" />
+        <div className="header-main" style={{ marginBottom: '2rem' }}>
+          <div style={{ flex: 1 }}>
+            <Skeleton width="300px" height="36px" className="mb-2" />
+            <Skeleton width="200px" height="16px" />
+          </div>
+          <Skeleton width="100px" height="60px" />
+        </div>
+      </header>
+      <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '2rem' }}>
+        {[...Array(3)].map((_, i) => <Skeleton key={i} width="100%" height="100px" variant="rect" />)}
+      </div>
+      <div className="results-section">
+        <div className="section-header" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between' }}>
+          <Skeleton width="150px" height="24px" />
+        </div>
+        <div className="results-table-wrapper">
+          {[...Array(5)].map((_, i) => <Skeleton key={i} width="100%" height="70px" style={{ marginBottom: '8px' }} />)}
+        </div>
+      </div>
+    </div>
+  );
+
+  if (isLoading && !data) return <ResultsSkeleton />;
+
+  if (error || !data) {
+    return (
+      <div className="error-page" style={{ textAlign: 'center', padding: '10rem 2rem' }}>
+        <h2 className="glow-text">Task Data Corrupted or Unauthorized</h2>
+        <p style={{ color: 'rgba(255,255,255,0.6)', marginTop: '1rem' }}>{error || "We couldn't retrieve the intelligence data for this task."}</p>
+        <Link to="/mcq" className="btn-primary mt-6" style={{ display: 'inline-flex', gap: '0.5rem' }}>
+          <ArrowLeft size={18} /> Back to Hub
+        </Link>
+      </div>
+    );
+  }
 
   const { test, results, stats } = data;
-
-  const filteredResults = results.filter(r => 
-    r.studentId?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    r.studentId?.username?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <div className="task-results-container">
       <header>
-        <Link to="/mcq-hub" className="back-link">
+        <Link to="/mcq" className="back-link">
           <ArrowLeft size={16} /> Back to Hub
         </Link>
         <div className="header-main">
@@ -78,15 +99,6 @@ const TaskResults = () => {
       <div className="results-section">
         <div className="section-header">
           <h3>Recipient Field Data</h3>
-          <div className="search-box">
-            <Search size={16} className="search-icon" />
-            <input 
-              className="glass-input"
-              placeholder="Filter by name..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
         </div>
 
         <div className="results-table-wrapper">
@@ -101,7 +113,7 @@ const TaskResults = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredResults.map((res) => (
+              {(results || []).map((res) => (
                 <tr key={res._id}>
                   <td>
                     <div className="student-info">
@@ -134,10 +146,10 @@ const TaskResults = () => {
                   </td>
                 </tr>
               ))}
-              {filteredResults.length === 0 && (
+              {(!results || results.length === 0) && (
                 <tr>
                   <td colSpan="5" className="empty-table-cell">
-                    No intelligence data matched your filter criteria.
+                    No intelligence data available.
                   </td>
                 </tr>
               )}

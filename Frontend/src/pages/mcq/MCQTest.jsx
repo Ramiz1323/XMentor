@@ -1,22 +1,21 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import api from '../../lib/api';
+import useMCQStore from '../../store/useMCQStore';
 import { Timer, ArrowRight, ArrowLeft, CheckCircle, XCircle, HelpCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import Skeleton from '../../components/ui/Skeleton';
 
 const MCQTest = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [test, setTest] = useState(null);
+  const { currentTest: test, fetchTestById, submitTest, isLoading, error } = useMCQStore();
+  
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [timeLeft, setTimeLeft] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
 
-  // Refs to avoid stale closures in setInterval
   const answersRef = useRef([]);
   const timeLeftRef = useRef(null);
   const testRef = useRef(null);
@@ -33,30 +32,23 @@ const MCQTest = () => {
     testRef.current = test;
   }, [test]);
 
-  const fetchTest = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const { data } = await api.get(`/mcq/${id}`);
-      const testData = data.data;
-      setTest(testData);
-      setAnswers(new Array(testData.questions.length).fill(-1));
-      
-      if (!testData.isSubmitted) {
-        setTimeLeft(testData.duration * 60);
-      } else {
-        setResult(testData.result);
-      }
-    } catch (err) {
-      setError(err.message || 'Transmission lost with testing module');
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
+  useEffect(() => {
+    const initTest = async () => {
+      await fetchTestById(id);
+    };
+    initTest();
+  }, [id, fetchTestById]);
 
   useEffect(() => {
-    fetchTest();
-  }, [fetchTest]);
+    if (test) {
+      setAnswers(new Array(test.questions.length).fill(-1));
+      if (!test.isSubmitted) {
+        setTimeLeft(test.duration * 60);
+      } else {
+        setResult(test.result);
+      }
+    }
+  }, [test]);
 
   const handleSubmit = useCallback(async (autoSubmit = false) => {
     if (submitting || result || !testRef.current) return;
@@ -64,27 +56,24 @@ const MCQTest = () => {
       setSubmitting(true);
       const currentAnswers = autoSubmit ? answersRef.current : answers;
       
-      // Calculate time taken: use timeLeft if timer exists, otherwise use elapsedTime store
       const timeTaken = testRef.current.hasTimer 
         ? (testRef.current.duration * 60 - (timeLeftRef.current || 0))
         : elapsedTime;
       
-      const { data } = await api.post(`/mcq/${id}/submit`, {
+      const res = await submitTest(id, {
         answers: currentAnswers,
         timeTaken: Math.max(1, timeTaken)
       });
-      setResult(data.data);
-      const updated = await api.get(`/mcq/${id}`);
-      setTest(updated.data.data);
+      setResult(res.data);
+      await fetchTestById(id); 
     } catch (err) {
       if (!autoSubmit) alert(err.message || 'Submission failed');
     } finally {
       setSubmitting(false);
     }
-  }, [id, submitting, result, answers, elapsedTime]);
+  }, [id, submitting, result, answers, elapsedTime, submitTest, fetchTestById]);
 
   useEffect(() => {
-    // Timer is only active if hasTimer is true and it's not submitted
     if (!test?.hasTimer || timeLeft === null || timeLeft <= 0 || result || test?.isSubmitted) return;
     
     const timer = setInterval(() => {
@@ -101,15 +90,14 @@ const MCQTest = () => {
     return () => clearInterval(timer);
   }, [timeLeft, result, test?.isSubmitted, test?.hasTimer, handleSubmit]);
 
-  // Handle Fluid missions (no timer): track elapsed time
   useEffect(() => {
-    if (test?.hasTimer || result || test?.isSubmitted || loading || !test) return;
+    if (test?.hasTimer || result || test?.isSubmitted || isLoading || !test) return;
     
     const ticker = setInterval(() => {
       setElapsedTime(prev => prev + 1);
     }, 1000);
     return () => clearInterval(ticker);
-  }, [test?.hasTimer, result, test?.isSubmitted, loading, test]);
+  }, [test?.hasTimer, result, test?.isSubmitted, isLoading, test]);
 
   const handleOptionSelect = (optionIdx) => {
     if (test?.isSubmitted || result) return;
@@ -118,7 +106,28 @@ const MCQTest = () => {
     setAnswers(newAnswers);
   };
 
-  if (loading) return <div className="loader">Initialising secure testing environment...</div>;
+  const TestSkeleton = () => (
+    <div className="mcq-page">
+      <header>
+        <div className="test-info">
+          <Skeleton width="200px" height="32px" className="mb-2" />
+          <Skeleton width="150px" height="16px" />
+        </div>
+        <Skeleton width="80px" height="40px" />
+      </header>
+      <div className="question-container">
+        <div style={{ display: 'flex', gap: '4px', marginBottom: '2rem' }}>
+          {[...Array(5)].map((_, i) => <Skeleton key={i} width="100%" height="4px" />)}
+        </div>
+        <Skeleton width="80%" height="24px" className="mb-8" />
+        <div className="options-list">
+          {[...Array(4)].map((_, i) => <Skeleton key={i} width="100%" height="60px" style={{ marginBottom: '1rem' }} />)}
+        </div>
+      </div>
+    </div>
+  );
+
+  if (isLoading && !test) return <TestSkeleton />;
 
   if (error || !test) {
     return (
@@ -127,7 +136,7 @@ const MCQTest = () => {
           <AlertCircle size={48} className="error-icon" />
           <h2 className="glow-text">Strategic Link Failure</h2>
           <p>{error || 'Task node not found'}</p>
-          <button onClick={fetchTest} className="btn-primary">
+          <button onClick={() => fetchTestById(id)} className="btn-primary">
             <RefreshCw size={18} /> Re-establish Uplink
           </button>
         </div>
@@ -257,9 +266,9 @@ const MCQTest = () => {
           )}
 
           {result && currentIdx === test.questions.length - 1 && (
-             <button onClick={() => navigate('/mcq-hub')} className="btn-primary">
+            <button onClick={() => navigate('/mcq')} className="btn-primary">
                 Done
-             </button>
+            </button>
           )}
         </div>
       </div>

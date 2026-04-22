@@ -1,14 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../../lib/api';
-import { Plus, Trash2, Save, X, Timer, Users, ChevronRight, GraduationCap, BookOpen } from 'lucide-react';
+import useMCQStore from '../../store/useMCQStore';
+import useUserStore from '../../store/useUserStore';
+import { Plus, Trash2, X, ChevronRight, GraduationCap, BookOpen, Users } from 'lucide-react';
 import GlassDropdown from '../../components/ui/GlassDropdown';
+import Skeleton from '../../components/ui/Skeleton';
 
 const MCQCreator = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [students, setStudents] = useState([]);
-  const [fetchingStudents, setFetchingStudents] = useState(false);
+  const { createTest, isLoading: isCreating } = useMCQStore();
+  const { profile, fetchProfile, isLoading: isFetchingProfile } = useUserStore();
   
   const [testData, setTestData] = useState({
     title: '',
@@ -32,20 +33,11 @@ const MCQCreator = () => {
     { value: 'OTHERS', label: 'Others' }
   ];
 
-  useState(() => {
-    const fetchStudents = async () => {
-      try {
-        setFetchingStudents(true);
-        const { data } = await api.get('/user/profile');
-        setStudents(data.data.students || []);
-      } catch (err) {
-        console.error('Failed to load cohort intel', err);
-      } finally {
-        setFetchingStudents(false);
-      }
-    };
-    fetchStudents();
-  }, []);
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+  const students = profile?.students || [];
 
   const handleCreate = async () => {
     if (!testData.title) return alert('Task title is required');
@@ -55,14 +47,11 @@ const MCQCreator = () => {
     }
     
     try {
-      setLoading(true);
-      await api.post('/mcq', testData);
+      await createTest(testData);
       alert('Task Deployed Successfully!');
-      navigate('/mcq-hub');
+      navigate('/mcq');
     } catch (err) {
-      alert(err.response?.data?.message || err.message);
-    } finally {
-      setLoading(false);
+      alert(err.message || 'Deployment failed');
     }
   };
 
@@ -99,6 +88,19 @@ const MCQCreator = () => {
     setStep(next);
   };
 
+  const TargetingSkeleton = () => (
+    <div className="targeting-grid">
+      {[...Array(4)].map((_, i) => (
+        <div key={i} className="student-select-card skeleton-card">
+          <Skeleton width="40px" height="40px" variant="circle" />
+          <div className="student-info" style={{ width: '100%' }}>
+            <Skeleton width="60%" height="16px" className="mb-1" />
+            <Skeleton width="40%" height="12px" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div className="task-creator-container">
@@ -244,8 +246,8 @@ const MCQCreator = () => {
             <h2 className="section-title"><Users size={24} className="step-icon" /> Task Targeting</h2>
             <p className="section-desc">Deploy this task to specific students in your cohort. Leave unselected for a Public Curriculum Task.</p>
             
-            {fetchingStudents ? (
-              <div className="loader">Analyzing cohort database...</div>
+            {isFetchingProfile ? (
+              <TargetingSkeleton />
             ) : students.length === 0 ? (
               <div className="empty-cohort-msg">
                 <p>No students detected in your network. Use <strong>Profile</strong> to recruit participants.</p>
@@ -275,9 +277,9 @@ const MCQCreator = () => {
               <button 
                 className="btn-primary" 
                 onClick={handleCreate}
-                disabled={loading}
+                disabled={isCreating}
               >
-                {loading ? 'Deploying...' : 'Finalize and Deploy Task'}
+                {isCreating ? 'Deploying...' : 'Finalize and Deploy Task'}
               </button>
             </div>
 
@@ -288,7 +290,7 @@ const MCQCreator = () => {
         )}
       </div>
 
-      <button onClick={() => navigate('/mcq-hub')} className="abort-btn">
+      <button onClick={() => navigate('/mcq')} className="abort-btn">
         <X size={16} /> Abort Task Operation
       </button>
     </div>

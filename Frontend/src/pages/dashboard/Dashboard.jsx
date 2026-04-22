@@ -1,29 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import useAuthStore from '../../store/useAuthStore';
+import useCommunityStore from '../../store/useCommunityStore';
+import useMCQStore from '../../store/useMCQStore';
 import { BookOpen, Users, Trophy } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import api from '../../lib/api';
+import Skeleton from '../../components/ui/Skeleton';
 
 const Dashboard = () => {
   const { user } = useAuthStore();
-  const [stats, setStats] = useState({ communities: 0, tests: 0 });
+  const { communities, fetchAllCommunities, isLoading: commLoading } = useCommunityStore();
+  const { tests, fetchMyTests, isLoading: mcqLoading } = useMCQStore();
 
   useEffect(() => {
-    const fetchDashboardStats = async () => {
-      try {
-        const [commRes] = await Promise.all([
-          api.get('/community')
-        ]);
-        setStats({
-          communities: commRes.data.data.length,
-          tests: 0
-        });
-      } catch (err) {
-        console.error('Failed to fetch stats', err);
-      }
-    };
-    fetchDashboardStats();
-  }, []);
+    fetchAllCommunities();
+    fetchMyTests();
+  }, [fetchAllCommunities, fetchMyTests]);
+
+  const isLoading = commLoading || mcqLoading;
 
   return (
     <div className="dashboard-container">
@@ -38,8 +31,17 @@ const Dashboard = () => {
             <Users size={32} color="#3b82f6" />
           </div>
           <div className="stat-info">
-            <h3>{stats.communities}</h3>
-            <p>Communities Available</p>
+            {isLoading ? (
+              <>
+                <Skeleton width="40px" height="24px" className="mb-1" />
+                <Skeleton width="80px" height="14px" opacity={0.5} />
+              </>
+            ) : (
+              <>
+                <h3>{communities?.length || 0}</h3>
+                <p>Communities Available</p>
+              </>
+            )}
           </div>
         </div>
 
@@ -48,8 +50,17 @@ const Dashboard = () => {
             <BookOpen size={32} color="#22d3ee" />
           </div>
           <div className="stat-info">
-            <h3>{stats.tests}</h3>
-            <p>Completed Tests</p>
+            {isLoading ? (
+              <>
+                <Skeleton width="40px" height="24px" className="mb-1" />
+                <Skeleton width="80px" height="14px" opacity={0.5} />
+              </>
+            ) : (
+              <>
+                <h3>{tests?.length || 0}</h3>
+                <p>Completed Tests</p>
+              </>
+            )}
           </div>
         </div>
 
@@ -71,10 +82,10 @@ const Dashboard = () => {
             <h4>Join Community</h4>
             <p>Connect with peers</p>
           </Link>
-          <div className="action-card">
+          <Link to="/mcq" className="action-card">
             <h4>Practice MCQ</h4>
             <p>Test your knowledge</p>
-          </div>
+          </Link>
         </div>
       </section>
     </div>
