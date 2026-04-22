@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useMCQStore from '../../store/useMCQStore';
 import useUserStore from '../../store/useUserStore';
-import { Plus, Trash2, X, ChevronRight, GraduationCap, BookOpen, Users } from 'lucide-react';
+import { Plus, Trash2, X, ChevronRight, GraduationCap, BookOpen, Users, Target, AlertCircle, RefreshCw } from 'lucide-react';
 import GlassDropdown from '../../components/ui/GlassDropdown';
 import Skeleton from '../../components/ui/Skeleton';
 
@@ -11,6 +11,8 @@ const MCQCreator = () => {
   const { createTest, isLoading: isCreating } = useMCQStore();
   const { profile, fetchProfile, isLoading: isFetchingProfile } = useUserStore();
   
+  const [creationMode, setCreationMode] = useState(null); // null, 'MANUAL', 'JSON'
+  const [step, setStep] = useState(1); 
   const [testData, setTestData] = useState({
     title: '',
     subject: 'CODING',
@@ -22,7 +24,32 @@ const MCQCreator = () => {
     ]
   });
 
-  const [step, setStep] = useState(1); 
+  const [importData, setImportData] = useState({
+    subject: 'CODING',
+    topic: '',
+    difficulty: 'MEDIUM',
+    count: 10,
+    jsonText: '',
+    hasTimer: true,
+    board: 'CBSE',
+    classLevel: '12',
+    marksPerQ: 4,
+    isLengthy: true
+  });
+
+  const boardOptions = [
+    { value: 'CBSE', label: 'CBSE' },
+    { value: 'ICSE', label: 'ICSE' },
+    { value: 'WBBSE', label: 'WBBSE (WB Board)' },
+    { value: 'WBCHSE', label: 'WBCHSE (Higher Sec.)' },
+    { value: 'CODING', label: 'Coding / Technical' }
+  ];
+
+  const difficultyOptions = [
+    { value: 'EASY', label: 'Beginner' },
+    { value: 'MEDIUM', label: 'Intermediate' },
+    { value: 'HARD', label: 'Advanced' }
+  ];
 
   const subjectOptions = [
     { value: 'MATHS', label: 'Mathematics' },
@@ -39,6 +66,55 @@ const MCQCreator = () => {
 
   const students = profile?.students || [];
 
+  const handleImport = () => {
+    if (!importData.topic) return alert('Enter a Topic Name for the mission.');
+    if (!importData.jsonText) return alert('JSON Data field empty. Systems unresponsive.');
+
+    try {
+      const parsed = JSON.parse(importData.jsonText);
+      const formattedQs = parsed.map(q => ({
+        q: q.question || q.q || '',
+        options: q.options || ['', '', '', ''],
+        correct: q.answer !== undefined ? q.answer : (q.correct !== undefined ? q.correct : 0),
+        explanation: q.explanation || ''
+      }));
+
+      if (formattedQs.some(q => !q.q)) throw new Error('Data structure corrupted: Question text missing.');
+
+      setTestData({
+        ...testData,
+        title: importData.topic,
+        subject: importData.subject,
+        hasTimer: importData.hasTimer,
+        questions: formattedQs
+      });
+
+      setCreationMode('MANUAL');
+      setStep(3); // Jump to targeting
+    } catch (err) {
+      alert('Strategic Analysis Failed: ' + err.message);
+    }
+  };
+
+  const copyPrompt = () => {
+    const complexityTxt = importData.isLengthy 
+      ? 'Focus on lengthy, multi-step calculative problems where students need to solve on paper before selecting the option (JEE Style).' 
+      : 'Focus on conceptual clarity and rapid theoretical analysis.';
+
+    const prompt = `Act as a high-level academic curriculum architect. Generate a JSON array of ${importData.count} MCQ questions for class ${importData.classLevel} students studying ${importData.board || 'Standards'}.
+Subject: ${importData.subject}
+Topic: ${importData.topic || 'General Concepts'}
+Difficulty: ${importData.difficulty}
+Weightage: ${importData.marksPerQ} Marks per question
+Instruction: ${complexityTxt}
+
+Format strictly as a JSON array: [{"question": "...", "options": ["A", "B", "C", "D"], "answer": 0, "explanation": "..."}]
+Note: 'answer' must be the index (0-3) of the correct option. Return ONLY the JSON array packet.`;
+    
+    navigator.clipboard.writeText(prompt);
+    alert('Strategic Intelligence Prompt Copied!');
+  };
+
   const handleCreate = async () => {
     if (!testData.title) return alert('Task title is required');
     if (testData.questions.some(q => !q.q)) return alert('All questions must have text');
@@ -49,7 +125,7 @@ const MCQCreator = () => {
     try {
       await createTest(testData);
       alert('Task Deployed Successfully!');
-      navigate('/mcq');
+      navigate('/mcq-hub');
     } catch (err) {
       alert(err.message || 'Deployment failed');
     }
@@ -102,8 +178,178 @@ const MCQCreator = () => {
     </div>
   );
 
+  if (!creationMode) {
+    return (
+      <div className="creation-method-selection">
+        <header className="creator-header" style={{ marginBottom: '4rem' }}>
+          <h1 className="glow-text">Strategic Entry Point</h1>
+          <p className="subtitle">Select your method of curriculum architecting.</p>
+        </header>
+
+        <div className="selection-grid">
+          <div className="method-card" onClick={() => setCreationMode('MANUAL')}>
+            <div className="icon-wrapper">
+              <Plus size={32} />
+            </div>
+            <h3>Manual Architect</h3>
+            <p>Design every task entry with absolute precision for maximum tactical engagement.</p>
+            <button className="btn-primary full-width mt-4">Initiate Manual Path</button>
+          </div>
+
+          <div className="method-card json-path" onClick={() => setCreationMode('JSON')}>
+            <div className="icon-wrapper">
+              <BookOpen size={32} />
+            </div>
+            <h3>JSON Intelligence Uplink</h3>
+            <p>Deploy curriculum via strategic data packets or ChatGPT-generated intelligence.</p>
+            <button className="btn-primary full-width mt-4" style={{ background: 'linear-gradient(135deg, #ff4d4d, #ff8c42)' }}>Initiate Intelligence Uplink</button>
+          </div>
+        </div>
+
+        <button onClick={() => navigate('/mcq-hub')} className="abort-btn mt-8">
+           <X size={16} /> Abort Selection
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="task-creator-container">
+      {creationMode === 'JSON' && (
+        <div className="import-modal-overlay">
+          <div className="import-modal">
+            <button className="modal-close" onClick={() => setCreationMode(null)}>
+              <X size={24} />
+            </button>
+            <h2 className="modal-title">Import MCQ Test</h2>
+            <p className="modal-subtitle">Paste your ChatGPT generated JSON below.</p>
+
+            <div className="import-form-grid">
+              <div className="input-stack">
+                <div className="input-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <GlassDropdown 
+                    label="Subject"
+                    options={subjectOptions}
+                    value={importData.subject}
+                    onChange={(val) => setImportData({...importData, subject: val})}
+                    icon={GraduationCap}
+                  />
+                  <GlassDropdown 
+                    label="Board / Curriculum"
+                    options={boardOptions}
+                    value={importData.board}
+                    onChange={(val) => setImportData({...importData, board: val})}
+                    icon={BookOpen}
+                  />
+                </div>
+                
+                <div className="input-grid" style={{ gridTemplateColumns: '1.5fr 1fr', gap: '1rem' }}>
+                  <div className="input-group">
+                    <label>Topic Name</label>
+                    <input 
+                      className="glass-input" 
+                      placeholder="Mission Topic..."
+                      value={importData.topic}
+                      onChange={(e) => setImportData({...importData, topic: e.target.value})}
+                    />
+                  </div>
+                  <div className="input-group">
+                    <label>Target Class</label>
+                    <input 
+                      className="glass-input" 
+                      placeholder="e.g. 12"
+                      value={importData.classLevel}
+                      onChange={(e) => setImportData({...importData, classLevel: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="input-grid" style={{ gridTemplateColumns: '1.2fr 0.8fr 0.8fr', gap: '1rem' }}>
+                   <GlassDropdown 
+                    label="Proficiency"
+                    options={difficultyOptions}
+                    value={importData.difficulty}
+                    onChange={(val) => setImportData({...importData, difficulty: val})}
+                    icon={Target}
+                  />
+                  <div className="input-group">
+                    <label>Qty</label>
+                    <input 
+                      type="number"
+                      className="glass-input" 
+                      value={importData.count}
+                      onChange={(e) => setImportData({...importData, count: e.target.value})}
+                    />
+                  </div>
+                  <div className="input-group">
+                    <label>Marks</label>
+                    <input 
+                      type="number"
+                      className="glass-input" 
+                      value={importData.marksPerQ}
+                      onChange={(e) => setImportData({...importData, marksPerQ: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="tactical-toggle mt-2">
+                    <span>Timed Task</span>
+                    <label className="switch">
+                        <input 
+                          type="checkbox" 
+                          checked={importData.hasTimer}
+                          onChange={() => setImportData({...importData, hasTimer: !importData.hasTimer})}
+                        />
+                        <span className="slider"></span>
+                    </label>
+                  </div>
+                  <div className="tactical-toggle mt-2">
+                    <span>Lengthy</span>
+                    <label className="switch">
+                        <input 
+                          type="checkbox" 
+                          checked={importData.isLengthy}
+                          onChange={() => setImportData({...importData, isLengthy: !importData.isLengthy})}
+                        />
+                        <span className="slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="ai-helper-zone">
+                    <button className="btn-generate-prompt full-width active" onClick={copyPrompt}>
+                        Generate Prompt for AI
+                    </button>
+                    <p className="prompt-help-text">Metadata synced. Click to copy strategic prompt.</p>
+                </div>
+              </div>
+
+              <div className="json-textarea-wrapper">
+                <div className="input-group">
+                    <div className="label-with-info">
+                        <label>JSON Data</label>
+                        <AlertCircle size={14} />
+                    </div>
+                </div>
+                <textarea 
+                  placeholder={`[ { "question": "...", "options": [...], "answer": 0 } ]`}
+                  value={importData.jsonText}
+                  onChange={(e) => setImportData({...importData, jsonText: e.target.value})}
+                />
+              </div>
+            </div>
+
+            <div className="modal-actions">
+               <button className="btn-cancel" onClick={() => setCreationMode(null)}>Cancel</button>
+               <button className="btn-import" onClick={handleImport}>
+                  <RefreshCw size={20} /> Import & Start
+               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <header className="creator-header">
         <div>
           <h1 className="glow-text">Task Architect</h1>
@@ -273,7 +519,7 @@ const MCQCreator = () => {
             )}
 
             <div className="action-row mt-8">
-              <button className="btn-sec" onClick={() => setStep(2)}>Adjust Intel</button>
+              <button className="btn-sec" onClick={() => setStep(creationMode === 'JSON' ? 1 : 2)}>Adjust Intel</button>
               <button 
                 className="btn-primary" 
                 onClick={handleCreate}
@@ -290,8 +536,8 @@ const MCQCreator = () => {
         )}
       </div>
 
-      <button onClick={() => navigate('/mcq')} className="abort-btn">
-        <X size={16} /> Abort Task Operation
+      <button onClick={() => setCreationMode(null)} className="abort-btn">
+        <X size={16} /> Change Creation Method
       </button>
     </div>
   );

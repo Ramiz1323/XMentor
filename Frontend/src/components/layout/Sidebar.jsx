@@ -83,12 +83,12 @@ const Sidebar = ({ isOpen, onClose }) => {
           </NavLink>
         </nav>
 
-        <div className="sidebar-footer">
+        {/* <div className="sidebar-footer">
           <div className="rank-badge">
             <span className="label">Rank</span>
             <span className="value">Novice</span>
           </div>
-        </div>
+        </div> */}
       </aside>
     </>
   );
