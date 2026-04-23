@@ -72,14 +72,43 @@ const MCQCreator = () => {
 
     try {
       const parsed = JSON.parse(importData.jsonText);
-      const formattedQs = parsed.map(q => ({
-        q: q.question || q.q || '',
-        options: q.options || ['', '', '', ''],
-        correct: q.answer !== undefined ? q.answer : (q.correct !== undefined ? q.correct : 0),
-        explanation: q.explanation || ''
-      }));
+      if (!Array.isArray(parsed)) throw new Error('Data must be a JSON array of question objects.');
 
-      if (formattedQs.some(q => !q.q)) throw new Error('Data structure corrupted: Question text missing.');
+      const formattedQs = parsed.map((q, index) => {
+        const qNum = index + 1;
+        
+        // 1. Validate Question Text
+        const questionText = q.question || q.q || '';
+        if (!questionText) throw new Error(`Question ${qNum}: Text content missing.`);
+
+        // 2. Normalize and Validate Options (exactly 4)
+        let rawOptions = q.options || [];
+        if (!Array.isArray(rawOptions)) rawOptions = [];
+        
+        // Truncate or Pad to exactly 4
+        const finalOptions = [...rawOptions].slice(0, 4);
+        while (finalOptions.length < 4) {
+          finalOptions.push(""); 
+        }
+        
+        // Ensure all entries are strings
+        const normalizedOptions = finalOptions.map(opt => String(opt || ''));
+
+        // 3. Validate Answer Index (0-3)
+        let ansIdx = q.answer !== undefined ? q.answer : (q.correct !== undefined ? q.correct : 0);
+        ansIdx = parseInt(ansIdx, 10);
+        
+        if (isNaN(ansIdx) || ansIdx < 0 || ansIdx > 3) {
+           throw new Error(`Question ${qNum}: Invalid answer index "${ansIdx}". Must be between 0-3.`);
+        }
+
+        return {
+          q: questionText,
+          options: normalizedOptions,
+          correct: ansIdx,
+          explanation: String(q.explanation || '')
+        };
+      });
 
       setTestData({
         ...testData,

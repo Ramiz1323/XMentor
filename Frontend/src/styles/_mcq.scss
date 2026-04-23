@@ -46,145 +46,208 @@
     @media (max-width: 480px) {
       grid-template-columns: 1fr;
     }
-  }
 
-  .task-card {
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    position: relative;
-    overflow: hidden;
-    transition: $transition-smooth;
-
-    &:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 15px 35px rgba(0,0,0,0.4), 0 0 20px rgba($accent-primary, 0.15);
-      border-color: rgba($accent-primary, 0.4);
-    }
-
-    .card-header {
-      @include flex-between;
-      align-items: flex-start;
-      gap: 1rem;
-      @media (max-width: 400px) { flex-direction: column; align-items: flex-start; }
-    }
-
-    .subject-tag {
-      font-size: 0.7rem;
-      background: rgba($accent-primary, 0.15);
-      color: $accent-secondary;
-      padding: 4px 10px;
-      border-radius: 6px;
-      text-transform: uppercase;
-      font-weight: 700;
-      letter-spacing: 0.05rem;
-    }
-
-    .card-meta {
-      display: flex;
-      gap: 1rem;
-      font-size: 0.85rem;
-      opacity: 0.8;
-    }
-
-    .card-footer {
-      margin-top: auto;
-      padding-top: 1.25rem;
-      border-top: 1px solid rgba(255,255,255,0.05);
+    .task-card {
+      padding: 1.5rem;
       display: flex;
       flex-direction: column;
-      gap: 1.25rem;
-    }
+      gap: 1rem;
+      position: relative;
+      overflow: hidden;
+      transition: $transition-smooth;
 
-    .creator-badge {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      font-size: 0.8rem;
-      opacity: 0.8;
-      min-width: 0;
-      flex: 1;
-
-      .avatar {
-        width: 32px;
-        height: 32px;
-        flex-shrink: 0;
-        border-radius: 50%;
-        background: $gradient-primary;
-        @include flex-center;
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: white;
-        border: 1px solid rgba(255,255,255,0.1);
-        overflow: hidden;
-
-        img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
+      &.completed-task {
+        border-color: rgba($color-success, 0.2);
+        &:hover {
+          border-color: rgba($color-success, 0.4);
+          box-shadow: 0 15px 35px rgba(0,0,0,0.4), 0 0 20px rgba($color-success, 0.1);
         }
       }
 
-      .name {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.4), 0 0 20px rgba($accent-primary, 0.15);
+        border-color: rgba($accent-primary, 0.4);
       }
-    }
-    
-    .owner-indicator {
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 4px;
-      height: 100%;
-      background: $accent-secondary;
-    }
 
-    .title-group {
-      min-width: 0;
-      flex: 1;
-      h3 { 
-        margin-top: 0.5rem;
-        font-size: 1.25rem;
-        overflow-wrap: break-word;
-        word-wrap: break-word;
-        @media (max-width: 640px) { font-size: 1.1rem; }
+      .card-header {
+        @include flex-between;
+        align-items: flex-start;
+        gap: 1rem;
+        @media (max-width: 400px) { flex-direction: column; align-items: flex-start; }
       }
-    }
 
-    .duration-box {
-      text-align: right;
-      .label { font-size: 0.75rem; opacity: 0.6; }
-      .value { font-weight: 600; color: $accent-primary; }
-    }
+      .top-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.25rem;
+      }
 
-    .meta-item {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
+      .subject-tag {
+        font-size: 0.65rem;
+        background: rgba($accent-primary, 0.15);
+        color: $accent-secondary;
+        padding: 3px 8px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.05rem;
+      }
 
-    .btn-row {
-      display: flex;
-      gap: 0.75rem;
-      width: 100%;
-      
-      .results-btn { 
-        flex: 1;
-        height: 42px;
-        gap: 0.5rem;
+      .completed-badge {
+        font-size: 0.65rem;
+        background: rgba($color-success, 0.1);
+        color: $color-success;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.05rem;
+      }
+
+      .card-meta {
+        display: flex;
+        gap: 1rem;
         font-size: 0.85rem;
+        opacity: 0.8;
       }
 
-      .btn-primary {
-        flex: 2;
-        height: 42px;
-        @include flex-center;
-        font-size: 0.9rem;
-        font-weight: 600;
+      .card-footer {
+        margin-top: auto;
+        padding-top: 1.25rem;
+        border-top: 1px solid rgba(255,255,255,0.05);
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
       }
+
+      .creator-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.8rem;
+        opacity: 0.8;
+        min-width: 0;
+        flex: 1;
+
+        .avatar {
+          width: 32px;
+          height: 32px;
+          flex-shrink: 0;
+          border-radius: 50%;
+          background: $gradient-primary;
+          @include flex-center;
+          font-size: 0.85rem;
+          font-weight: 700;
+          color: white;
+          border: 1px solid rgba(255,255,255,0.1);
+          overflow: hidden;
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+        }
+
+        .name {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+      
+      .owner-indicator {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 4px;
+        height: 100%;
+        background: $accent-secondary;
+      }
+
+      .title-group {
+        min-width: 0;
+        flex: 1;
+        h3 { 
+          margin-top: 0.5rem;
+          font-size: 1.25rem;
+          overflow-wrap: break-word;
+          word-wrap: break-word;
+          @media (max-width: 640px) { font-size: 1.1rem; }
+        }
+      }
+
+      .duration-box {
+        text-align: right;
+        .label { font-size: 0.75rem; opacity: 0.6; }
+        .value { font-weight: 600; color: $accent-primary; }
+      }
+
+      .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      .btn-row {
+        display: flex;
+        gap: 0.75rem;
+        width: 100%;
+        
+        .results-btn { 
+          flex: 1;
+          height: 42px;
+          gap: 0.5rem;
+          font-size: 0.85rem;
+        }
+
+        .btn-primary {
+          flex: 2;
+          height: 42px;
+          @include flex-center;
+          font-size: 0.9rem;
+          font-weight: 600;
+        }
+
+        .review-btn {
+          flex: 1;
+          height: 42px;
+          background: rgba($accent-secondary, 0.15);
+          border: 1px solid rgba($accent-secondary, 0.3);
+          color: $accent-secondary;
+          font-weight: 700;
+          font-size: 0.85rem;
+          gap: 0.5rem;
+          text-shadow: 0 0 10px rgba($accent-secondary, 0.2);
+          
+          &:hover {
+            background: rgba($accent-secondary, 0.25);
+            border-color: $accent-secondary;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba($accent-secondary, 0.2);
+          }
+        }
+      }
+    }
+
+    .empty-state {
+      grid-column: 1 / -1;
+      padding: 4rem;
+      @include flex-column;
+      align-items: center;
+      gap: 1.5rem;
+      text-align: center;
+      background: rgba(255,255,255,0.02);
+      @include glass-card;
+      
+      .empty-icon { opacity: 0.2; }
+      h3 { opacity: 0.5; }
+      p { opacity: 0.4; margin-top: 0.5rem; font-size: 0.9rem; }
     }
   }
 
@@ -209,21 +272,6 @@
     &.full-width { width: 100%; }
     &.dashed { border-style: dashed; }
     &.icon-only { padding: 4px; }
-  }
-
-  .empty-state {
-    grid-column: 1 / -1;
-    padding: 4rem;
-    @include flex-column;
-    align-items: center;
-    gap: 1.5rem;
-    text-align: center;
-    background: rgba(255,255,255,0.02);
-    @include glass-card;
-    
-    .empty-icon { opacity: 0.2; }
-    h3 { opacity: 0.5; }
-    p { opacity: 0.4; margin-top: 0.5rem; font-size: 0.9rem; }
   }
 }
 
@@ -1123,6 +1171,12 @@
         
         input:checked + .slider {
             background-color: #ff4d4d;
+        }
+
+        input:focus-visible + .slider {
+            outline: 2px solid rgba(#ff4d4d, 0.5);
+            outline-offset: 2px;
+            box-shadow: 0 0 10px rgba(#ff4d4d, 0.3);
         }
         
         input:checked + .slider:before {
