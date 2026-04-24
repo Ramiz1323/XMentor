@@ -15,7 +15,8 @@ const useAuthStore = create(
       setUser: (userData) => {
         set({ 
           user: userData, 
-          isAuthenticated: !!userData 
+          isAuthenticated: !!userData,
+          authChecked: true 
         });
       },
 
@@ -45,7 +46,8 @@ const useAuthStore = create(
           const data = await authService.login(email, password);
           set({ 
             user: data.data, 
-            isAuthenticated: true 
+            isAuthenticated: true,
+            authChecked: true
           });
           return data;
         } catch (err) {
@@ -63,7 +65,8 @@ const useAuthStore = create(
           const data = await authService.register(userData);
           set({ 
             user: data.data, 
-            isAuthenticated: true 
+            isAuthenticated: true,
+            authChecked: true
           });
           return data;
         } catch (err) {
@@ -85,18 +88,23 @@ const useAuthStore = create(
           set({ 
             user: null, 
             isAuthenticated: false, 
+            authChecked: true,
             isLoading: false 
           });
         }
       },
     }),
     {
-      name: 'xmentor-auth', // key in localStorage
-      storage: createJSONStorage(() => localStorage),
+      name: 'xmentor-auth', // key in sessionStorage
+      storage: createJSONStorage(() => sessionStorage),
+      onRehydrateStorage: () => (state) => {
+        if (state && state.user) {
+          state.isAuthenticated = true;
+        }
+      },
       partialize: (state) => ({ 
-        user: state.user, 
-        isAuthenticated: state.isAuthenticated 
-      }), // only persist these fields
+        user: state.user 
+      }), // only persist user, isAuthenticated will be derived/re-checked
     }
   )
 );

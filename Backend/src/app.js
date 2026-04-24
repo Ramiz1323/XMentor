@@ -12,6 +12,8 @@ import mcqRoutes from './modules/mcq/mcq.routes.js';
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 // Request logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
