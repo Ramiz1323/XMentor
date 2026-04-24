@@ -37,7 +37,7 @@ export const updateProfile = async (userId, updateData) => {
       if (value && typeof value === 'object' && !Array.isArray(value)) {
         flatten(value, `${newKey}.`);
       } else {
-        flattenData[newKey] = value;
+        flattenedData[newKey] = value;
       }
     });
   };

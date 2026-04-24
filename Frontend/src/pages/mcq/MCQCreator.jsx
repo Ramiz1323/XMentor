@@ -138,7 +138,8 @@ Weightage: ${importData.marksPerQ} Marks per question
 Instruction: ${complexityTxt}
 
 Format strictly as a JSON array: [{"question": "...", "options": ["A", "B", "C", "D"], "answer": 0, "explanation": "..."}]
-Note: 'answer' must be the index (0-3) of the correct option. Return ONLY the JSON array packet.`;
+Note: 'answer' must be the index (0-3) of the correct option. Return ONLY the JSON array packet. 
+Keep double check that the questions should be easy to understand and in simple language and also double check for correct answers should not be wrong.`;
     
     navigator.clipboard.writeText(prompt);
     alert('Strategic Intelligence Prompt Copied!');

@@ -7,11 +7,11 @@ export const updateProfileSchema = z.object({
     boardInfo: z.object({
       board: z.enum(['CBSE', 'WB', 'ICSE', 'NONE']),
       class: z.string(),
-      subjects: z.array(z.string()),
+      subjects: z.array(z.string()).optional().default([]),
     }).optional(),
     devProfile: z.object({
       github: z.string().url('Invalid GitHub URL').optional().or(z.literal('')),
-      skills: z.array(z.string()),
+      skills: z.array(z.string()).optional().default([]),
     }).optional(),
   }),
 });

@@ -99,7 +99,7 @@ export const getTestsByCommunity = async (communityId) => {
 
 export const getAssignedTests = async (userId) => {
   // Find tests created by teacher OR tests where student is in assignedStudents
-  return await MCQTest.find({
+  const tests = await MCQTest.find({
     $or: [
       { createdBy: userId },
       { assignedStudents: userId }
@@ -109,6 +109,19 @@ export const getAssignedTests = async (userId) => {
   .populate('createdBy', 'name profilePic')
   .sort({ createdAt: -1 })
   .lean();
+
+  // For each test, check if the current user has already submitted a result
+  const results = await MCQResult.find({ 
+    studentId: userId,
+    testId: { $in: tests.map(t => t._id) }
+  }).select('testId').lean();
+
+  const submittedTestIds = new Set(results.map(r => r.testId.toString()));
+
+  return tests.map(test => ({
+    ...test,
+    isSubmitted: submittedTestIds.has(test._id.toString())
+  }));
 };
 
 export const getTestAnalytics = async (testId, teacherId) => {
