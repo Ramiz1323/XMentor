@@ -8,6 +8,8 @@ export const createTest = async (testData, teacherId) => {
     communityId, 
     duration, 
     hasTimer = true, 
+    deadline,
+    language = 'english',
     assignedStudents = [], 
     questions: inputQuestions 
   } = testData;
@@ -20,6 +22,8 @@ export const createTest = async (testData, teacherId) => {
     communityId,
     duration,
     hasTimer,
+    deadline,
+    language,
     assignedStudents,
     questions,
     totalQuestions: questions.length,
@@ -93,7 +97,7 @@ export const submitTest = async (testId, studentId, studentAnswers, timeTaken) =
 
 export const getTestsByCommunity = async (communityId) => {
   return await MCQTest.find({ communityId })
-    .select('title subject totalQuestions duration hasTimer createdAt')
+    .select('title subject totalQuestions duration hasTimer deadline language createdAt')
     .lean();
 };
 
@@ -105,7 +109,7 @@ export const getAssignedTests = async (userId) => {
       { assignedStudents: userId }
     ]
   })
-  .select('title subject totalQuestions duration hasTimer createdAt createdBy')
+  .select('title subject totalQuestions duration hasTimer deadline language createdAt createdBy')
   .populate('createdBy', 'name profilePic')
   .sort({ createdAt: -1 })
   .lean();

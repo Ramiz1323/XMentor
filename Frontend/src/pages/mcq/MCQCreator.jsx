@@ -18,6 +18,8 @@ const MCQCreator = () => {
     subject: 'CODING',
     duration: 10,
     hasTimer: true,
+    deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Default 3 days
+    language: 'english',
     assignedStudents: [],
     questions: [
       { q: '', options: ['', '', '', ''], correct: 0, explanation: '' }
@@ -34,7 +36,9 @@ const MCQCreator = () => {
     board: 'CBSE',
     classLevel: '12',
     marksPerQ: 4,
-    isLengthy: true
+    isLengthy: true,
+    language: 'english',
+    deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
   });
 
   const boardOptions = [
@@ -58,6 +62,11 @@ const MCQCreator = () => {
     { value: 'BIOLOGY', label: 'Biology' },
     { value: 'CODING', label: 'Coding' },
     { value: 'OTHERS', label: 'Others' }
+  ];
+  
+  const languageOptions = [
+    { value: 'english', label: 'English' },
+    { value: 'bengali', label: 'Bengali' }
   ];
 
   useEffect(() => {
@@ -115,6 +124,8 @@ const MCQCreator = () => {
         title: importData.topic,
         subject: importData.subject,
         hasTimer: importData.hasTimer,
+        deadline: importData.deadline,
+        language: importData.language,
         questions: formattedQs
       });
 
@@ -131,6 +142,7 @@ const MCQCreator = () => {
       : 'Focus on conceptual clarity and rapid theoretical analysis.';
 
     const prompt = `Act as a high-level academic curriculum architect. Generate a JSON array of ${importData.count} MCQ questions for class ${importData.classLevel} students studying ${importData.board || 'Standards'}.
+The entire content (questions, options, and explanations) MUST be in ${importData.language === 'bengali' ? 'BENGALI' : 'ENGLISH'} language.
 Subject: ${importData.subject}
 Topic: ${importData.topic || 'General Concepts'}
 Difficulty: ${importData.difficulty}
@@ -294,7 +306,7 @@ Keep double check that the questions should be easy to understand and in simple 
                   </div>
                 </div>
 
-                <div className="input-grid" style={{ gridTemplateColumns: '1.2fr 0.8fr 0.8fr', gap: '1rem' }}>
+                <div className="input-grid" style={{ gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
                    <GlassDropdown 
                     label="Proficiency"
                     options={difficultyOptions}
@@ -311,13 +323,32 @@ Keep double check that the questions should be easy to understand and in simple 
                       onChange={(e) => setImportData({...importData, count: e.target.value})}
                     />
                   </div>
+                  <GlassDropdown 
+                    label="Language"
+                    options={languageOptions}
+                    value={importData.language}
+                    onChange={(val) => setImportData({...importData, language: val})}
+                    icon={BookOpen}
+                  />
+                </div>
+
+                <div className="input-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div className="input-group">
-                    <label>Marks</label>
+                    <label>Marks / Q</label>
                     <input 
                       type="number"
                       className="glass-input" 
                       value={importData.marksPerQ}
                       onChange={(e) => setImportData({...importData, marksPerQ: e.target.value})}
+                    />
+                  </div>
+                  <div className="input-group">
+                    <label>Deadline</label>
+                    <input 
+                      type="date"
+                      className="glass-input" 
+                      value={importData.deadline}
+                      onChange={(e) => setImportData({...importData, deadline: e.target.value})}
                     />
                   </div>
                 </div>
@@ -416,6 +447,15 @@ Keep double check that the questions should be easy to understand and in simple 
                   onChange={(val) => setTestData({...testData, subject: val})}
                   icon={GraduationCap}
                 />
+                <GlassDropdown 
+                  label="Language"
+                  options={languageOptions}
+                  value={testData.language}
+                  onChange={(val) => setTestData({...testData, language: val})}
+                  icon={BookOpen}
+                />
+              </div>
+              <div className="input-grid">
                 <div className="input-group">
                   <label>Duration (Minutes)</label>
                   <input 
@@ -425,6 +465,15 @@ Keep double check that the questions should be easy to understand and in simple 
                       const val = parseInt(e.target.value);
                       setTestData({...testData, duration: isNaN(val) ? 0 : val});
                     }}
+                    className="glass-input" 
+                  />
+                </div>
+                <div className="input-group">
+                  <label>Deadline</label>
+                  <input 
+                    type="date"
+                    value={testData.deadline}
+                    onChange={(e) => setTestData({...testData, deadline: e.target.value})}
                     className="glass-input" 
                   />
                 </div>

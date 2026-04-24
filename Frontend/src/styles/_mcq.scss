@@ -249,6 +249,58 @@
       h3 { opacity: 0.5; }
       p { opacity: 0.4; margin-top: 0.5rem; font-size: 0.9rem; }
     }
+
+    .dashboard-section {
+      margin-top: 3rem;
+      
+      .section-header {
+        margin-bottom: 2rem;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        padding-bottom: 1.5rem;
+        
+        .section-title {
+          display: flex !important;
+          align-items: center;
+          gap: 1rem;
+          font-size: 1.5rem;
+          color: $accent-primary;
+          text-transform: uppercase;
+          letter-spacing: 0.1rem;
+          font-family: $font-family-display;
+          font-weight: 700;
+          
+          &.completed { color: $color-success; }
+          
+          .count-badge {
+            margin-left: 0.5rem;
+            background: rgba($accent-primary, 0.1);
+            color: $accent-primary;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 800;
+            border: 1px solid rgba($accent-primary, 0.2);
+          }
+
+          &.completed .count-badge {
+            background: rgba($color-success, 0.1);
+            color: $color-success;
+            border-color: rgba($color-success, 0.2);
+          }
+        }
+      }
+
+      .empty-section-msg {
+        padding: 3rem;
+        text-align: left;
+        opacity: 0.6;
+        color: rgba(255,255,255,0.5);
+        font-style: italic;
+        background: rgba(255,255,255,0.02);
+        border-radius: 12px;
+        border: 1px dashed rgba(255,255,255,0.1);
+      }
+    }
   }
 
   .btn-sec {

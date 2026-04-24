@@ -66,6 +66,15 @@ const mcqTestSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    deadline: {
+      type: Date,
+      required: [true, 'Deadline is required'],
+    },
+    language: {
+      type: String,
+      enum: ['english', 'bengali'],
+      default: 'english',
+    }
   },
   {
     timestamps: true,

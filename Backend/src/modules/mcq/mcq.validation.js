@@ -15,6 +15,8 @@ export const createTestSchema = z.object({
     assignedStudents: z.array(z.string().regex(/^[0-9a-fA-F]{24}$/)).optional(),
     duration: z.number().int().min(1, 'Duration must be at least 1 minute'),
     hasTimer: z.boolean().optional(),
+    deadline: z.string().datetime({ message: 'Invalid deadline format' }),
+    language: z.enum(['english', 'bengali']).optional().default('english'),
     questions: z.array(questionSchema).min(1, 'At least one question is required'),
   }),
 });
