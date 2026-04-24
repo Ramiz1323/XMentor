@@ -165,10 +165,20 @@ Keep double check that the questions should be easy to understand and in simple 
     }
     
     try {
+      let deadline = undefined;
+      if (testData.deadline) {
+        const dateObj = new Date(`${testData.deadline}T23:59:59`);
+        if (!isNaN(dateObj.getTime())) {
+          deadline = dateObj.toISOString();
+        } else {
+          return alert('Invalid deadline selected');
+        }
+      }
+
       // Ensure deadline is sent in ISO format that Zod datetime() expects
       const formattedData = {
         ...testData,
-        deadline: new Date(`${testData.deadline}T23:59:59Z`).toISOString()
+        deadline
       };
       
       await createTest(formattedData);

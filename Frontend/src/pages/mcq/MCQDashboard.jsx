@@ -15,7 +15,12 @@ const MCQDashboard = () => {
   useEffect(() => {
     fetchMyTests();
     if (user.role === 'TEACHER') {
-      fetchTeacherOverview().then(data => setOverviewData(data));
+      fetchTeacherOverview()
+        .then(data => setOverviewData(data))
+        .catch(err => {
+          console.error('Failed to fetch teacher overview:', err);
+          setOverviewData(null);
+        });
     }
   }, [fetchMyTests, fetchTeacherOverview, user.role]);
 
@@ -131,7 +136,7 @@ const MCQDashboard = () => {
               >
                 <div className="student-profile">
                   <div className="avatar">
-                    {student.profilePic ? <img src={student.profilePic} alt="" /> : student.name.charAt(0)}
+                    {student.profilePic ? <img src={student.profilePic} alt="" /> : (student.name?.[0] || '?')}
                   </div>
                   <div className="info">
                     <div className="name">{student.name}</div>
@@ -209,7 +214,7 @@ const MCQDashboard = () => {
     // Calculate metrics
     const totalScore = completed.reduce((acc, t) => acc + (t.result?.score || 0), 0);
     const totalPossible = completed.reduce((acc, t) => acc + (t.result?.total || 0), 0);
-    const avgAccuracy = Math.round((totalScore / totalPossible) * 100);
+    const avgAccuracy = totalPossible > 0 ? Math.round((totalScore / totalPossible) * 100) : 0;
 
     const subjectStats = completed.reduce((acc, t) => {
       const sub = t.subject || 'OTHERS';
@@ -223,7 +228,7 @@ const MCQDashboard = () => {
     const sortedSubjects = Object.entries(subjectStats)
       .map(([name, data]) => ({
         name,
-        accuracy: Math.round((data.score / data.total) * 100),
+        accuracy: data.total > 0 ? Math.round((data.score / data.total) * 100) : 0,
         count: data.count
       }))
       .sort((a, b) => b.accuracy - a.accuracy);
@@ -351,15 +356,15 @@ const MCQDashboard = () => {
                 </h2>
               </div>
               
-              {pendingTests.length > 0 ? (
+              {isLoading ? (
                 <div className="hub-grid">
-                  {isLoading ? (
-                    [...Array(3)].map((_, i) => <TaskSkeleton key={i} />)
-                  ) : (
-                    pendingTests.map(test => <TaskCard key={test._id} test={test} />)
-                  )}
+                  {[...Array(3)].map((_, i) => <TaskSkeleton key={i} />)}
                 </div>
-              ) : !isLoading && (
+              ) : pendingTests.length > 0 ? (
+                <div className="hub-grid">
+                  {pendingTests.map(test => <TaskCard key={test._id} test={test} />)}
+                </div>
+              ) : (
                 <div className="empty-section-msg">
                   <p>No pending tasks. Sector clear.</p>
                 </div>

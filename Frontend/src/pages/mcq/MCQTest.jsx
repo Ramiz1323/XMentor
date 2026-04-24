@@ -199,7 +199,9 @@ const MCQTest = () => {
               </div>
               <div className="res-stat-card">
                 <Target size={20} className="stat-icon accuracy" />
-                <div className="stat-value">{Math.round((result.score / result.total) * 100)}%</div>
+                <div className="stat-value">
+                  {result && result.total > 0 ? Math.round((result.score / result.total) * 100) : 0}%
+                </div>
                 <div className="stat-label">Accuracy</div>
               </div>
               <div className="res-stat-card">
