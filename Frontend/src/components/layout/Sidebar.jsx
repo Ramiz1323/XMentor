@@ -63,7 +63,7 @@ const Sidebar = ({ isOpen, onClose }) => {
           <div className="sidebar-divider" role="presentation">Tasks</div>
 
           <NavLink 
-            to="/mcq-hub" 
+            to="/mcq" 
             onClick={handleLinkClick}
             className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
           >

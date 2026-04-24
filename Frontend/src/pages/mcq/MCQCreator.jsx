@@ -154,7 +154,7 @@ Note: 'answer' must be the index (0-3) of the correct option. Return ONLY the JS
     try {
       await createTest(testData);
       alert('Task Deployed Successfully!');
-      navigate('/mcq-hub');
+      navigate('/mcq');
     } catch (err) {
       alert(err.message || 'Deployment failed');
     }
@@ -235,7 +235,7 @@ Note: 'answer' must be the index (0-3) of the correct option. Return ONLY the JS
           </div>
         </div>
 
-        <button onClick={() => navigate('/mcq-hub')} className="abort-btn mt-8">
+        <button onClick={() => navigate('/mcq')} className="abort-btn mt-8">
            <X size={16} /> Abort Selection
         </button>
       </div>

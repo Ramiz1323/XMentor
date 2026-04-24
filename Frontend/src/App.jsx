@@ -58,7 +58,7 @@ function AppContent({ isAuthenticated }) {
             
             <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/communities" element={<ProtectedRoute><CommunityList /></ProtectedRoute>} />
-            <Route path="/mcq-hub" element={<ProtectedRoute><MCQDashboard /></ProtectedRoute>} />
+            <Route path="/mcq" element={<ProtectedRoute><MCQDashboard /></ProtectedRoute>} />
             <Route path="/mcq/create" element={<ProtectedRoute><MCQCreator /></ProtectedRoute>} />
             <Route path="/mcq/:id" element={<ProtectedRoute><MCQTest /></ProtectedRoute>} />
             <Route path="/mcq/:id/results" element={<ProtectedRoute><TaskResults /></ProtectedRoute>} />

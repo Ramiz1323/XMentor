@@ -266,7 +266,7 @@ const MCQTest = () => {
           )}
 
           {result && currentIdx === test.questions.length - 1 && (
-            <button onClick={() => navigate('/mcq-hub')} className="btn-primary">
+            <button onClick={() => navigate('/mcq')} className="btn-primary">
                 Done
             </button>
           )}
