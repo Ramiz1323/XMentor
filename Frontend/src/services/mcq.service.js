@@ -29,6 +29,11 @@ const mcqService = {
   submitTest: async (id, submissionData) => {
     const { data } = await api.post(`/mcq/${id}/submit`, submissionData);
     return data;
+  },
+
+  getTeacherOverview: async () => {
+    const { data } = await api.get('/mcq/teacher/overview');
+    return data;
   }
 };
 

@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import useMCQStore from '../../store/useMCQStore';
-import { Timer, ArrowRight, ArrowLeft, CheckCircle, XCircle, HelpCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { Timer, ArrowRight, ArrowLeft, CheckCircle, XCircle, HelpCircle, AlertCircle, RefreshCw, Trophy, Target, Clock, Star } from 'lucide-react';
 import Skeleton from '../../components/ui/Skeleton';
+import confetti from 'canvas-confetti';
 
 const MCQTest = () => {
   const { id } = useParams();
@@ -15,6 +16,7 @@ const MCQTest = () => {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [showResultModal, setShowResultModal] = useState(false);
 
   const answersRef = useRef([]);
   const timeLeftRef = useRef(null);
@@ -50,6 +52,26 @@ const MCQTest = () => {
     }
   }, [test]);
 
+  const triggerConfetti = () => {
+    const duration = 3 * 1000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+
+    const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+    const interval = setInterval(() => {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+    }, 250);
+  };
+
   const handleSubmit = useCallback(async (autoSubmit = false) => {
     if (submitting || result || !testRef.current) return;
     try {
@@ -65,6 +87,8 @@ const MCQTest = () => {
         timeTaken: Math.max(1, timeTaken)
       });
       setResult(res.data);
+      setShowResultModal(true);
+      triggerConfetti();
       await fetchTestById(id); 
     } catch (err) {
       if (!autoSubmit) alert(err.message || 'Submission failed');
@@ -155,6 +179,48 @@ const MCQTest = () => {
 
   return (
     <div className="mcq-page">
+      {/* CONGRATULATIONS MODAL */}
+      {showResultModal && result && (
+        <div className="result-modal-overlay">
+          <div className="result-modal-card glass-card">
+            <div className="modal-header">
+              <div className="trophy-wrapper">
+                <Trophy size={48} className="trophy-icon" />
+              </div>
+              <h2 className="glow-text">Congratulations!</h2>
+              <p>You have successfully completed the tactical assessment.</p>
+            </div>
+
+            <div className="result-stats-grid">
+              <div className="res-stat-card">
+                <Star size={20} className="stat-icon score" />
+                <div className="stat-value">{result.score}/{result.total}</div>
+                <div className="stat-label">Final Score</div>
+              </div>
+              <div className="res-stat-card">
+                <Target size={20} className="stat-icon accuracy" />
+                <div className="stat-value">{Math.round((result.score / result.total) * 100)}%</div>
+                <div className="stat-label">Accuracy</div>
+              </div>
+              <div className="res-stat-card">
+                <Clock size={20} className="stat-icon time" />
+                <div className="stat-value">{formatTime(result.timeTaken)}</div>
+                <div className="stat-label">Time Taken</div>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button onClick={() => setShowResultModal(false)} className="btn-sec full-width">
+                Review Answers
+              </button>
+              <button onClick={() => navigate('/mcq')} className="btn-primary full-width">
+                Back to Hub
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <header>
         <div className="test-info">
           <h1 className="glow-text">{test.title}</h1>
@@ -175,7 +241,7 @@ const MCQTest = () => {
         )}
       </header>
 
-      {result && (
+      {result && !showResultModal && (
         <div className="result-banner">
           <div className="banner-content">
             <div className="result-status">

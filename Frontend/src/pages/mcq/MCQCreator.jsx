@@ -165,7 +165,13 @@ Keep double check that the questions should be easy to understand and in simple 
     }
     
     try {
-      await createTest(testData);
+      // Ensure deadline is sent in ISO format that Zod datetime() expects
+      const formattedData = {
+        ...testData,
+        deadline: new Date(`${testData.deadline}T23:59:59Z`).toISOString()
+      };
+      
+      await createTest(formattedData);
       alert('Task Deployed Successfully!');
       navigate('/mcq');
     } catch (err) {

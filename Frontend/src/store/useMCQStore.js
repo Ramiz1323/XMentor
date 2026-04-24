@@ -81,6 +81,19 @@ const useMCQStore = create((set) => ({
     } finally {
       set({ isLoading: false });
     }
+  },
+
+  fetchTeacherOverview: async () => {
+    try {
+      set({ isLoading: true, error: null });
+      const data = await mcqService.getTeacherOverview();
+      return data.data;
+    } catch (err) {
+      set({ error: err.message || 'Failed to fetch overview' });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
   }
 }));
 

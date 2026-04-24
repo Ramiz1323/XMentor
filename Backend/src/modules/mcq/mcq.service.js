@@ -118,14 +118,21 @@ export const getAssignedTests = async (userId) => {
   const results = await MCQResult.find({ 
     studentId: userId,
     testId: { $in: tests.map(t => t._id) }
-  }).select('testId').lean();
+  }).lean();
 
-  const submittedTestIds = new Set(results.map(r => r.testId.toString()));
+  const resultsMap = results.reduce((acc, r) => {
+    acc[r.testId.toString()] = r;
+    return acc;
+  }, {});
 
-  return tests.map(test => ({
-    ...test,
-    isSubmitted: submittedTestIds.has(test._id.toString())
-  }));
+  return tests.map(test => {
+    const userResult = resultsMap[test._id.toString()];
+    return {
+      ...test,
+      isSubmitted: !!userResult,
+      result: userResult || null
+    };
+  });
 };
 
 export const getTestAnalytics = async (testId, teacherId) => {
@@ -151,5 +158,61 @@ export const getTestAnalytics = async (testId, teacherId) => {
         ? parseFloat((results.reduce((acc, curr) => acc + curr.score, 0) / results.length).toFixed(1)) 
         : 0
     }
+  };
+};
+
+export const getTeacherOverview = async (teacherId) => {
+  // 1. Get teacher's tests
+  const tests = await MCQTest.find({ createdBy: teacherId })
+    .select('title subject totalQuestions assignedStudents createdAt')
+    .sort({ createdAt: -1 })
+    .lean();
+
+  // 2. Get teacher's students
+  const User = MCQTest.db.model('User');
+  const teacher = await User.findById(teacherId)
+    .populate('students', 'name username profilePic')
+    .lean();
+
+  if (!teacher) throw new ErrorResponse('Teacher not found', 404);
+
+  const students = teacher.students || [];
+
+  // 3. Get all results for these tests
+  const testIds = tests.map(t => t._id);
+  const allResults = await MCQResult.find({ 
+    testId: { $in: testIds } 
+  }).lean();
+
+  // Map results to student-wise view
+  const studentStats = students.map(student => {
+    const studentResults = allResults.filter(r => r.studentId.toString() === student._id.toString());
+    const completedTestIds = new Set(studentResults.map(r => r.testId.toString()));
+    
+    // Find tests where student is assigned but hasn't completed
+    const pendingTasks = tests.filter(test => 
+      test.assignedStudents.map(id => id.toString()).includes(student._id.toString()) &&
+      !completedTestIds.has(test._id.toString())
+    );
+
+    return {
+      student,
+      completedCount: studentResults.length,
+      pendingCount: pendingTasks.length,
+      pendingTasks: pendingTasks.map(t => ({ _id: t._id, title: t.title, subject: t.subject })),
+      results: studentResults.map(r => {
+        const test = tests.find(t => t._id.toString() === r.testId.toString());
+        return {
+          ...r,
+          testTitle: test?.title || 'Unknown Test',
+          subject: test?.subject || 'OTHERS'
+        };
+      })
+    };
+  });
+
+  return {
+    tests,
+    studentStats
   };
 };

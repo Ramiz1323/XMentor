@@ -61,3 +61,12 @@ export const getAnalytics = asyncHandler(async (req, res) => {
     data: analytics,
   });
 });
+export const getOverview = asyncHandler(async (req, res) => {
+  const overview = await mcqService.getTeacherOverview(req.user._id);
+  
+  res.status(200).json({
+    success: true,
+    message: 'Teacher overview retrieved successfully',
+    data: overview,
+  });
+});
