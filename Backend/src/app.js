@@ -3,6 +3,8 @@ import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
+import morgan from 'morgan';
+import rateLimit from 'express-rate-limit';
 import authRoutes from './modules/auth/auth.routes.js';
 import userRoutes from './modules/user/user.routes.js';
 import communityRoutes from './modules/community/community.routes.js';
@@ -10,7 +12,29 @@ import mcqRoutes from './modules/mcq/mcq.routes.js';
 
 const app = express();
 
-app.use(express.json()); 
+// Request logging
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+} else {
+  app.use(morgan('combined'));
+}
+
+// Security: Rate Limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: {
+    message: 'Too many requests from this IP, please try again after 15 minutes',
+  },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+// Apply rate limiter to all api routes
+app.use('/api', limiter);
+
+// Body parser with limits
+app.use(express.json({ limit: '10kb' })); 
 app.use(cookieParser());
 app.use(helmet()); 
 app.use(cors({
