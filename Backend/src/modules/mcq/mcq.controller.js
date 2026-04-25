@@ -1,29 +1,57 @@
 import asyncHandler from '../../utils/asyncHandler.js';
 import * as mcqService from './mcq.service.js';
+import { notifyUser } from '../../utils/push.utils.js';
+import User from '../auth/auth.model.js';
 
 export const create = asyncHandler(async (req, res) => {
   const test = await mcqService.createTest(req.body, req.user._id);
   
-  // HUD Notification Broadcast
+  // 📡 NOTIFICATION SYSTEM
   const io = req.app.get('socketio');
-  if (io) {
-    const payload = {
-      id: test._id,
-      title: test.title,
-      subject: test.subject,
-      mentorName: req.user.name,
-      type: 'TASK_ALERT'
-    };
+  const payload = {
+    id: test._id,
+    title: test.title,
+    subject: test.subject,
+    mentorName: req.user.name,
+    type: 'TASK_ALERT'
+  };
 
+  // 1. Socket.io (Active users)
+  if (io) {
     if (test.communityId) {
-      // Notify entire community
       io.to(test.communityId.toString()).emit('new_task', payload);
     } else if (test.assignedStudents && test.assignedStudents.length > 0) {
-      // Notify specific students
       test.assignedStudents.forEach(studentId => {
         io.to(studentId.toString()).emit('new_task', payload);
       });
     }
+  }
+
+  // 2. Web Push (Mobile/Offline users)
+  try {
+    let targetUsers = [];
+    if (test.communityId) {
+      // Find all members of the community
+      const Community = (await import('../community/community.model.js')).default;
+      const community = await Community.findById(test.communityId).select('members');
+      if (community) {
+        const memberIds = community.members.map(m => m.user);
+        targetUsers = await User.find({ _id: { $in: memberIds } });
+      }
+    } else if (test.assignedStudents && test.assignedStudents.length > 0) {
+      targetUsers = await User.find({ _id: { $in: test.assignedStudents } });
+    }
+
+    // Broadcast Push Signal
+    targetUsers.forEach(user => {
+      notifyUser(user, {
+        title: `INCOMING TRANSMISSION: Mentor ${req.user.name}`,
+        body: `New Tactical Assessment detected in ${test.subject}: ${test.title}`,
+        url: `/mcq/${test._id}`
+      });
+    });
+  } catch (pushErr) {
+    console.error('[Notification] Push broadcast failed:', pushErr.message);
   }
 
   res.status(201).json({

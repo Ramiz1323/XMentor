@@ -64,6 +64,13 @@ const userSchema = new mongoose.Schema(
       },
       skills: [String],
     },
+    pushSubscriptions: [{
+      endpoint: { type: String, required: true },
+      keys: {
+        p256dh: { type: String, required: true },
+        auth: { type: String, required: true }
+      }
+    }]
   },
   {
     timestamps: true,

@@ -223,3 +223,19 @@ export const getGlobalLeaderboard = async () => {
     score: Math.round(entry.rankingScore)
   }));
 };
+
+export const updatePushSubscription = async (userId, subscription) => {
+  const user = await User.findById(userId);
+  if (!user) throw new ErrorResponse('User not found', 404);
+
+  const exists = user.pushSubscriptions.some(sub => sub.endpoint === subscription.endpoint);
+  if (exists) return user;
+
+  user.pushSubscriptions.push(subscription);
+  if (user.pushSubscriptions.length > 3) {
+    user.pushSubscriptions.shift();
+  }
+
+  await user.save();
+  return user;
+};

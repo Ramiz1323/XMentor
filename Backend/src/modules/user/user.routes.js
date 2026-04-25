@@ -1,5 +1,5 @@
 import express from 'express';
-import { getMyProfile, updateMyProfile, uploadProfilePic, addStudent, getStats, getLeaderboard } from './user.controller.js';
+import { getMyProfile, updateMyProfile, uploadProfilePic, addStudent, getStats, getLeaderboard, savePushSubscription } from './user.controller.js';
 import { protect, authorize } from '../../middleware/auth.middleware.js';
 import { validate } from '../../middleware/community.middleware.js';
 import upload from '../../middleware/upload.middleware.js';
@@ -15,5 +15,6 @@ router.get('/leaderboard', getLeaderboard);
 router.put('/profile', validate(updateProfileSchema), updateMyProfile);
 router.post('/upload-profile-pic', upload.single('image'), uploadProfilePic);
 router.post('/add-student', authorize('TEACHER'), addStudent);
+router.post('/push-subscribe', savePushSubscription);
 
 export default router;
