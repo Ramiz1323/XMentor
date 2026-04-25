@@ -161,7 +161,11 @@ const DoubtDashboard = () => {
                   </div>
                   <span>{isTeacher ? doubt.student?.name : `Mentor: ${doubt.teacher?.name}`}</span>
                 </div>
-                <span className="timestamp">{new Date(doubt.createdAt).toLocaleDateString()}</span>
+                <span className="timestamp">
+                  {doubt.createdAt && !isNaN(new Date(doubt.createdAt).getTime()) 
+                    ? new Date(doubt.createdAt).toLocaleDateString() 
+                    : '—'}
+                </span>
               </div>
             </div>
           ))
@@ -174,7 +178,16 @@ const DoubtDashboard = () => {
           <div className="glass-card ask-doubt-modal">
             <div className="modal-header">
               <h2>Ask a Doubt</h2>
-              <button onClick={() => setShowAskModal(false)} className="close-btn"><X size={20} /></button>
+              <button 
+                onClick={() => {
+                  setShowAskModal(false);
+                  setAskData({ teacherId: '', title: '', description: '', subject: '', priority: 'MEDIUM' });
+                  setSelectedFile(null);
+                }} 
+                className="close-btn"
+              >
+                <X size={20} />
+              </button>
             </div>
             <form onSubmit={handleAskSubmit} className="doubt-form">
               <div className="form-group">

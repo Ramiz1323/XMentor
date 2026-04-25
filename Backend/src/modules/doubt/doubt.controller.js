@@ -9,8 +9,14 @@ export const ask = asyncHandler(async (req, res) => {
     attachments.push(imageUrl);
   }
 
+  const { teacherId, title, description, subject, priority } = req.body;
+
   const result = await doubtService.createDoubt(req.user._id, {
-    ...req.body,
+    teacherId,
+    title,
+    description,
+    subject,
+    priority,
     attachments
   });
   res.status(201).json({ success: true, message: 'Doubt submitted successfully', data: result });

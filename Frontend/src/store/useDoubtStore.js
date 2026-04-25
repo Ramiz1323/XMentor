@@ -54,6 +54,7 @@ const useDoubtStore = create((set, get) => ({
         currentDoubt: response.data,
         isLoading: false
       }));
+      return response.data;
     } catch (error) {
       const msg = error.response?.data?.message || 'Error resolving doubt';
       set({ error: msg, isLoading: false });
@@ -86,6 +87,7 @@ const useDoubtStore = create((set, get) => ({
       await doubtService.deleteDoubt(id);
       set((state) => ({
         doubts: state.doubts.filter(d => d._id !== id),
+        currentDoubt: state.currentDoubt?._id === id ? null : state.currentDoubt,
         isLoading: false
       }));
     } catch (error) {

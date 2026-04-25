@@ -6,8 +6,10 @@ export const getAllCommunities = async (userId, filters = {}) => {
     .select('name description type memberCount maxMembers createdBy members')
     .lean();
 
+  const userIdStr = userId?.toString();
+
   return communities.map(community => {
-    const member = community.members?.find(m => m.user.toString() === userId.toString());
+    const member = userIdStr ? community.members?.find(m => m.user.toString() === userIdStr) : null;
     const { members, ...rest } = community;
     return {
       ...rest,

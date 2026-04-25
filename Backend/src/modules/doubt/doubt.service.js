@@ -22,7 +22,8 @@ export const createDoubt = async (userId, doubtData) => {
   const student = await User.findById(userId);
   if (!student) throw new ErrorResponse('User not found', 404);
 
-  const isAssigned = student.teachers.some(t => t.toString() === teacherId.toString());
+  const teachers = student.teachers || [];
+  const isAssigned = Array.isArray(teachers) && teachers.some(t => t.toString() === teacherId.toString());
   if (!isAssigned) {
     throw new ErrorResponse('You can only ask doubts to your assigned teachers', 403);
   }
@@ -60,8 +61,8 @@ export const getDoubtById = async (doubtId, userId) => {
   if (!doubt) throw new ErrorResponse('Doubt not found', 404);
 
   // Authorization: Must be the student or the teacher
-  if (doubt.student._id.toString() !== userId.toString() && 
-      doubt.teacher._id.toString() !== userId.toString()) {
+  if (doubt.student.toString() !== userId.toString() && 
+      doubt.teacher.toString() !== userId.toString()) {
     throw new ErrorResponse('Not authorized to view this doubt', 403);
   }
 
@@ -76,7 +77,7 @@ export const resolveDoubt = async (doubtId, teacherId, answerContent) => {
   if (!doubt) throw new ErrorResponse('Doubt not found', 404);
 
   // Authorization
-  if (doubt.teacher._id.toString() !== teacherId.toString()) {
+  if (doubt.teacher.toString() !== teacherId.toString()) {
     throw new ErrorResponse('Only the assigned teacher can resolve this doubt', 403);
   }
 
@@ -97,7 +98,7 @@ export const deleteDoubt = async (doubtId, userId) => {
   const doubt = await Doubt.findById(doubtId);
   if (!doubt) throw new ErrorResponse('Doubt not found', 404);
 
-  if (doubt.student._id.toString() !== userId.toString()) {
+  if (doubt.student.toString() !== userId.toString()) {
     throw new ErrorResponse('Not authorized to delete this doubt', 403);
   }
 
