@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
 import useMCQStore from '../../store/useMCQStore';
-import { Plus, BookOpen, Clock, Target, Users, TrendingUp, Star, CheckCircle } from 'lucide-react';
+import { Plus, BookOpen, Clock, Target, Users, TrendingUp, Star, CheckCircle, Trash2 } from 'lucide-react';
 import TaskSkeleton from '../../components/skeletons/TaskSkeleton';
 
 const MCQDashboard = () => {
   const { user } = useAuthStore();
-  const { tests, fetchMyTests, fetchTeacherOverview, isLoading, error } = useMCQStore();
+  const { tests, fetchMyTests, fetchTeacherOverview, deleteTest, isLoading, error } = useMCQStore();
   const [viewMode, setViewMode] = useState('TASK_WISE');
   const [overviewData, setOverviewData] = useState(null);
   const [expandedStudentId, setExpandedStudentId] = useState(null);
@@ -23,6 +23,16 @@ const MCQDashboard = () => {
         });
     }
   }, [fetchMyTests, fetchTeacherOverview, user.role]);
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this MCQ test? This action cannot be undone and all student results will be permanently removed.')) {
+      try {
+        await deleteTest(id);
+      } catch (err) {
+        console.error('Failed to delete test:', err);
+      }
+    }
+  };
 
   const TaskCard = ({ test }) => {
     const isCompleted = test.isSubmitted;
@@ -106,6 +116,16 @@ const MCQDashboard = () => {
               >
                 {user.role === 'TEACHER' ? 'Participate' : 'Attend'}
               </Link>
+            )}
+
+            {user.role === 'TEACHER' && test.createdBy?._id === user._id && (
+              <button 
+                className="btn-sec delete-btn" 
+                onClick={(e) => { e.preventDefault(); handleDelete(test._id); }}
+                title="Delete Test"
+              >
+                <Trash2 size={16} />
+              </button>
             )}
           </div>
         </div>

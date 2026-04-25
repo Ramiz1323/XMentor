@@ -94,6 +94,21 @@ const useMCQStore = create((set) => ({
     } finally {
       set({ isLoading: false });
     }
+  },
+
+  deleteTest: async (id) => {
+    try {
+      set({ isLoading: true, error: null });
+      await mcqService.deleteTest(id);
+      set((state) => ({
+        tests: state.tests.filter(t => t._id !== id)
+      }));
+    } catch (err) {
+      set({ error: err.message || 'Failed to delete test' });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
   }
 }));
 

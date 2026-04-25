@@ -34,6 +34,11 @@ const mcqService = {
   getTeacherOverview: async () => {
     const { data } = await api.get('/mcq/teacher/overview');
     return data;
+  },
+
+  deleteTest: async (id) => {
+    const { data } = await api.delete(`/mcq/${id}`);
+    return data;
   }
 };
 

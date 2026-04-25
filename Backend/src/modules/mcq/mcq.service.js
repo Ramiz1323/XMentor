@@ -95,6 +95,19 @@ export const submitTest = async (testId, studentId, studentAnswers, timeTaken) =
   }
 };
 
+export const deleteTest = async (testId, teacherId) => {
+  const test = await MCQTest.findById(testId);
+  if (!test) throw new ErrorResponse('Test not found', 404);
+
+  if (test.createdBy.toString() !== teacherId.toString()) {
+    throw new ErrorResponse('Unauthorized: Only creator can delete this test', 403);
+  }
+
+  await MCQResult.deleteMany({ testId });
+  await MCQTest.findByIdAndDelete(testId);
+  return { message: 'Test deleted successfully' };
+};
+
 export const getTestsByCommunity = async (communityId) => {
   return await MCQTest.find({ communityId })
     .select('title subject totalQuestions duration hasTimer deadline language createdAt')

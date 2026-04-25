@@ -70,3 +70,11 @@ export const getOverview = asyncHandler(async (req, res) => {
     data: overview,
   });
 });
+export const remove = asyncHandler(async (req, res) => {
+  await mcqService.deleteTest(req.params.id, req.user._id);
+  
+  res.status(200).json({
+    success: true,
+    message: 'Test and associated results deleted successfully',
+  });
+});

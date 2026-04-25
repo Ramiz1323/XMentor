@@ -214,6 +214,21 @@
           font-weight: 600;
         }
 
+        .delete-btn {
+          flex: 0 0 42px;
+          height: 42px;
+          background: rgba($color-danger, 0.1);
+          border: 1px solid rgba($color-danger, 0.2);
+          color: $color-danger;
+          
+          &:hover {
+            background: rgba($color-danger, 0.2);
+            border-color: $color-danger !important;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba($color-danger, 0.2);
+          }
+        }
+
         .review-btn {
           flex: 1;
           height: 42px;
