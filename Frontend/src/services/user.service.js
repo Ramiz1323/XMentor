@@ -21,6 +21,16 @@ const userService = {
   addStudent: async (studentData) => {
     const { data } = await api.post('/user/add-student', studentData);
     return data;
+  },
+
+  getStats: async () => {
+    const { data } = await api.get('/user/stats');
+    return data;
+  },
+
+  getLeaderboard: async () => {
+    const { data } = await api.get('/user/leaderboard');
+    return data;
   }
 };
 

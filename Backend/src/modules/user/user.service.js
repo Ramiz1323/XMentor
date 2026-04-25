@@ -121,3 +121,105 @@ export const linkStudentByUsername = async (teacherId, studentUsername) => {
 
   return { studentId: student._id, name: student.name, username: student.username };
 };
+
+export const getDashboardStats = async (userId, role) => {
+  const [
+    mcqStats,
+    doubtStats,
+    communityStats
+  ] = await Promise.all([
+    // MCQ Stats
+    (async () => {
+      const { MCQResult } = await import('../mcq/mcq.model.js');
+      const results = await MCQResult.find({ studentId: userId });
+      const totalTests = results.length;
+      const avgScore = totalTests > 0 
+        ? (results.reduce((acc, r) => acc + (r.score / r.total), 0) / totalTests) * 100 
+        : 0;
+      return { totalTests, avgScore: Math.round(avgScore) };
+    })(),
+    
+    // Doubt Stats
+    (async () => {
+      const Doubt = (await import('../doubt/doubt.model.js')).default;
+      const query = role === 'TEACHER' ? { teacher: userId } : { student: userId };
+      const doubts = await Doubt.find(query);
+      const totalDoubts = doubts.length;
+      const resolvedDoubts = doubts.filter(d => d.status === 'RESOLVED').length;
+      return { totalDoubts, resolvedDoubts };
+    })(),
+
+    // Community Stats
+    (async () => {
+      const Community = (await import('../community/community.model.js')).default;
+      const communities = await Community.find({ 'members.user': userId });
+      return { joinedCommunities: communities.length };
+    })()
+  ]);
+
+  return {
+    mcq: mcqStats,
+    doubts: doubtStats,
+    communities: communityStats
+  };
+};
+
+export const getGlobalLeaderboard = async () => {
+  const { MCQResult } = await import('../mcq/mcq.model.js');
+  
+  // Aggregate MCQ results for all students
+  const leaderboardData = await MCQResult.aggregate([
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'studentId',
+        foreignField: '_id',
+        as: 'studentInfo'
+      }
+    },
+    { $unwind: '$studentInfo' },
+    { $match: { 'studentInfo.role': 'STUDENT' } },
+    {
+      $group: {
+        _id: '$studentId',
+        totalTests: { $sum: 1 },
+        totalScore: { $sum: '$score' },
+        totalPossible: { $sum: '$total' },
+        avgAccuracy: { $avg: { $divide: ['$score', '$total'] } },
+        studentName: { $first: '$studentInfo.name' },
+        studentUsername: { $first: '$studentInfo.username' },
+        studentPic: { $first: '$studentInfo.profilePic' }
+      }
+    },
+    {
+      $project: {
+        studentId: '$_id',
+        name: '$studentName',
+        username: '$studentUsername',
+        profilePic: '$studentPic',
+        totalTests: 1,
+        avgAccuracy: { $multiply: ['$avgAccuracy', 100] },
+        // A weighted score for ranking: (Accuracy * 0.8) + (Participation * 0.2)
+        rankingScore: { 
+          $add: [
+            { $multiply: ['$avgAccuracy', 80] }, 
+            { $multiply: [{ $min: ['$totalTests', 10] }, 2] } // Cap participation bonus
+          ]
+        }
+      }
+    },
+    { $sort: { rankingScore: -1, totalTests: -1 } },
+    { $limit: 20 }
+  ]);
+
+  return leaderboardData.map((entry, index) => ({
+    rank: index + 1,
+    id: entry.studentId,
+    name: entry.name,
+    username: entry.username,
+    profilePic: entry.profilePic,
+    totalTests: entry.totalTests,
+    accuracy: Math.round(entry.avgAccuracy),
+    score: Math.round(entry.rankingScore)
+  }));
+};

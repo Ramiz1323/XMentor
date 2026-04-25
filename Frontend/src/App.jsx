@@ -15,6 +15,7 @@ import MCQCreator from './pages/mcq/MCQCreator';
 import TaskResults from './pages/mcq/TaskResults';
 import ProfilePage from './pages/profile/ProfilePage';
 import DoubtDashboard from './pages/doubt/DoubtDashboard';
+import Leaderboard from './pages/leaderboard/Leaderboard';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, authChecked } = useAuthStore();
@@ -67,6 +68,7 @@ function AppContent({ isAuthenticated }) {
             <Route path="/mcq/:id/results" element={<ProtectedRoute><TaskResults /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             <Route path="/doubts" element={<ProtectedRoute><DoubtDashboard /></ProtectedRoute>} />
+            <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
           </Routes>
         </main>
       </div>

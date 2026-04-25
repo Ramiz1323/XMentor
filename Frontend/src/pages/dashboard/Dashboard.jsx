@@ -1,95 +1,150 @@
 import { useEffect } from 'react';
 import useAuthStore from '../../store/useAuthStore';
-import useCommunityStore from '../../store/useCommunityStore';
-import useMCQStore from '../../store/useMCQStore';
-import { BookOpen, Users, Trophy } from 'lucide-react';
+import useUserStore from '../../store/useUserStore';
+import { BookOpen, Users, Trophy, MessageSquare, Target, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Skeleton from '../../components/ui/Skeleton';
 
 const Dashboard = () => {
   const { user } = useAuthStore();
-  const { communities, fetchAllCommunities, isLoading: commLoading } = useCommunityStore();
-  const { tests, fetchMyTests, isLoading: mcqLoading } = useMCQStore();
+  const { stats, fetchStats, isLoading } = useUserStore();
 
   useEffect(() => {
-    fetchAllCommunities();
-    fetchMyTests();
-  }, [fetchAllCommunities, fetchMyTests]);
-
-  const isLoading = commLoading || mcqLoading;
+    fetchStats();
+  }, [fetchStats]);
 
   return (
     <div className="dashboard-container">
-      <header>
-        <h1 className="glow-text">Welcome back, {user?.name}!</h1>
-        <p>Your learning journey continues here.</p>
+      <header className="dashboard-header">
+        <div className="welcome-text">
+          <h1 className="glow-text">Strategic Overview, {user?.name}</h1>
+          <p>Analyzing your tactical progress across the XMentor network.</p>
+        </div>
+        <Link to="/leaderboard" className="user-badge glass-card clickable-badge">
+          <Trophy size={20} className="gold-icon" />
+          <span>Leaderboard</span>
+        </Link>
       </header>
 
       <div className="stats-grid">
-        <div className="stat-card">
-          <div className="icon-box blue">
-            <Users size={32} color="#3b82f6" />
+        {/* Community Stats */}
+        <div className="stat-card glass-card">
+          <div className="stat-header">
+            <div className="icon-box blue">
+              <Users size={24} />
+            </div>
+            <span className="stat-label">Network Connectivity</span>
           </div>
-          <div className="stat-info">
-            {isLoading ? (
-              <>
-                <Skeleton width="40px" height="24px" className="mb-1" />
-                <Skeleton width="80px" height="14px" opacity={0.5} />
-              </>
-            ) : (
-              <>
-                <h3>{communities?.length || 0}</h3>
-                <p>Communities Available</p>
-              </>
-            )}
+          <div className="stat-value">
+            {isLoading ? <Skeleton width="50px" height="32px" /> : stats?.communities?.joinedCommunities || 0}
           </div>
+          <p className="stat-desc">Active Communities Joined</p>
         </div>
 
-        <div className="stat-card">
-          <div className="icon-box cyan">
-            <BookOpen size={32} color="#22d3ee" />
+        {/* MCQ Stats */}
+        <div className="stat-card glass-card">
+          <div className="stat-header">
+            <div className="icon-box cyan">
+              <Target size={24} />
+            </div>
+            <span className="stat-label">Cognitive Accuracy</span>
           </div>
-          <div className="stat-info">
-            {isLoading ? (
-              <>
-                <Skeleton width="40px" height="24px" className="mb-1" />
-                <Skeleton width="80px" height="14px" opacity={0.5} />
-              </>
-            ) : (
-              <>
-                <h3>{tests?.length || 0}</h3>
-                <p>Completed Tests</p>
-              </>
-            )}
+          <div className="stat-value">
+            {isLoading ? <Skeleton width="50px" height="32px" /> : `${stats?.mcq?.avgScore || 0}%`}
           </div>
+          <p className="stat-desc">{stats?.mcq?.totalTests || 0} Assessments Completed</p>
+          {stats?.mcq?.totalTests > 0 && (
+            <div className="stat-progress-bar">
+              <div className="progress" style={{ width: `${stats.mcq.avgScore}%` }}></div>
+            </div>
+          )}
         </div>
 
-        <div className="stat-card">
-          <div className="icon-box gold">
-            <Trophy size={32} color="#fbbf24" />
+        {/* Doubt Stats */}
+        <div className="stat-card glass-card">
+          <div className="stat-header">
+            <div className="icon-box purple">
+              <HelpCircle size={24} />
+            </div>
+            <span className="stat-label">Inquiry Resolution</span>
           </div>
-          <div className="stat-info">
-            <h3>{user?.role}</h3>
-            <p>Account Level</p>
+          <div className="stat-value">
+            {isLoading ? <Skeleton width="50px" height="32px" /> : stats?.doubts?.resolvedDoubts || 0}
           </div>
+          <p className="stat-desc">Doubts Resolved / {stats?.doubts?.totalDoubts || 0} Total</p>
         </div>
       </div>
 
-      <section className="actions-section">
-        <h2>Quick Actions</h2>
-        <div className="actions-grid">
-          <Link to="/communities" className="action-card">
-            <h4>Join Community</h4>
-            <p>Connect with peers</p>
-          </Link>
-          <Link to="/mcq" className="action-card">
-            <h4>Practice MCQ</h4>
-            <p>Test your knowledge</p>
-          </Link>
-        </div>
-      </section>
+      <div className="dashboard-main-content">
+        <section className="quick-access">
+          <h2 className="section-title">Tactical Operations</h2>
+          <div className="actions-grid">
+            <Link to="/communities" className="action-card glass-card">
+              <div className="action-icon">
+                <Users size={24} />
+              </div>
+              <div className="action-info">
+                <h4>Anonymous Hubs</h4>
+                <p>Deploy to collaborative encrypted channels.</p>
+              </div>
+              <ChevronRight size={20} className="arrow" />
+            </Link>
+
+            <Link to="/mcq" className="action-card glass-card">
+              <div className="action-icon">
+                <BookOpen size={24} />
+              </div>
+              <div className="action-info">
+                <h4>Training Grounds</h4>
+                <p>Initiate MCQ assessments and knowledge audits.</p>
+              </div>
+              <ChevronRight size={20} className="arrow" />
+            </Link>
+
+            <Link to="/doubts" className="action-card glass-card">
+              <div className="action-icon">
+                <MessageSquare size={24} />
+              </div>
+              <div className="action-info">
+                <h4>Doubt Uplink</h4>
+                <p>Transmit inquiries to assigned senior mentors.</p>
+              </div>
+              <ChevronRight size={20} className="arrow" />
+            </Link>
+          </div>
+        </section>
+
+        {/* Recent Performance can be added here if needed */}
+      </div>
     </div>
   );
 };
+
+// Simple HelpCircle and ChevronRight icons as they might not be imported
+const HelpCircle = ({ size, ...props }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width={size} height={size} 
+    viewBox="0 0 24 24" fill="none" 
+    stroke="currentColor" strokeWidth="2" 
+    strokeLinecap="round" strokeLinejoin="round" 
+    {...props}
+  >
+    <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+  </svg>
+);
+
+const ChevronRight = ({ size, ...props }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width={size} height={size} 
+    viewBox="0 0 24 24" fill="none" 
+    stroke="currentColor" strokeWidth="2" 
+    strokeLinecap="round" strokeLinejoin="round" 
+    {...props}
+  >
+    <polyline points="9 18 15 12 9 6"/>
+  </svg>
+);
 
 export default Dashboard;

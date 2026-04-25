@@ -3,8 +3,34 @@ import userService from '../services/user.service';
 
 const useUserStore = create((set) => ({
   profile: null,
+  stats: null,
+  leaderboard: [],
   isLoading: false,
   error: null,
+
+  fetchLeaderboard: async () => {
+    try {
+      set({ isLoading: true, error: null });
+      const data = await userService.getLeaderboard();
+      set({ leaderboard: data.data });
+    } catch (err) {
+      set({ error: err.message || 'Failed to fetch leaderboard' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  fetchStats: async () => {
+    try {
+      set({ isLoading: true, error: null });
+      const data = await userService.getStats();
+      set({ stats: data.data });
+    } catch (err) {
+      set({ error: err.message || 'Failed to fetch stats' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
 
   fetchProfile: async () => {
     try {

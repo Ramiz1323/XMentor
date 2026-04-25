@@ -50,3 +50,21 @@ export const addStudent = asyncHandler(async (req, res) => {
     data: result,
   });
 });
+
+export const getStats = asyncHandler(async (req, res) => {
+  const stats = await userService.getDashboardStats(req.user._id, req.user.role);
+  res.status(200).json({
+    success: true,
+    message: 'Stats retrieved',
+    data: stats,
+  });
+});
+
+export const getLeaderboard = asyncHandler(async (req, res) => {
+  const leaderboard = await userService.getGlobalLeaderboard();
+  res.status(200).json({
+    success: true,
+    message: 'Leaderboard retrieved',
+    data: leaderboard,
+  });
+});
