@@ -3,11 +3,16 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // Configure VAPID
-webpush.setVapidDetails(
-  process.env.WEB_PUSH_EMAIL || 'mailto:support@xmentor.com',
-  process.env.VAPID_PUBLIC_KEY,
-  process.env.VAPID_PRIVATE_KEY
-);
+if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(
+    process.env.WEB_PUSH_EMAIL || 'mailto:support@xmentor.com',
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
+  console.log('[WebPush] Tactical Uplink Configured.');
+} else {
+  console.warn('[WebPush] WARNING: VAPID keys missing in .env. Mobile push notifications will not work.');
+}
 
 export const sendPushNotification = async (subscription, payload) => {
   try {
