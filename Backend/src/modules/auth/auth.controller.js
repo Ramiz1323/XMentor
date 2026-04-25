@@ -24,7 +24,9 @@ const sendTokenResponse = (user, statusCode, res) => {
         email: user.email,
         role: user.role,
         profilePic: user.profilePic,
-        boardInfo: user.boardInfo
+        boardInfo: user.boardInfo,
+        teachers: user.teachers || [],
+        students: user.students || [],
       },
     });
 };

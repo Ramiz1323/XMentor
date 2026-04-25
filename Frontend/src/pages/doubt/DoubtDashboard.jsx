@@ -10,30 +10,34 @@ import {
   Send, 
   HelpCircle,
   AlertCircle,
-  ChevronRight
+  ChevronRight,
+  Trash2,
+  Calendar,
+  User as UserIcon,
+  Image as ImageIcon
 } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
 import useDoubtStore from '../../store/useDoubtStore';
 
 const DoubtDashboard = () => {
   const { user } = useAuthStore();
-  const { doubts, fetchDoubts, askDoubt, resolveDoubt, isLoading, error } = useDoubtStore();
+  const { doubts, fetchDoubts, askDoubt, resolveDoubt, deleteDoubt, isLoading, error } = useDoubtStore();
   
   const [filter, setFilter] = useState({ status: '', subject: '' });
   const [showAskModal, setShowAskModal] = useState(false);
-  const [showResolveModal, setShowResolveModal] = useState(null);
+  const [selectedDoubt, setSelectedDoubt] = useState(null);
   
   // Ask Doubt Form State
   const [askData, setAskData] = useState({
     teacherId: '',
-    title: '', // This will be Chapter Name
+    title: '', 
     description: '',
     subject: '',
     priority: 'MEDIUM'
   });
   const [selectedFile, setSelectedFile] = useState(null);
 
-  // Resolve Doubt State
+  // Teacher Answer State
   const [answer, setAnswer] = useState('');
 
   useEffect(() => {
@@ -57,20 +61,23 @@ const DoubtDashboard = () => {
       setShowAskModal(false);
       setAskData({ teacherId: '', title: '', description: '', subject: '', priority: 'MEDIUM' });
       setSelectedFile(null);
-    } catch (err) {
-      // Error handled by store
-    }
+    } catch (err) {}
   };
 
   const handleResolveSubmit = async (e) => {
     e.preventDefault();
     if (!answer.trim()) return;
     try {
-      await resolveDoubt(showResolveModal._id, answer);
-      setShowResolveModal(null);
+      await resolveDoubt(selectedDoubt._id, answer);
+      setSelectedDoubt(null);
       setAnswer('');
-    } catch (err) {
-      // Error handled by store
+    } catch (err) {}
+  };
+
+  const handleDeleteDoubt = async (e, id) => {
+    e.stopPropagation();
+    if (window.confirm('Are you sure you want to withdraw this inquiry?')) {
+      await deleteDoubt(id);
     }
   };
 
@@ -123,7 +130,7 @@ const DoubtDashboard = () => {
             <div 
               key={doubt._id} 
               className={`doubt-card ${doubt.status}`}
-              onClick={() => isTeacher && doubt.status === 'PENDING' ? setShowResolveModal(doubt) : null}
+              onClick={() => setSelectedDoubt(doubt)}
             >
               <div className="card-header">
                 <span className="subject-tag">{doubt.subject}</span>
@@ -147,6 +154,7 @@ const DoubtDashboard = () => {
               {doubt.attachments?.length > 0 && (
                 <div className="doubt-attachment">
                   <img src={doubt.attachments[0]} alt="Doubt attachment" />
+                  <div className="attachment-overlay"><ImageIcon size={14} /> View Reference</div>
                 </div>
               )}
 
@@ -161,11 +169,15 @@ const DoubtDashboard = () => {
                   </div>
                   <span>{isTeacher ? doubt.student?.name : `Mentor: ${doubt.teacher?.name}`}</span>
                 </div>
-                <span className="timestamp">
-                  {doubt.createdAt && !isNaN(new Date(doubt.createdAt).getTime()) 
-                    ? new Date(doubt.createdAt).toLocaleDateString() 
-                    : '—'}
-                </span>
+                {!isTeacher && doubt.status === 'PENDING' && (
+                  <button 
+                    className="delete-btn-minimal" 
+                    onClick={(e) => handleDeleteDoubt(e, doubt._id)}
+                    title="Withdraw Inquiry"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
               </div>
             </div>
           ))
@@ -258,51 +270,81 @@ const DoubtDashboard = () => {
         </div>
       )}
 
-      {/* Resolve Doubt Modal */}
-      {showResolveModal && (
+      {/* Detail / Resolve Modal */}
+      {selectedDoubt && (
         <div className="modal-overlay">
-          <div className="glass-card resolve-modal">
+          <div className="glass-card resolve-modal full-detail-modal">
             <div className="modal-header">
               <div className="header-title-group">
-                <MessageSquare className="header-icon" />
-                <h2>Resolve Doubt</h2>
+                <HelpCircle className="header-icon" />
+                <h2>Inquiry Details</h2>
               </div>
-              <button onClick={() => setShowResolveModal(null)} className="close-btn-ghost"><X size={20} /></button>
+              <button onClick={() => setSelectedDoubt(null)} className="close-btn-ghost"><X size={20} /></button>
             </div>
             
-            <div className="doubt-context-ticket">
-              <div className="ticket-meta">
-                <span className="subject">{showResolveModal.subject}</span>
-                <span className="divider">|</span>
-                <span className="chapter">{showResolveModal.title}</span>
-                <span className="divider">|</span>
-                <span className="student">By {showResolveModal.student?.name}</span>
+            <div className="modal-body-scrollable">
+              <div className="doubt-context-ticket">
+                <div className="ticket-meta">
+                  <span className="subject">{selectedDoubt.subject}</span>
+                  <span className="divider">|</span>
+                  <span className="chapter">{selectedDoubt.title}</span>
+                  <span className="divider">|</span>
+                  <span className="student">By {selectedDoubt.student?.name}</span>
+                </div>
+                <div className="ticket-body">
+                  <p>{selectedDoubt.description}</p>
+                  {selectedDoubt.attachments?.length > 0 && (
+                    <div className="modal-attachment">
+                      <a href={selectedDoubt.attachments[0]} target="_blank" rel="noreferrer">
+                        <img src={selectedDoubt.attachments[0]} alt="Doubt context" />
+                      </a>
+                      <span className="img-hint">Click image to enlarge</span>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="ticket-body">
-                <p>{showResolveModal.description}</p>
-                {showResolveModal.attachments?.length > 0 && (
-                  <div className="modal-attachment">
-                    <img src={showResolveModal.attachments[0]} alt="Doubt context" />
-                  </div>
-                )}
-              </div>
-            </div>
 
-            <form onSubmit={handleResolveSubmit} className="answer-section">
-              <div className="section-header">
-                <Send size={16} />
-                <h4>Your Official Resolution</h4>
-              </div>
-              <textarea 
-                required 
-                placeholder="Provide a detailed explanation or step-by-step solution..."
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-              />
-              <button type="submit" className="btn-primary resolve-submit-btn" disabled={isLoading || !answer.trim()}>
-                {isLoading ? 'Resolving Inquiry...' : 'Transmit Resolution'}
-              </button>
-            </form>
+              {selectedDoubt.status === 'RESOLVED' ? (
+                <div className="resolved-view-section">
+                  <div className="section-header success">
+                    <CheckCircle size={18} />
+                    <h4>Official Resolution</h4>
+                  </div>
+                  <div className="resolution-bubble">
+                    <p>{selectedDoubt.answer?.content}</p>
+                    <div className="bubble-footer">
+                      <UserIcon size={12} /> Resolved by {selectedDoubt.teacher?.name}
+                      <span className="spacer">|</span>
+                      <Calendar size={12} /> {new Date(selectedDoubt.answer?.answeredAt || selectedDoubt.updatedAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                </div>
+              ) : isTeacher ? (
+                <form onSubmit={handleResolveSubmit} className="answer-section">
+                  <div className="section-header">
+                    <Send size={16} />
+                    <h4>Provide Official Resolution</h4>
+                  </div>
+                  <textarea 
+                    required 
+                    placeholder="Provide a detailed explanation or step-by-step solution..."
+                    value={answer}
+                    onChange={(e) => setAnswer(e.target.value)}
+                  />
+                  <button type="submit" className="btn-primary resolve-submit-btn" disabled={isLoading || !answer.trim()}>
+                    {isLoading ? 'Resolving Inquiry...' : 'Transmit Resolution'}
+                  </button>
+                </form>
+              ) : (
+                <div className="pending-status-msg">
+                  <Clock size={20} />
+                  <div>
+                    <h4>Awaiting Mentor Review</h4>
+                    <p>Your inquiry is in the queue. You will be notified once a mentor provides a resolution.</p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
