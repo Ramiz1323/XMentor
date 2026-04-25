@@ -54,6 +54,9 @@ const setupCommunitySocket = (server) => {
   io.on('connection', (socket) => {
     console.log(`[Socket] User Connected: ${socket.user.id} (${socket.user.role})`);
 
+    // Join personal room for system notifications
+    socket.join(socket.user.id);
+
     socket.on('join_community', async (communityId) => {
       try {
         // Authorization check: Verify membership

@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import useAuthStore from './store/useAuthStore';
 import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
+import useHUDNotifications from './hooks/useHUDNotifications';
+import { Toaster } from 'react-hot-toast';
 
 import LoginPage from './pages/login/LoginPage';
 import RegisterPage from './pages/register/RegisterPage';
@@ -38,6 +40,9 @@ const AuthRoute = ({ children }) => {
 function AppContent({ isAuthenticated }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
+
+  // Initialize Global HUD Notifications
+  useHUDNotifications();
 
   // Close sidebar on route change for mobile
   useEffect(() => {
@@ -89,6 +94,7 @@ function App() {
 
   return (
     <Router>
+      <Toaster />
       <AppContent isAuthenticated={isAuthenticated} />
     </Router>
   );

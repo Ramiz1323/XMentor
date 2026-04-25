@@ -4,6 +4,28 @@ import * as mcqService from './mcq.service.js';
 export const create = asyncHandler(async (req, res) => {
   const test = await mcqService.createTest(req.body, req.user._id);
   
+  // HUD Notification Broadcast
+  const io = req.app.get('socketio');
+  if (io) {
+    const payload = {
+      id: test._id,
+      title: test.title,
+      subject: test.subject,
+      mentorName: req.user.name,
+      type: 'TASK_ALERT'
+    };
+
+    if (test.communityId) {
+      // Notify entire community
+      io.to(test.communityId.toString()).emit('new_task', payload);
+    } else if (test.assignedStudents && test.assignedStudents.length > 0) {
+      // Notify specific students
+      test.assignedStudents.forEach(studentId => {
+        io.to(studentId.toString()).emit('new_task', payload);
+      });
+    }
+  }
+
   res.status(201).json({
     success: true,
     message: 'Test created successfully',
