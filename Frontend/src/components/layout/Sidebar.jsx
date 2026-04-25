@@ -1,9 +1,29 @@
+import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Users, BookOpen, Settings, LayoutDashboard, X, Target, HelpCircle, Trophy } from 'lucide-react';
+import { Users, BookOpen, Settings, LayoutDashboard, X, Target, HelpCircle, Trophy, Download } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
 
 const Sidebar = ({ isOpen, onClose }) => {
   const { user } = useAuthStore();
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+    }
+  };
 
   const handleLinkClick = () => {
     if (window.innerWidth <= 768) {
@@ -101,12 +121,14 @@ const Sidebar = ({ isOpen, onClose }) => {
           </NavLink>
         </nav>
 
-        {/* <div className="sidebar-footer">
-          <div className="rank-badge">
-            <span className="label">Rank</span>
-            <span className="value">Novice</span>
+        {deferredPrompt && (
+          <div className="sidebar-footer">
+            <button className="install-button glass-card" onClick={handleInstall}>
+              <Download size={18} />
+              <span>Install XMentor</span>
+            </button>
           </div>
-        </div> */}
+        )}
       </aside>
     </>
   );

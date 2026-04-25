@@ -165,4 +165,34 @@
       box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
     }
   }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding-top: 1.5rem;
+
+    .install-button {
+      width: 100%;
+      padding: 0.85rem;
+      @include flex-center;
+      gap: 0.75rem;
+      background: rgba($accent-secondary, 0.1);
+      border: 1px solid rgba($accent-secondary, 0.2);
+      border-radius: 12px;
+      color: $accent-secondary;
+      font-family: $font-family-display;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba($accent-secondary, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba($accent-secondary, 0.3);
+      }
+
+      svg { flex-shrink: 0; }
+    }
+  }
 }
