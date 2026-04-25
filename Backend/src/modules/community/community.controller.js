@@ -7,7 +7,10 @@ export const create = asyncHandler(async (req, res) => {
 });
 
 export const getAll = asyncHandler(async (req, res) => {
-  const communities = await communityService.getAllCommunities(req.query.type ? { type: req.query.type } : {});
+  const communities = await communityService.getAllCommunities(
+    req.user._id,
+    req.query.type ? { type: req.query.type } : {}
+  );
   res.status(200).json({ success: true, message: 'Communities retrieved', data: communities });
 });
 

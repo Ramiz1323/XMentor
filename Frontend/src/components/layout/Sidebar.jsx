@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Users, BookOpen, Settings, LayoutDashboard, X, Target } from 'lucide-react';
+import { Users, BookOpen, Settings, LayoutDashboard, X, Target, HelpCircle } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
 
 const Sidebar = ({ isOpen, onClose }) => {
@@ -58,6 +58,15 @@ const Sidebar = ({ isOpen, onClose }) => {
           >
             <Users size={20} aria-hidden="true" />
             <span>Communities</span>
+          </NavLink>
+
+          <NavLink 
+            to="/doubts" 
+            onClick={handleLinkClick}
+            className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
+          >
+            <HelpCircle size={20} aria-hidden="true" />
+            <span>Doubt Section</span>
           </NavLink>
 
           <div className="sidebar-divider" role="presentation">Tasks</div>

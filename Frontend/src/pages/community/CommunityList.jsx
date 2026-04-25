@@ -121,10 +121,7 @@ const CommunityList = () => {
         ) : (
           communities.map(community => {
             const uId = (user?._id || user?.id)?.toString();
-            const isMember = community.members?.some(m => {
-              const mId = m.user?._id || m.user?.id || m.user || m;
-              return mId?.toString() === uId;
-            });
+            const isMember = community.isMember;
             const isCreator = (community.createdBy?._id || community.createdBy)?.toString() === uId;
             const isLoadingAction = actionLoading[community._id];
 

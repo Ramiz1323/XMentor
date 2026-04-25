@@ -9,6 +9,7 @@ import authRoutes from './modules/auth/auth.routes.js';
 import userRoutes from './modules/user/user.routes.js';
 import communityRoutes from './modules/community/community.routes.js';
 import mcqRoutes from './modules/mcq/mcq.routes.js';
+import doubtRoutes from './modules/doubt/doubt.routes.js';
 
 const app = express();
 
@@ -49,6 +50,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/community', communityRoutes);
 app.use('/api/mcq', mcqRoutes);
+app.use('/api/doubt', doubtRoutes);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({

@@ -1,10 +1,20 @@
 import Community, { Message } from './community.model.js';
 import ErrorResponse from '../../utils/errorResponse.js';
 
-export const getAllCommunities = async (filters = {}) => {
-  return await Community.find(filters)
-    .select('name description type memberCount maxMembers createdBy')
+export const getAllCommunities = async (userId, filters = {}) => {
+  const communities = await Community.find(filters)
+    .select('name description type memberCount maxMembers createdBy members')
     .lean();
+
+  return communities.map(community => {
+    const member = community.members?.find(m => m.user.toString() === userId.toString());
+    const { members, ...rest } = community;
+    return {
+      ...rest,
+      isMember: !!member,
+      myAlias: member?.alias || null
+    };
+  });
 };
 
 export const getCommunityById = async (communityId, userId) => {
