@@ -14,6 +14,8 @@ const ChatRoom = () => {
     fetchCommunityById, 
     messages: history, 
     fetchHistory, 
+    fetchMembers,
+    members,
     deleteCommunity,
     isLoading, 
     error 
@@ -31,7 +33,10 @@ const ChatRoom = () => {
   useEffect(() => {
     fetchCommunityById(id);
     fetchHistory(id);
-  }, [id, fetchCommunityById, fetchHistory]);
+    if (user?.role === 'TEACHER') {
+      fetchMembers(id);
+    }
+  }, [id, fetchCommunityById, fetchHistory, fetchMembers, user?.role]);
 
   useEffect(() => {
     if (history?.length > 0) {
@@ -122,9 +127,18 @@ const ChatRoom = () => {
             ? 'Recent' 
             : messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+          // Teacher-only identity reveal logic
+          let senderDisplay = msg?.senderAlias || 'Unknown';
+          if (user?.role === 'TEACHER' && msg?.sender && msg.sender !== user.id && msg.sender !== user._id) {
+            const memberInfo = members.find(m => (m.userId || m.user)?._id?.toString() === msg.sender?.toString() || (m.userId || m.user)?.toString() === msg.sender?.toString());
+            if (memberInfo?.realName) {
+              senderDisplay = `${msg.senderAlias} (${memberInfo.realName})`;
+            }
+          }
+
           return (
             <div key={msg?._id || idx} className={`message-wrapper ${isMe ? 'own' : ''}`}>
-              {!isMe && <div className="sender-alias">{msg?.senderAlias || 'Unknown'}</div>}
+              {!isMe && <div className="sender-alias">{senderDisplay}</div>}
               <div className="message-bubble glass-card">
                 <div className="content">{msg?.content}</div>
                 <div className="time">{timeString}</div>

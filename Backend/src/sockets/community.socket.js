@@ -91,6 +91,7 @@ const setupCommunitySocket = (server) => {
           io.to(communityId).emit('new_message', {
             _id: savedMsg._id,
             content: savedMsg.content,
+            sender: savedMsg.sender,
             senderAlias: savedMsg.senderAlias,
             createdAt: savedMsg.createdAt,
             community: communityId

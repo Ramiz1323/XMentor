@@ -127,22 +127,35 @@ export const leaveCommunity = async (communityId, userId) => {
 };
 
 export const getCommunityMembers = async (communityId, userId, userRole) => {
-  const community = await Community.findById(communityId).lean();
+  const community = await Community.findById(communityId)
+    .populate('members.user', 'name profilePic')
+    .lean();
+    
   if (!community) throw new ErrorResponse('Community not found', 404);
 
   const isMember = community.members.some(
-    (m) => m.user.toString() === userId.toString()
+    (m) => m.user?._id?.toString() === userId.toString() || m.user?.toString() === userId.toString()
   );
 
   if (!isMember && userRole !== 'TEACHER') {
     throw new ErrorResponse('Access denied. You are not a member', 403);
   }
   
-  // Only return aliases to ensure anonymity
-  return community.members.map(m => ({
-    alias: m.alias,
-    joinedAt: m.joinedAt
-  }));
+  // Only return aliases to ensure anonymity, unless user is a teacher
+  return community.members.map(m => {
+    const memberData = {
+      alias: m.alias,
+      joinedAt: m.joinedAt
+    };
+
+    if (userRole === 'TEACHER') {
+      memberData.realName = m.user?.name;
+      memberData.profilePic = m.user?.profilePic;
+      memberData.userId = m.user?._id || m.user;
+    }
+
+    return memberData;
+  });
 };
 
 export const getChatHistory = async (communityId, userId) => {
@@ -160,7 +173,7 @@ export const getChatHistory = async (communityId, userId) => {
   const messages = await Message.find({ community: communityId })
     .sort({ createdAt: -1 })
     .limit(100)
-    .select('content senderAlias createdAt isSystem')
+    .select('content sender senderAlias createdAt isSystem')
     .lean();
 
   return messages.reverse();
