@@ -209,3 +209,20 @@ export const deleteCommunity = async (communityId, userId) => {
   // Delete the community itself
   return await Community.findByIdAndDelete(communityId);
 };
+
+export const verifyDailyPasscode = async (passcode) => {
+  if (!passcode) {
+    throw new ErrorResponse('Passcode is required to enter this hub', 400);
+  }
+
+  const now = new Date();
+  const day = String(now.getDate()).padStart(2, '0');
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const expected = `${day}${month}`;
+
+  if (passcode !== expected) {
+    throw new ErrorResponse('Access Denied: Invalid passcode. Please consult your mentor.', 403);
+  }
+
+  return true;
+};

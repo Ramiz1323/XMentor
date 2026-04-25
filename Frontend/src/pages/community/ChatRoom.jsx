@@ -15,11 +15,17 @@ const ChatRoom = () => {
     messages: history, 
     fetchHistory, 
     fetchMembers,
+    verifyPasscode,
     members,
     deleteCommunity,
     isLoading, 
     error 
   } = useCommunityStore();
+
+  const [isPasscodeVerified, setIsPasscodeVerified] = useState(user?.role === 'TEACHER');
+  const [passcode, setPasscode] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verifyError, setVerifyError] = useState('');
 
   const handleTerminated = useCallback(() => {
     alert('This anonymous hub has been terminated by the administrator.');
@@ -32,17 +38,34 @@ const ChatRoom = () => {
 
   useEffect(() => {
     fetchCommunityById(id);
-    fetchHistory(id);
-    if (user?.role === 'TEACHER') {
-      fetchMembers(id);
+    if (isPasscodeVerified) {
+      fetchHistory(id);
+      if (user?.role === 'TEACHER') {
+        fetchMembers(id);
+      }
     }
-  }, [id, fetchCommunityById, fetchHistory, fetchMembers, user?.role]);
+  }, [id, fetchCommunityById, fetchHistory, fetchMembers, user?.role, isPasscodeVerified]);
 
   useEffect(() => {
-    if (history?.length > 0) {
+    if (history?.length > 0 && isPasscodeVerified) {
       setMessages(history);
     }
-  }, [history, setMessages]);
+  }, [history, setMessages, isPasscodeVerified]);
+
+  const onVerify = async (e) => {
+    e.preventDefault();
+    if (!passcode) return;
+    setIsVerifying(true);
+    setVerifyError('');
+    try {
+      await verifyPasscode(id, passcode);
+      setIsPasscodeVerified(true);
+    } catch (err) {
+      setVerifyError(err.response?.data?.message || err.message || 'Verification failed');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -50,7 +73,7 @@ const ChatRoom = () => {
 
   const handleSend = (e) => {
     e.preventDefault();
-    if (!input.trim() || !isConnected) return;
+    if (!input.trim() || !isConnected || !isPasscodeVerified) return;
     sendMessage(input);
     setInput('');
   };
@@ -69,6 +92,7 @@ const ChatRoom = () => {
 
   if (isLoading && !currentCommunity) return <div className="chat-loader">Establishing secure uplink...</div>;
   if (error) return <div className="chat-error">{error}</div>;
+  
   if (!currentCommunity && !isLoading) {
     return (
       <div className="chat-error">
@@ -87,6 +111,37 @@ const ChatRoom = () => {
         <h2>Access Denied</h2>
         <p>You must join this community to access the secure communication channel.</p>
         <button onClick={() => navigate('/communities')} className="btn-primary">Return to Hub</button>
+      </div>
+    );
+  }
+
+  if (!isPasscodeVerified) {
+    return (
+      <div className="modal-overlay">
+        <div className="glass-card passcode-modal">
+          <div className="modal-header">
+            <button onClick={() => navigate('/communities')} className="close-btn" title="Go Back">
+              <ArrowLeft size={20} />
+            </button>
+            <h3><ShieldCheck size={24} /> Security Clearance</h3>
+          </div>
+          <p>This is a secure academic channel. Please enter the access passcode provided by your mentor.</p>
+          <form onSubmit={onVerify} className="passcode-form">
+            <div className="input-group">
+              <input 
+                type="password" 
+                placeholder="Enter Passcode" 
+                value={passcode}
+                onChange={(e) => setPasscode(e.target.value)}
+                autoFocus
+              />
+              {verifyError && <span className="error-text">{verifyError}</span>}
+              <button type="submit" className="btn-primary" disabled={isVerifying}>
+                {isVerifying ? 'Decrypting...' : 'Verify Access'}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     );
   }

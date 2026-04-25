@@ -21,6 +21,7 @@ router.post('/:id/leave', validate(leaveCommunitySchema), communityController.le
 
 // Optimized: Membership check is moved to service layer to save one DB hit
 router.get('/:id/members', communityController.getMembers);
+router.post('/:id/verify-passcode', communityController.verifyPasscode);
 router.get('/:id/history', communityController.getHistory);
 router.delete('/:id', authorize('TEACHER'), communityController.remove);
 

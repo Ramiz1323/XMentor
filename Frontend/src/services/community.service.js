@@ -39,6 +39,11 @@ const communityService = {
   deleteCommunity: async (id) => {
     const { data } = await api.delete(`/community/${id}`);
     return data;
+  },
+
+  verifyPasscode: async (id, passcode) => {
+    const { data } = await api.post(`/community/${id}/verify-passcode`, { passcode });
+    return data;
   }
 };
 

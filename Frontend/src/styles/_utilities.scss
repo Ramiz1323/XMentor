@@ -187,6 +187,24 @@
 .glow-text { @include glow-text; }
 .btn-primary { @include btn-primary; }
 
+.close-btn, .modal-close {
+  background: transparent !important;
+  border: none !important;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  padding: 0.5rem;
+  border-radius: 8px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: white;
+  }
+}
+
 // Custom Glass Dropdown
 .glass-dropdown-wrapper {
   position: relative;

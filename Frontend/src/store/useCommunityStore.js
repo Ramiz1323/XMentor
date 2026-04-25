@@ -98,6 +98,19 @@ const useCommunityStore = create((set) => ({
     } finally {
       set({ isLoading: false });
     }
+  },
+
+  verifyPasscode: async (id, passcode) => {
+    try {
+      set({ isLoading: true, error: null });
+      await communityService.verifyPasscode(id, passcode);
+      return true;
+    } catch (err) {
+      set({ error: err.message || 'Verification failed' });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
   }
 }));
 

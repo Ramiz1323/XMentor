@@ -60,3 +60,9 @@ export const remove = asyncHandler(async (req, res) => {
 
   res.status(200).json({ success: true, message: 'Community terminated successfully' });
 });
+
+export const verifyPasscode = asyncHandler(async (req, res) => {
+  const { passcode } = req.body;
+  await communityService.verifyDailyPasscode(passcode);
+  res.status(200).json({ success: true, message: 'Passcode verified' });
+});

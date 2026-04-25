@@ -1,3 +1,6 @@
+@use 'variables' as *;
+@use 'utilities' as *;
+
 .doubt-page {
   padding: 1.5rem;
   max-width: 1400px;
@@ -400,6 +403,19 @@
     align-items: center;
     margin-bottom: 2rem;
     h2 { margin: 0; color: var(--accent-primary); }
+
+    .close-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      @include flex-center;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        transform: scale(1.05);
+      }
+    }
   }
 
   .doubt-form {
