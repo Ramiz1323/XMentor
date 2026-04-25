@@ -14,6 +14,7 @@ export const createCommunitySchema = z.object({
     }),
     accessCode: z.string().optional(),
     maxMembers: z.number().int().min(1).max(1000).optional(),
+    alias: z.string().min(2).max(30).optional(),
   }),
 });
 
@@ -23,6 +24,7 @@ export const joinCommunitySchema = z.object({
   }),
   body: z.object({
     accessCode: z.string().optional(),
+    alias: z.string().min(2, 'Alias must be at least 2 characters').max(30, 'Alias cannot exceed 30 characters'),
   }),
 });
 

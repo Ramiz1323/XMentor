@@ -1,14 +1,20 @@
 import dotenv from 'dotenv';
+import http from 'node:http';
 import app from './src/app.js';
 import connectDB from './src/config/db.js';
+import setupCommunitySocket from './src/sockets/community.socket.js';
 
 dotenv.config();
 
 connectDB();
 
+const server = http.createServer(app);
+const io = setupCommunitySocket(server);
+app.set('socketio', io);
+
 const PORT = process.env.PORT || 5000;
 
-const server = app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
 });
 

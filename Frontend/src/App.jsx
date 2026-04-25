@@ -8,6 +8,7 @@ import LoginPage from './pages/login/LoginPage';
 import RegisterPage from './pages/register/RegisterPage';
 import Dashboard from './pages/dashboard/Dashboard';
 import CommunityList from './pages/community/CommunityList';
+import ChatRoom from './pages/community/ChatRoom';
 import MCQTest from './pages/mcq/MCQTest';
 import MCQDashboard from './pages/mcq/MCQDashboard';
 import MCQCreator from './pages/mcq/MCQCreator';
@@ -58,6 +59,7 @@ function AppContent({ isAuthenticated }) {
             
             <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/communities" element={<ProtectedRoute><CommunityList /></ProtectedRoute>} />
+            <Route path="/communities/:id/chat" element={<ProtectedRoute><ChatRoom /></ProtectedRoute>} />
             <Route path="/mcq" element={<ProtectedRoute><MCQDashboard /></ProtectedRoute>} />
             <Route path="/mcq/create" element={<ProtectedRoute><MCQCreator /></ProtectedRoute>} />
             <Route path="/mcq/:id" element={<ProtectedRoute><MCQTest /></ProtectedRoute>} />

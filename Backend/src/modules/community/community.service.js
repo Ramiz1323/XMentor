@@ -1,35 +1,35 @@
-import Community from './community.model.js';
+import Community, { Message } from './community.model.js';
 import ErrorResponse from '../../utils/errorResponse.js';
 
 export const getAllCommunities = async (filters = {}) => {
   return await Community.find(filters)
-    .select('name description type memberCount maxMembers')
+    .select('name description type memberCount maxMembers members createdBy')
     .lean();
 };
 
 export const getCommunityById = async (communityId, userId) => {
   const community = await Community.findById(communityId)
-    .populate('createdBy', 'name profilePic')
+    .populate('createdBy', 'name')
     .lean();
 
   if (!community) {
     throw new ErrorResponse('Community not found', 404);
   }
 
-  const isMember = community.members?.some(
-    (id) => id.toString() === userId.toString()
+  const memberInfo = community.members?.find(
+    (m) => m.user.toString() === userId.toString()
   );
 
-  if (!isMember) {
+  if (!memberInfo) {
     const { members, accessCode, ...publicView } = community;
     return { ...publicView, isMember: false };
   }
 
-  return { ...community, isMember: true };
+  return { ...community, isMember: true, myAlias: memberInfo.alias };
 };
 
 export const createCommunity = async (communityData, creatorId) => {
-  const { name, description, type, accessCode, maxMembers } = communityData;
+  const { name, description, type, accessCode, maxMembers, alias } = communityData;
 
   const existing = await Community.findOne({ name });
   if (existing) {
@@ -43,36 +43,47 @@ export const createCommunity = async (communityData, creatorId) => {
     accessCode,
     maxMembers,
     createdBy: creatorId,
-    members: [creatorId],
+    members: [{ user: creatorId, alias: alias || 'Mentor' }],
     memberCount: 1,
   });
 };
 
-export const joinCommunity = async (communityId, userId) => {
+export const joinCommunity = async (communityId, userId, alias, accessCode) => {
   const community = await Community.findById(communityId);
   if (!community) throw new ErrorResponse('Community not found', 404);
 
-  const alreadyMember = community.members.some(
-    (id) => id.toString() === userId.toString()
+  if (community.accessCode && community.accessCode !== accessCode) {
+    throw new ErrorResponse('Invalid access code', 401);
+  }
+
+  const member = community.members.find(
+    (m) => m.user.toString() === userId.toString()
   );
-  if (alreadyMember) {
-    return { alreadyMember: true, community };
+  
+  if (member) {
+    return { alreadyMember: true, community, alias: member.alias };
   }
 
   if (community.memberCount >= community.maxMembers) {
     throw new ErrorResponse('Community is full', 400);
   }
 
+  // Check if alias is already taken in this community
+  const aliasTaken = community.members.some(m => m.alias === alias);
+  if (aliasTaken) {
+    throw new ErrorResponse('Alias already taken in this community', 400);
+  }
+
   const updatedCommunity = await Community.findByIdAndUpdate(
     communityId,
     { 
-      $addToSet: { members: userId },
+      $push: { members: { user: userId, alias } },
       $inc: { memberCount: 1 }
     },
     { new: true, runValidators: true }
   ).lean();
 
-  return { alreadyMember: false, community: updatedCommunity };
+  return { alreadyMember: false, community: updatedCommunity, alias };
 };
 
 export const leaveCommunity = async (communityId, userId) => {
@@ -84,7 +95,7 @@ export const leaveCommunity = async (communityId, userId) => {
   }
 
   const isMember = community.members.some(
-    (id) => id.toString() === userId.toString()
+    (m) => m.user.toString() === userId.toString()
   );
   if (!isMember) {
     throw new ErrorResponse('You are not a member', 400);
@@ -93,7 +104,7 @@ export const leaveCommunity = async (communityId, userId) => {
   return await Community.findByIdAndUpdate(
     communityId,
     { 
-      $pull: { members: userId },
+      $pull: { members: { user: userId } },
       $inc: { memberCount: -1 }
     },
     { new: true }
@@ -101,22 +112,70 @@ export const leaveCommunity = async (communityId, userId) => {
 };
 
 export const getCommunityMembers = async (communityId, userId, userRole) => {
-  const community = await Community.findById(communityId)
-    .populate({
-      path: 'members',
-      select: userRole === 'TEACHER' ? 'name profilePic email' : 'name profilePic',
-    })
-    .lean();
-
+  const community = await Community.findById(communityId).lean();
   if (!community) throw new ErrorResponse('Community not found', 404);
 
   const isMember = community.members.some(
-    (member) => member._id.toString() === userId.toString()
+    (m) => m.user.toString() === userId.toString()
   );
 
-  if (!isMember) {
+  if (!isMember && userRole !== 'TEACHER') {
     throw new ErrorResponse('Access denied. You are not a member', 403);
   }
   
-  return community.members;
+  // Only return aliases to ensure anonymity
+  return community.members.map(m => ({
+    alias: m.alias,
+    joinedAt: m.joinedAt
+  }));
+};
+
+export const getChatHistory = async (communityId, userId) => {
+  const community = await Community.findById(communityId).lean();
+  if (!community) throw new ErrorResponse('Community not found', 404);
+
+  const isMember = community.members.some(
+    (m) => m.user.toString() === userId.toString()
+  );
+
+  if (!isMember) {
+    throw new ErrorResponse('Access denied. Join community to view chat', 403);
+  }
+
+  return await Message.find({ community: communityId })
+    .sort({ createdAt: 1 })
+    .limit(100)
+    .select('content senderAlias createdAt isSystem')
+    .lean();
+};
+
+export const saveMessage = async (communityId, userId, content) => {
+  const community = await Community.findById(communityId);
+  if (!community) return null;
+
+  const member = community.members.find(m => m.user.toString() === userId.toString());
+  if (!member) return null;
+
+  return await Message.create({
+    community: communityId,
+    sender: userId,
+    senderAlias: member.alias,
+    content
+  });
+};
+
+export const deleteCommunity = async (communityId, userId) => {
+  const community = await Community.findById(communityId);
+  if (!community) throw new ErrorResponse('Community not found', 404);
+
+  // Only the creator (Teacher) can delete
+  if (community.createdBy.toString() !== userId.toString()) {
+    throw new ErrorResponse('Not authorized to delete this community', 403);
+  }
+
+  // Delete all messages in this community first
+  await Message.deleteMany({ community: communityId });
+  
+  // Delete the community itself
+  return await Community.findByIdAndDelete(communityId);
 };

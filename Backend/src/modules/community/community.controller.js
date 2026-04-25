@@ -17,12 +17,20 @@ export const getById = asyncHandler(async (req, res) => {
 });
 
 export const join = asyncHandler(async (req, res) => {
-  const result = await communityService.joinCommunity(req.params.id, req.user._id);
+  const { alias, accessCode } = req.body;
+  if (!alias) return res.status(400).json({ success: false, message: 'Alias is required for anonymity' });
+
+  const result = await communityService.joinCommunity(req.params.id, req.user._id, alias, accessCode);
   res.status(200).json({
     success: true,
     message: result.alreadyMember ? 'Already a member' : 'Joined successfully',
-    data: result.community,
+    data: { community: result.community, alias: result.alias },
   });
+});
+
+export const getHistory = asyncHandler(async (req, res) => {
+  const messages = await communityService.getChatHistory(req.params.id, req.user._id);
+  res.status(200).json({ success: true, data: messages });
 });
 
 export const leave = asyncHandler(async (req, res) => {
@@ -33,4 +41,14 @@ export const leave = asyncHandler(async (req, res) => {
 export const getMembers = asyncHandler(async (req, res) => {
   const members = await communityService.getCommunityMembers(req.params.id, req.user._id, req.user.role);
   res.status(200).json({ success: true, message: 'Members retrieved', data: members });
+});
+
+export const remove = asyncHandler(async (req, res) => {
+  await communityService.deleteCommunity(req.params.id, req.user._id);
+  
+  // Notify all socket clients in that room
+  const io = req.app.get('socketio');
+  io.to(req.params.id).emit('community_terminated', { communityId: req.params.id });
+
+  res.status(200).json({ success: true, message: 'Community terminated successfully' });
 });

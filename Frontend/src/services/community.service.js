@@ -16,8 +16,13 @@ const communityService = {
     return data;
   },
 
-  joinCommunity: async (id, joinCode) => {
-    const { data } = await api.post(`/community/${id}/join`, { joinCode });
+  joinCommunity: async (id, alias, accessCode) => {
+    const { data } = await api.post(`/community/${id}/join`, { alias, accessCode });
+    return data;
+  },
+
+  getHistory: async (id) => {
+    const { data } = await api.get(`/community/${id}/history`);
     return data;
   },
 
@@ -28,6 +33,11 @@ const communityService = {
 
   getMembers: async (id) => {
     const { data } = await api.get(`/community/${id}/members`);
+    return data;
+  },
+
+  deleteCommunity: async (id) => {
+    const { data } = await api.delete(`/community/${id}`);
     return data;
   }
 };
