@@ -3,7 +3,7 @@ import ErrorResponse from '../../utils/errorResponse.js';
 
 export const getAllCommunities = async (filters = {}) => {
   return await Community.find(filters)
-    .select('name description type memberCount maxMembers members createdBy')
+    .select('name description type memberCount maxMembers createdBy')
     .lean();
 };
 
@@ -53,7 +53,7 @@ export const joinCommunity = async (communityId, userId, alias, accessCode) => {
   if (!community) throw new ErrorResponse('Community not found', 404);
 
   if (community.accessCode && community.accessCode !== accessCode) {
-    throw new ErrorResponse('Invalid access code', 401);
+    throw new ErrorResponse('Invalid access code', 403);
   }
 
   const member = community.members.find(
@@ -64,24 +64,27 @@ export const joinCommunity = async (communityId, userId, alias, accessCode) => {
     return { alreadyMember: true, community, alias: member.alias };
   }
 
-  if (community.memberCount >= community.maxMembers) {
-    throw new ErrorResponse('Community is full', 400);
-  }
-
-  // Check if alias is already taken in this community
-  const aliasTaken = community.members.some(m => m.alias === alias);
-  if (aliasTaken) {
-    throw new ErrorResponse('Alias already taken in this community', 400);
-  }
-
-  const updatedCommunity = await Community.findByIdAndUpdate(
-    communityId,
+  // Atomic update to check for alias uniqueness and capacity
+  const updatedCommunity = await Community.findOneAndUpdate(
+    { 
+      _id: communityId,
+      "members.alias": { $ne: alias },
+      memberCount: { $lt: community.maxMembers }
+    },
     { 
       $push: { members: { user: userId, alias } },
       $inc: { memberCount: 1 }
     },
     { new: true, runValidators: true }
   ).lean();
+
+  if (!updatedCommunity) {
+    // Re-check why it failed
+    if (community.memberCount >= community.maxMembers) {
+      throw new ErrorResponse('Community is full', 400);
+    }
+    throw new ErrorResponse('Alias already taken in this community', 400);
+  }
 
   return { alreadyMember: false, community: updatedCommunity, alias };
 };
@@ -142,11 +145,13 @@ export const getChatHistory = async (communityId, userId) => {
     throw new ErrorResponse('Access denied. Join community to view chat', 403);
   }
 
-  return await Message.find({ community: communityId })
-    .sort({ createdAt: 1 })
+  const messages = await Message.find({ community: communityId })
+    .sort({ createdAt: -1 })
     .limit(100)
     .select('content senderAlias createdAt isSystem')
     .lean();
+
+  return messages.reverse();
 };
 
 export const saveMessage = async (communityId, userId, content) => {

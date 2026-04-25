@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Send, ArrowLeft, Users, Clock, ShieldCheck, MessageSquare, Trash2 } from 'lucide-react';
+import { Send, ArrowLeft, Users, Clock, ShieldCheck, MessageSquare, Trash2, AlertCircle } from 'lucide-react';
 import useCommunityStore from '../../store/useCommunityStore';
 import useAuthStore from '../../store/useAuthStore';
 import useSocket from '../../hooks/useSocket';
@@ -45,7 +45,7 @@ const ChatRoom = () => {
 
   const handleSend = (e) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || !isConnected) return;
     sendMessage(input);
     setInput('');
   };
@@ -57,12 +57,24 @@ const ChatRoom = () => {
         navigate('/communities');
       } catch (err) {
         console.error('Termination failed:', err);
+        alert(`Failed to terminate community: ${err.message || 'Unknown error'}`);
       }
     }
   };
 
   if (isLoading && !currentCommunity) return <div className="chat-loader">Establishing secure uplink...</div>;
   if (error) return <div className="chat-error">{error}</div>;
+  if (!currentCommunity && !isLoading) {
+    return (
+      <div className="chat-error">
+        <AlertCircle size={48} />
+        <h2>Hub Not Found</h2>
+        <p>The community you are looking for does not exist or has been terminated.</p>
+        <button onClick={() => navigate('/communities')} className="btn-primary">Back to Discovery</button>
+      </div>
+    );
+  }
+
   if (currentCommunity && !currentCommunity.isMember) {
     return (
       <div className="access-denied">
@@ -131,7 +143,7 @@ const ChatRoom = () => {
           placeholder="Transmit anonymous message..."
           maxLength={1000}
         />
-        <button type="submit" disabled={!input.trim()} className="send-btn">
+        <button type="submit" disabled={!input.trim() || !isConnected} className="send-btn">
           <Send size={20} />
         </button>
       </form>

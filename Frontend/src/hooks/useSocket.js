@@ -10,8 +10,21 @@ const useSocket = (communityId, onTerminated) => {
   const [isConnected, setIsConnected] = useState(false);
   const [messages, setMessages] = useState([]);
 
+  const onTerminatedRef = useRef(onTerminated);
+
+  // Update ref when onTerminated changes
   useEffect(() => {
-    if (!isAuthenticated || !communityId) return;
+    onTerminatedRef.current = onTerminated;
+  }, [onTerminated]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !communityId) {
+      setMessages([]);
+      return;
+    }
+    
+    // Reset messages when starting a new connection/communityId
+    setMessages([]);
     console.log('[Socket] Attempting connection to:', SOCKET_URL);
 
     socketRef.current = io(SOCKET_URL, {
@@ -31,7 +44,7 @@ const useSocket = (communityId, onTerminated) => {
 
     socketRef.current.on('community_terminated', (data) => {
       console.log('[Socket] Community terminated:', data);
-      if (onTerminated) onTerminated(data);
+      if (onTerminatedRef.current) onTerminatedRef.current(data);
     });
 
     socketRef.current.on('disconnect', () => {
@@ -48,7 +61,7 @@ const useSocket = (communityId, onTerminated) => {
         socketRef.current.disconnect();
       }
     };
-  }, [isAuthenticated, communityId, onTerminated]);
+  }, [isAuthenticated, communityId]);
 
   const sendMessage = (content) => {
     if (socketRef.current && content.trim()) {

@@ -25,8 +25,13 @@ const setupCommunitySocket = (server) => {
       // If not in auth object, check cookies
       if (!token && socket.handshake.headers.cookie) {
         const cookies = socket.handshake.headers.cookie.split(';').reduce((acc, c) => {
-          const [name, value] = c.split('=').map(v => v.trim());
-          if (name) acc[name] = value;
+          const cookiePair = c.trim();
+          const eqIdx = cookiePair.indexOf('=');
+          if (eqIdx > 0) {
+            const name = cookiePair.substring(0, eqIdx).trim();
+            const value = cookiePair.substring(eqIdx + 1).trim();
+            if (name) acc[name] = value;
+          }
           return acc;
         }, {});
         token = cookies['token'];
@@ -50,18 +55,36 @@ const setupCommunitySocket = (server) => {
     console.log(`[Socket] User Connected: ${socket.user.id} (${socket.user.role})`);
 
     socket.on('join_community', async (communityId) => {
-      socket.join(communityId);
-      console.log(`[Socket] User ${socket.user.id} joined room: ${communityId}`);
+      try {
+        // Authorization check: Verify membership
+        const community = await communityService.getCommunityById(communityId, socket.user.id);
+        if (!community || !community.isMember) {
+          return socket.emit('error', { message: 'Access denied. You are not a member of this community.' });
+        }
+
+        socket.join(communityId);
+        console.log(`[Socket] User ${socket.user.id} joined room: ${communityId}`);
+      } catch (err) {
+        socket.emit('error', { message: 'Failed to join room: ' + err.message });
+      }
     });
 
     socket.on('send_message', async (data) => {
       const { communityId, content } = data;
       console.log(`[Socket] Message from ${socket.user.id} to ${communityId}`);
       
-      if (!content || !communityId) return;
+      if (!communityId) return socket.emit('error', { message: 'Community ID is required' });
+      if (!content || content.trim().length === 0) return socket.emit('error', { message: 'Message content cannot be empty' });
+      if (content.length > 1000) return socket.emit('error', { message: 'Message too long (max 1000 chars)' });
 
       try {
-        const savedMsg = await communityService.saveMessage(communityId, socket.user.id, content);
+        // Authorization check: Verify membership
+        const community = await communityService.getCommunityById(communityId, socket.user.id);
+        if (!community || !community.isMember) {
+          return socket.emit('error', { message: 'Access denied. You must be a member to send messages.' });
+        }
+
+        const savedMsg = await communityService.saveMessage(communityId, socket.user.id, content.trim());
         
         if (savedMsg) {
           console.log(`[Socket] Broadcasting message: ${savedMsg._id}`);
@@ -75,6 +98,7 @@ const setupCommunitySocket = (server) => {
         }
       } catch (err) {
         console.error('[Socket] Message Save/Broadcast Error:', err.message);
+        socket.emit('error', { message: 'Failed to send message: ' + err.message });
       }
     });
 

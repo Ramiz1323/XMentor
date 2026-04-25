@@ -17,10 +17,11 @@ export const getById = asyncHandler(async (req, res) => {
 });
 
 export const join = asyncHandler(async (req, res) => {
-  const { alias, accessCode } = req.body;
-  if (!alias) return res.status(400).json({ success: false, message: 'Alias is required for anonymity' });
+  const trimmedAlias = (req.body.alias || '').trim();
+  if (!trimmedAlias) return res.status(400).json({ success: false, message: 'Alias is required for anonymity' });
 
-  const result = await communityService.joinCommunity(req.params.id, req.user._id, alias, accessCode);
+  const { accessCode } = req.body;
+  const result = await communityService.joinCommunity(req.params.id, req.user._id, trimmedAlias, accessCode);
   res.status(200).json({
     success: true,
     message: result.alreadyMember ? 'Already a member' : 'Joined successfully',
@@ -48,7 +49,11 @@ export const remove = asyncHandler(async (req, res) => {
   
   // Notify all socket clients in that room
   const io = req.app.get('socketio');
-  io.to(req.params.id).emit('community_terminated', { communityId: req.params.id });
+  if (io && typeof io.to === 'function') {
+    io.to(req.params.id).emit('community_terminated', { communityId: req.params.id });
+  } else {
+    console.warn('[Community] Socket.IO not available for termination broadcast');
+  }
 
   res.status(200).json({ success: true, message: 'Community terminated successfully' });
 });

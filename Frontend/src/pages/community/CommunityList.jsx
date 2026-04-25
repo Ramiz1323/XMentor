@@ -164,7 +164,8 @@ const CommunityList = () => {
                     {isCreator && (
                       <button 
                         onClick={() => handleLeave(community._id, true)} 
-                        className="leave-btn-icon delete-btn"
+                        disabled={isLoadingAction}
+                        className={`leave-btn-icon delete-btn ${isLoadingAction ? 'loading' : ''}`}
                         title="Terminate Community"
                       >
                         <Trash2 size={18} />
