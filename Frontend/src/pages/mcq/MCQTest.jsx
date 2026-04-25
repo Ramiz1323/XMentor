@@ -98,7 +98,7 @@ const MCQTest = () => {
   }, [id, submitting, result, answers, elapsedTime, submitTest, fetchTestById]);
 
   useEffect(() => {
-    if (!test?.hasTimer || timeLeft === null || timeLeft <= 0 || result || test?.isSubmitted) return;
+    if (!timeLeft || timeLeft <= 0 || result || test?.isSubmitted || !test?.hasTimer) return;
     
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -113,6 +113,26 @@ const MCQTest = () => {
     
     return () => clearInterval(timer);
   }, [timeLeft, result, test?.isSubmitted, test?.hasTimer, handleSubmit]);
+
+  useEffect(() => {
+    if (showResultModal && result) {
+      const accuracy = (result.score / result.total) * 100;
+      let soundPath = '';
+      
+      if (accuracy > 65) {
+        // Randomize between faah and Congo
+        soundPath = Math.random() > 0.5 ? '/faahhhhhhhh.mp3' : '/Congo.mp3';
+      } else {
+        // Low score, play laugh
+        soundPath = '/Laugh.mp3';
+      }
+
+      if (soundPath) {
+        const audio = new Audio(soundPath);
+        audio.play().catch(e => console.error('Audio play failed:', e));
+      }
+    }
+  }, [showResultModal, result]);
 
   useEffect(() => {
     if (test?.hasTimer || result || test?.isSubmitted || isLoading || !test) return;
