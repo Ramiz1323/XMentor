@@ -1,4 +1,6 @@
 import express from 'express';
+import mongoose from 'mongoose';
+
 import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -53,11 +55,15 @@ app.use('/api/mcq', mcqRoutes);
 app.use('/api/doubt', doubtRoutes);
 
 app.get('/api/health', (req, res) => {
+  const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
   res.status(200).json({
     status: 'success',
     message: 'Server running',
+    database: dbStatus,
+    timestamp: new Date().toISOString(),
   });
 });
+
 
 app.use((err, req, res, next) => {
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
