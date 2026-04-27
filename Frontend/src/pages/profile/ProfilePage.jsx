@@ -50,7 +50,6 @@ const ProfilePage = () => {
     try {
       setSuccess('');
       const data = await updateProfile({
-        name: formData.name,
         boardInfo: {
           board: formData.board,
           class: formData.class
@@ -130,11 +129,15 @@ const ProfilePage = () => {
 
         <form onSubmit={handleUpdate} className="settings-form">
           <div className="input-group">
-            <label>Full Name</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <label>Full Name</label>
+              <span style={{ fontSize: '0.65rem', opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Unchangeable</span>
+            </div>
             <input 
               value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
-              className="glass-input"
+              disabled
+              className="glass-input disabled"
+              style={{ cursor: 'not-allowed', opacity: 0.7 }}
             />
           </div>
 

@@ -58,7 +58,7 @@ const Leaderboard = () => {
           <div className="col tests">Tests</div>
           <div className="col points">Tactical Points</div>
         </div>
-        
+
         <div className="list-body">
           {isLoading ? (
             Array(5).fill(0).map((_, i) => <Skeleton key={i} width="100%" height="60px" className="mb-2" />)

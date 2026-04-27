@@ -44,7 +44,7 @@ export const updateProfile = async (userId, updateData) => {
 
   flatten(updateData);
 
-  const sensitiveFields = ['email', 'password', 'role', '_id'];
+  const sensitiveFields = ['email', 'password', 'role', '_id', 'name', 'username'];
   sensitiveFields.forEach(field => delete flattenedData[field]);
 
   const updatedUser = await User.findByIdAndUpdate(

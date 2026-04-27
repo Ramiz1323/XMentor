@@ -10,10 +10,12 @@ const connectDB = async () => {
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error(`MongoDB Connection Error: ${error.message}`);
-    if (error.name === 'MongoNetworkTimeoutError') {
-      console.error('Tip: Check if your server IP is whitelisted in MongoDB Atlas Network Access.');
+    console.error(`URI used: ${process.env.MONGO_URI ? 'Defined' : 'UNDEFINED'}`);
+    
+    if (error.name === 'MongoNetworkTimeoutError' || error.message.includes('ETIMEDOUT')) {
+      console.error('Tip: Check if your local MongoDB service is running (mongod) or if your Atlas IP whitelist is correct.');
     }
-    // Don't exit process in dev if we want to keep server running (optional)
+    
     if (process.env.NODE_ENV === 'production') {
       process.exit(1);
     }
