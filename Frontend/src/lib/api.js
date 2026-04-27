@@ -1,4 +1,5 @@
 import axios from 'axios';
+import useAuthStore from '../store/useAuthStore';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
@@ -18,6 +19,14 @@ api.interceptors.response.use(
     enrichedError.config = error.config;
     enrichedError.code = error.code;
     enrichedError.originalError = error;
+
+    // Detect server down or critical errors
+    const isNetworkError = error.code === 'ERR_NETWORK' || error.message === 'Network Error';
+    const isCriticalServerError = error.response?.status >= 500;
+
+    if (isNetworkError || isCriticalServerError) {
+      useAuthStore.getState().setServerDown(true);
+    }
 
     return Promise.reject(enrichedError);
   }

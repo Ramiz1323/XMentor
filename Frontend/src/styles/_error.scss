@@ -1,0 +1,362 @@
+@use 'variables' as *;
+@use 'utilities' as *;
+@use 'sass:color';
+
+.error-page {
+  @include flex-center;
+  min-height: calc(100vh - 64px);
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+
+  .error-content {
+    @include glass-card;
+    max-width: 500px;
+    width: 100%;
+    padding: 3rem 2rem;
+    text-align: center;
+    @include flex-column;
+    gap: 2rem;
+    position: relative;
+    z-index: 10;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba($accent-primary, 0.15);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 
+                inset 0 0 20px rgba($accent-primary, 0.05);
+
+    .error-icon-wrapper {
+      .glow-icon-error {
+        color: $color-warning;
+        filter: drop-shadow(0 0 15px rgba($color-warning, 0.5));
+        animation: pulse-glow 2s infinite ease-in-out;
+      }
+    }
+
+    .error-text {
+      @include flex-column;
+      gap: 0.5rem;
+
+      h1 {
+        font-size: 6rem;
+        line-height: 1;
+        margin: 0;
+        background: linear-gradient(135deg, white 30%, rgba(255,255,255,0.4));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -2px;
+      }
+
+      h2 {
+        font-size: 1.75rem;
+        color: $accent-secondary;
+        text-transform: uppercase;
+        letter-spacing: 4px;
+        margin-bottom: 1rem;
+      }
+
+      p {
+        color: $text-secondary;
+        line-height: 1.6;
+        font-size: 1rem;
+      }
+    }
+
+    .error-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      width: 100%;
+
+      @media (max-width: 480px) {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+
+      .btn-primary, .btn-secondary {
+        @include flex-center;
+        gap: 0.75rem;
+        padding: 0.85rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        cursor: pointer;
+        @media (max-width: 480px) { padding: 0.75rem; font-size: 0.9rem; }
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, $accent-primary, color.adjust($accent-primary, $lightness: -15%));
+        color: white;
+        border: none;
+        box-shadow: 0 4px 15px rgba($accent-primary, 0.3);
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba($accent-primary, 0.4);
+        }
+      }
+
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.1);
+          border-color: rgba(255, 255, 255, 0.2);
+        }
+      }
+    }
+
+    @media (max-width: 640px) {
+      padding: 2.5rem 1.5rem;
+      gap: 1.5rem;
+      
+      .error-text {
+        h1 { font-size: 4rem; }
+        h2 { font-size: 1.25rem; letter-spacing: 2px; }
+        p { font-size: 0.9rem; }
+      }
+    }
+  }
+
+  .error-background-decor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+
+    .decor-circle {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.15;
+    }
+
+    .circle-1 {
+      width: 400px;
+      height: 400px;
+      background: $accent-primary;
+      top: -100px;
+      right: -100px;
+    }
+
+    .circle-2 {
+      width: 300px;
+      height: 300px;
+      background: $accent-secondary;
+      bottom: -50px;
+      left: -50px;
+    }
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { transform: scale(1); opacity: 1; filter: drop-shadow(0 0 15px rgba($color-warning, 0.5)); }
+  50% { transform: scale(1.05); opacity: 0.8; filter: drop-shadow(0 0 25px rgba($color-warning, 0.7)); }
+}
+
+// Maintenance Page Styles
+.maintenance-page {
+  @include flex-center;
+  min-height: 100vh;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+  background-color: $bg-primary;
+
+  .maintenance-content {
+    @include glass-card;
+    max-width: 550px;
+    width: 100%;
+    padding: 4rem 2rem;
+    text-align: center;
+    @include flex-column;
+    gap: 2.5rem;
+    z-index: 10;
+
+    .maintenance-visual {
+      position: relative;
+      height: 120px;
+      @include flex-center;
+      gap: 2rem;
+
+      .server-container {
+        position: relative;
+        color: $accent-primary;
+        
+        .server-icon {
+          filter: drop-shadow(0 0 10px rgba($accent-primary, 0.4));
+        }
+
+        .scan-line {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 2px;
+          background: $accent-secondary;
+          box-shadow: 0 0 10px $accent-secondary;
+          animation: scan 2s infinite linear;
+        }
+
+        .status-dots {
+          position: absolute;
+          bottom: 15px;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          gap: 4px;
+
+          .dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: $color-danger;
+            box-shadow: 0 0 5px $color-danger;
+            
+            &.red {
+              animation: blink 1s infinite alternate;
+              &:nth-child(2) { animation-delay: 0.2s; }
+              &:nth-child(3) { animation-delay: 0.4s; }
+            }
+          }
+        }
+      }
+
+      .gear-container {
+        position: relative;
+        color: $text-secondary;
+        
+        .gear-icon {
+          opacity: 0.5;
+          animation: spin 8s infinite linear;
+          
+          &.gear-2 {
+            position: absolute;
+            top: -15px;
+            right: -15px;
+            animation-direction: reverse;
+            animation-duration: 5s;
+          }
+        }
+      }
+    }
+
+    .maintenance-text {
+      h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+      h2 { color: $color-danger; letter-spacing: 5px; margin-bottom: 1rem; font-size: 1.25rem; }
+      p { color: $text-secondary; line-height: 1.6; }
+    }
+
+    .maintenance-status {
+      background: rgba($color-danger, 0.1);
+      border: 1px solid rgba($color-danger, 0.2);
+      padding: 0.75rem 1.5rem;
+      border-radius: 2rem;
+      @include flex-center;
+      gap: 0.75rem;
+      color: $color-danger;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .retry-btn {
+      width: 100%;
+      max-width: 300px;
+      margin: 0 auto;
+      @include flex-center;
+      gap: 1rem;
+      
+      .icon-spin {
+        animation: spin 2s infinite linear;
+        animation-play-state: paused;
+      }
+
+      &:hover .icon-spin {
+        animation-play-state: running;
+      }
+    }
+
+    @media (max-width: 640px) {
+      padding: 2.5rem 1.25rem;
+      gap: 1.5rem;
+      
+      .maintenance-visual {
+        transform: scale(0.85);
+        height: 100px;
+        margin-bottom: 0;
+      }
+      
+      .maintenance-text {
+        h1 { font-size: 1.75rem; }
+        h2 { font-size: 1rem; letter-spacing: 3px; }
+        p { font-size: 0.85rem; }
+      }
+      
+      .maintenance-status {
+        padding: 0.6rem 1rem;
+        font-size: 0.75rem;
+        width: 100%; // Make it full width on mobile if needed, or keep it compact
+        max-width: 280px;
+        margin: 0 auto;
+      }
+
+      .retry-btn {
+        max-width: 100%;
+        height: 50px;
+      }
+    }
+  }
+
+  @media (max-width: 640px) {
+    padding: 1rem;
+  }
+
+  .maintenance-bg-decor {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+
+    .grid-overlay {
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(rgba($accent-primary, 0.05) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba($accent-primary, 0.05) 1px, transparent 1px);
+      background-size: 50px 50px;
+      mask-image: radial-gradient(circle at center, black, transparent 80%);
+    }
+
+    .glow-orb {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.1;
+
+      &.orb-1 { top: -200px; left: -200px; background: $accent-primary; }
+      &.orb-2 { bottom: -200px; right: -200px; background: $color-danger; }
+    }
+  }
+}
+
+@keyframes scan {
+  0% { top: 10px; }
+  100% { top: 50px; }
+}
+
+@keyframes blink {
+  0% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

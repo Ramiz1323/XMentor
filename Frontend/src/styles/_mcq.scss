@@ -1385,7 +1385,7 @@
           color: rgba(255, 255, 255, 0.9);
         }
 
-        &:hover:not(:disabled) { 
+        &:hover:not(:disabled):not(.selected) { 
           border-color: rgba($accent-secondary, 0.3); 
           background: rgba(255,255,255,0.02);
           .option-badge { background: rgba(255, 255, 255, 0.2); color: white; }

@@ -18,6 +18,8 @@ import TaskResults from './pages/mcq/TaskResults';
 import ProfilePage from './pages/profile/ProfilePage';
 import DoubtDashboard from './pages/doubt/DoubtDashboard';
 import Leaderboard from './pages/leaderboard/Leaderboard';
+import NotFoundPage from './pages/error/NotFoundPage';
+import MaintenancePage from './pages/error/MaintenancePage';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, authChecked } = useAuthStore();
@@ -38,11 +40,17 @@ const AuthRoute = ({ children }) => {
 };
 
 function AppContent({ isAuthenticated }) {
+  const { isServerDown } = useAuthStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
 
   // Initialize Global HUD Notifications
   useHUDNotifications();
+
+  // If server is down, override everything with Maintenance Page
+  if (isServerDown) {
+    return <MaintenancePage />;
+  }
 
   // Close sidebar on route change for mobile
   useEffect(() => {
@@ -74,6 +82,9 @@ function AppContent({ isAuthenticated }) {
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             <Route path="/doubts" element={<ProtectedRoute><DoubtDashboard /></ProtectedRoute>} />
             <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+            
+            {/* Catch-all route for 404 */}
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
       </div>

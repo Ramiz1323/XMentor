@@ -2,13 +2,16 @@ import { useState, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
-import { UserPlus, Mail, Lock, User, GraduationCap, Sparkles, AlertCircle, Loader2 } from 'lucide-react';
+import { UserPlus, Mail, Lock, User, GraduationCap, Sparkles, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
 import GlassDropdown from '../../components/ui/GlassDropdown';
 
 const RegisterPage = () => {
-  const { register, handleSubmit, control, formState: { errors } } = useForm();
+  const { register, handleSubmit, control, formState: { errors } } = useForm({
+    defaultValues: { role: 'STUDENT' }
+  });
   const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { register: registerOperative } = useAuthStore();
   const navigate = useNavigate();
 
@@ -31,10 +34,7 @@ const RegisterPage = () => {
     { value: 'WB', label: 'WB Board' },
   ];
 
-  const roleOptions = [
-    { value: 'STUDENT', label: 'Student' },
-    { value: 'TEACHER', label: 'Teacher' },
-  ];
+
 
   return (
     <div className="auth-page">
@@ -94,56 +94,43 @@ const RegisterPage = () => {
               <Lock size={18} className="input-icon" aria-hidden="true" />
               <input
                 id="password-input"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
-                className="glass-input with-icon"
+                className="glass-input with-icon with-toggle"
                 {...register('password', { 
                   required: 'Password is required',
                   minLength: { value: 6, message: 'Min 6 characters required' }
                 })}
               />
+              <button 
+                type="button" 
+                className="password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex="-1"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
             {errors.password && <span id="password-error" className="error-msg" role="alert">{errors.password.message}</span>}
           </div>
 
-          <div className="form-grid">
-            <div className="form-group">
-              <Controller
-                name="role"
-                control={control}
-                rules={{ required: 'Role selection required' }}
-                render={({ field }) => (
-                  <GlassDropdown
-                    label="User Role"
-                    options={roleOptions}
-                    value={field.value}
-                    onChange={field.onChange}
-                    icon={User}
-                    placeholder="Student / Teacher"
-                  />
-                )}
-              />
-              {errors.role && <span className="error-msg" role="alert">{errors.role.message}</span>}
-            </div>
-
-            <div className="form-group">
-              <Controller
-                name="board"
-                control={control}
-                rules={{ required: 'Board selection required' }}
-                render={({ field }) => (
-                  <GlassDropdown
-                    label="Board"
-                    options={boardOptions}
-                    value={field.value}
-                    onChange={field.onChange}
-                    icon={GraduationCap}
-                    placeholder="Select Board"
-                  />
-                )}
-              />
-              {errors.board && <span className="error-msg" role="alert">{errors.board.message}</span>}
-            </div>
+          <div className="form-group">
+            <Controller
+              name="board"
+              control={control}
+              rules={{ required: 'Board selection required' }}
+              render={({ field }) => (
+                <GlassDropdown
+                  label="Board"
+                  options={boardOptions}
+                  value={field.value}
+                  onChange={field.onChange}
+                  icon={GraduationCap}
+                  placeholder="Select Board"
+                />
+              )}
+            />
+            {errors.board && <span className="error-msg" role="alert">{errors.board.message}</span>}
           </div>
 
           <button type="submit" className="auth-btn btn-primary" disabled={loading}>

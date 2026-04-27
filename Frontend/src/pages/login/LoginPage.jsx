@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
-import { LogIn, Mail, Lock, AlertCircle, Loader2 } from 'lucide-react';
+import { LogIn, Mail, Lock, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
 import GlassDropdown from '../../components/ui/GlassDropdown';
 
 const LoginPage = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuthStore();
   const navigate = useNavigate();
 
@@ -77,9 +78,9 @@ const LoginPage = () => {
               <Lock size={18} className="input-icon" aria-hidden="true" />
               <input
                 id="password-input"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
-                className="glass-input with-icon"
+                className="glass-input with-icon with-toggle"
                 {...register('password', { 
                   required: 'Password is required',
                   minLength: { value: 6, message: 'Password must be at least 6 characters' }
@@ -87,6 +88,14 @@ const LoginPage = () => {
                 aria-invalid={errors.password ? "true" : "false"}
                 aria-describedby={errors.password ? "password-error" : undefined}
               />
+              <button 
+                type="button" 
+                className="password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex="-1"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
             {errors.password && (
               <span id="password-error" className="error-msg" role="alert">

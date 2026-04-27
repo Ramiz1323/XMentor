@@ -11,6 +11,9 @@ const useAuthStore = create(
       isLoading: false,
       authChecked: false,
       error: null,
+      isServerDown: false,
+      
+      setServerDown: (status) => set({ isServerDown: status }),
       
       setUser: (userData) => {
         set({ 
