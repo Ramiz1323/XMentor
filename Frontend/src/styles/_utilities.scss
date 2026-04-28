@@ -1,9 +1,10 @@
 @use 'variables' as *;
 @use 'sass:color';
+@use 'sass:meta';
 
 // Tactical Alpha Helper: Supports both Sass colors and CSS Variables
 @function alpha($color, $opacity) {
-  @if type-of($color) == 'color' {
+  @if meta.type-of($color) == 'color' {
     @return rgba($color, $opacity);
   } @else {
     // For CSS Variables, use color-mix to provide proper transparency in the browser
