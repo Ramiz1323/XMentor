@@ -34,8 +34,8 @@ const Sidebar = ({ isOpen, onClose }) => {
   return (
     <>
       {/* Mobile Overlay */}
-      <div 
-        className={`sidebar-overlay ${isOpen ? 'show' : ''}`} 
+      <div
+        className={`sidebar-overlay ${isOpen ? 'show' : ''}`}
         onClick={onClose}
         aria-hidden="true"
       />
@@ -45,7 +45,7 @@ const Sidebar = ({ isOpen, onClose }) => {
           <button className="mobile-close" onClick={onClose} aria-label="Close sidebar">
             <X size={24} />
           </button>
-          
+
           <div className="user-info">
             <div className="avatar-mini">
               {user?.profilePic ? (
@@ -62,8 +62,8 @@ const Sidebar = ({ isOpen, onClose }) => {
         </div>
 
         <nav className="sidebar-nav">
-          <NavLink 
-            to="/" 
+          <NavLink
+            to="/"
             onClick={handleLinkClick}
             className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
           >
@@ -71,8 +71,8 @@ const Sidebar = ({ isOpen, onClose }) => {
             <span>Dashboard</span>
           </NavLink>
 
-          <NavLink 
-            to="/communities" 
+          <NavLink
+            to="/communities"
             onClick={handleLinkClick}
             className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
           >
@@ -80,8 +80,8 @@ const Sidebar = ({ isOpen, onClose }) => {
             <span>Communities</span>
           </NavLink>
 
-          <NavLink 
-            to="/doubts" 
+          <NavLink
+            to="/doubts"
             onClick={handleLinkClick}
             className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
           >
@@ -91,8 +91,8 @@ const Sidebar = ({ isOpen, onClose }) => {
 
           <div className="sidebar-divider" role="presentation">Tasks</div>
 
-          <NavLink 
-            to="/mcq" 
+          <NavLink
+            to="/mcq"
             onClick={handleLinkClick}
             className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
           >
@@ -100,8 +100,8 @@ const Sidebar = ({ isOpen, onClose }) => {
             <span>MCQ Hub</span>
           </NavLink>
 
-          <NavLink 
-            to="/leaderboard" 
+          <NavLink
+            to="/leaderboard"
             onClick={handleLinkClick}
             className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
           >
@@ -111,8 +111,8 @@ const Sidebar = ({ isOpen, onClose }) => {
 
           <div className="sidebar-divider" role="presentation">Settings</div>
 
-          <NavLink 
-            to="/profile" 
+          <NavLink
+            to="/profile"
             onClick={handleLinkClick}
             className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
           >
