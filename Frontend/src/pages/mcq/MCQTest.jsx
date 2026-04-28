@@ -113,8 +113,10 @@ const MCQTest = () => {
       triggerConfetti();
       await fetchTestById(id);
     } catch (err) {
-      if (!autoSubmit) {
-        setSecurityWarning(`Uplink Error: ${err.message || 'Submission failed. Please try again.'}`);
+      setSecurityWarning(`Uplink Error: ${err.message || 'Submission failed. Please check your connection and try again.'}`);
+      // If auto-submit failed, we want to stay on the page but show a clear failure state
+      if (autoSubmit) {
+        setSubmitting(false);
       }
     } finally {
       setSubmitting(false);
@@ -187,10 +189,7 @@ const MCQTest = () => {
       }
     };
 
-    const handleBlur = () => {
-      setViolations(v => v + 1);
-      setSecurityWarning('Strategic Breach: Focus lost. Maintain tactical awareness on the operation.');
-    };
+    // handleBlur removed due to false positives. Security now relies on visibilitychange (tab switching).
 
     const handleContextMenu = (e) => {
       e.preventDefault();
@@ -241,7 +240,6 @@ const MCQTest = () => {
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('blur', handleBlur);
     document.addEventListener('contextmenu', handleContextMenu);
     document.addEventListener('copy', handleCopy);
     document.addEventListener('dblclick', handleDoubleClick);
@@ -251,7 +249,6 @@ const MCQTest = () => {
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('blur', handleBlur);
       document.removeEventListener('contextmenu', handleContextMenu);
       document.removeEventListener('copy', handleCopy);
       document.removeEventListener('dblclick', handleDoubleClick);
@@ -261,18 +258,25 @@ const MCQTest = () => {
     };
   }, [isReady, result, test?.isSubmitted]);
 
-  const enterFullScreen = () => {
+  const enterFullScreen = async () => {
     const element = document.documentElement;
     if (element.requestFullscreen) {
-      element.requestFullscreen().catch(() => {
-        setSecurityWarning('Hardware Failure: Could not engage full-screen mode. Please try again or use a supported browser.');
-      });
+      try {
+        await element.requestFullscreen();
+        return true;
+      } catch (err) {
+        setSecurityWarning('Hardware Failure: Could not engage full-screen mode. Please ensure you haven\'t blocked the request.');
+        return false;
+      }
     }
+    return false;
   };
 
-  const startTest = () => {
-    enterFullScreen();
-    setIsReady(true);
+  const startTest = async () => {
+    const success = await enterFullScreen();
+    if (success) {
+      setIsReady(true);
+    }
   };
 
   const handleOptionSelect = (optionIdx) => {

@@ -61,9 +61,9 @@ function AppContent({ isAuthenticated }) {
   const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
   
   // Detect if we are in a tactical MCQ operation (MCQ Test Page)
-  const isMCQTestPage = location.pathname.startsWith('/mcq/') && 
-                        !['/mcq/create', '/mcq/results'].some(p => location.pathname.includes(p)) &&
-                        location.pathname !== '/mcq';
+  // Matches /mcq/:id but excludes /mcq, /mcq/create, and /mcq/:id/results
+  const isMCQTestPage = /^\/mcq\/[^\/]+$/.test(location.pathname) && 
+                        location.pathname !== '/mcq/create';
 
   return (
     <div className={`app-container ${isAuthenticated ? 'with-sidebar' : 'auth-mode'} ${isSidebarOpen ? 'sidebar-open' : ''} ${isMCQTestPage ? 'tactical-mode' : ''}`}>

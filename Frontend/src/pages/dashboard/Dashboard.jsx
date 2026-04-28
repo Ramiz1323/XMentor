@@ -18,7 +18,7 @@ const Dashboard = () => {
     }
   }, [fetchStats, fetchMyTests, user?.role]);
 
-  const pendingTests = tests.filter(t => !t.isSubmitted).slice(0, 3);
+  const pendingTests = (tests || []).filter(t => !t.isSubmitted).slice(0, 3);
 
   return (
     <div className="dashboard-container">
@@ -33,30 +33,41 @@ const Dashboard = () => {
         </Link>
       </header>
 
-      {user?.role === 'STUDENT' && pendingTests.length > 0 && (
+      {user?.role === 'STUDENT' && (pendingTests.length > 0 || testsLoading) && (
         <section className="pending-tasks-section top-priority">
           <h2 className="section-title">
             <Clock size={18} />
             <span>Pending Operations</span>
           </h2>
           <div className="pending-grid">
-            {pendingTests.map(test => (
-              <Link key={test._id} to={`/mcq/${test._id}`} className="pending-task-card glass-card">
-                <div className="task-info">
-                  <div className="task-type-tag">{test.subject}</div>
-                  <h3>{test.title}</h3>
-                  {test.deadline && !isNaN(new Date(test.deadline).getTime()) && (
-                    <div className="deadline-alert">
-                      <AlertCircle size={12} />
-                      <span>Ends: {new Date(test.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
-                    </div>
-                  )}
+            {testsLoading ? (
+              [...Array(3)].map((_, i) => (
+                <div key={i} className="pending-task-card glass-card skeleton-card">
+                  <div className="task-info">
+                    <Skeleton width="60px" height="12px" className="mb-2" />
+                    <Skeleton width="180px" height="24px" />
+                  </div>
                 </div>
-                <div className="action-button">
-                  <ArrowRight size={20} />
-                </div>
-              </Link>
-            ))}
+              ))
+            ) : (
+              pendingTests.map(test => (
+                <Link key={test._id} to={`/mcq/${test._id}`} className="pending-task-card glass-card">
+                  <div className="task-info">
+                    <div className="task-type-tag">{test.subject}</div>
+                    <h3>{test.title}</h3>
+                    {test.deadline && !isNaN(new Date(test.deadline).getTime()) && (
+                      <div className="deadline-alert">
+                        <AlertCircle size={12} />
+                        <span>Ends: {new Date(test.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="action-button">
+                    <ArrowRight size={20} />
+                  </div>
+                </Link>
+              ))
+            )}
           </div>
         </section>
       )}

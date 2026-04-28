@@ -16,6 +16,14 @@ export const getAll = asyncHandler(async (req, res) => {
 
 export const getById = asyncHandler(async (req, res) => {
   const result = await communityService.getCommunityById(req.params.id, req.user._id);
+  
+  if (!result) {
+    return res.status(404).json({
+      success: false,
+      message: 'Community node not found in the tactical network'
+    });
+  }
+
   res.status(200).json({ success: true, message: 'Community details retrieved', data: result });
 });
 

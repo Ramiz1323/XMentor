@@ -1381,10 +1381,21 @@
   padding: 2rem;
   max-width: 1600px;
   margin: 0 auto;
-  user-select: none; 
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
+  
+  // Accessibility: Restrict selection only to specific tactical elements for exam integrity
+  // while allowing assistive technologies to read content where possible.
+  button, .option, .choice, .tactical-grid .item {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+
+  // Allow selection in educational content/explanations
+  .explanation-box {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+  }
 
   &::selection { background: transparent; }
   *::selection { background: transparent; }
