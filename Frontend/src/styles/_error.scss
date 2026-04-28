@@ -21,7 +21,7 @@
     z-index: 10;
     backdrop-filter: blur(20px);
     border: 1px solid alpha($accent-primary, 0.15);
-    box-shadow: 0 20px 50px alpha(black, 0.4), 
+    box-shadow: 0 20px 50px rgba(black, 0.4), 
                 inset 0 0 20px alpha($accent-primary, 0.05);
 
     .error-icon-wrapper {
@@ -97,13 +97,13 @@
       }
 
       .btn-secondary {
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(white, 0.05);
         color: white;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(white, 0.1);
 
         &:hover {
-          background: rgba(255, 255, 255, 0.1);
-          border-color: rgba(255, 255, 255, 0.2);
+          background: rgba(white, 0.1);
+          border-color: rgba(white, 0.2);
         }
       }
     }
@@ -326,8 +326,8 @@
     .grid-overlay {
       position: absolute;
       inset: 0;
-      background-image: linear-gradient(alpha($accent-primary, 0.05) 1px, transparent 1px),
-                        linear-gradient(90deg, alpha($accent-primary, 0.05) 1px, transparent 1px);
+      background-image: linear-gradient(rgba($accent-primary, 0.05) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba($accent-primary, 0.05) 1px, transparent 1px);
       background-size: 50px 50px;
       mask-image: radial-gradient(circle at center, black, transparent 80%);
     }
@@ -340,8 +340,8 @@
       filter: blur(100px);
       opacity: 0.1;
 
-      \u0026.orb-1 { top: -200px; left: -200px; background: $accent-primary; }
-      \u0026.orb-2 { bottom: -200px; right: -200px; background: $color-danger; }
+      &.orb-1 { top: -200px; left: -200px; background: $accent-primary; }
+      &.orb-2 { bottom: -200px; right: -200px; background: $color-danger; }
     }
   }
 }

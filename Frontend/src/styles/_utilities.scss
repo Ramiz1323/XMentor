@@ -1,4 +1,15 @@
 @use 'variables' as *;
+@use 'sass:color';
+
+// Tactical Alpha Helper: Supports both Sass colors and CSS Variables
+@function alpha($color, $opacity) {
+  @if type-of($color) == 'color' {
+    @return rgba($color, $opacity);
+  } @else {
+    // For CSS Variables, use color-mix to provide proper transparency in the browser
+    @return color-mix(in srgb, #{$color} #{$opacity * 100}%, transparent);
+  }
+}
 
 @mixin flex-center {
   display: flex;
@@ -26,8 +37,8 @@
 @mixin glass-input {
   width: 100%;
   padding: 12px 14px;
-  background: alpha(white, 0.08) !important;
-  border: 1px solid alpha(white, 0.3) !important;
+  background: rgba(white, 0.08) !important;
+  border: 1px solid rgba(white, 0.3) !important;
   border-radius: 10px;
   color: white !important;
   outline: none;
@@ -36,20 +47,20 @@
   font-size: 0.95rem;
 
   &::placeholder {
-    color: alpha(white, 0.3);
+    color: rgba(white, 0.3);
   }
 
   &:focus {
     border-color: $accent-primary !important;
-    background: alpha(white, 0.12) !important;
+    background: rgba(white, 0.12) !important;
     box-shadow: 0 0 15px alpha($accent-primary, 0.3);
   }
 
   &:disabled, &.disabled {
     opacity: 0.6;
     cursor: not-allowed;
-    background: alpha(white, 0.04) !important;
-    border-color: alpha(white, 0.15) !important;
+    background: rgba(white, 0.04) !important;
+    border-color: rgba(white, 0.15) !important;
   }
   &:-webkit-autofill,
   &:-webkit-autofill:hover, 
@@ -70,7 +81,7 @@
   background: $glass-bg;
   backdrop-filter: $glass-blur;
   border: 1px solid $glass-border;
-  border-top: 1px solid alpha(white, 0.2); // Tactical rim light
+  border-top: 1px solid rgba(white, 0.2); // Tactical rim light
   border-radius: 16px;
   box-shadow: $glass-shadow;
   transition: $transition-smooth;
@@ -196,7 +207,7 @@
 .close-btn, .modal-close {
   background: transparent !important;
   border: none !important;
-  color: alpha(white, 0.4);
+  color: rgba(white, 0.4);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -206,7 +217,7 @@
   border-radius: 8px;
 
   &:hover {
-    background: alpha(white, 0.05) !important;
+    background: rgba(white, 0.05) !important;
     color: white;
   }
 }
@@ -232,8 +243,8 @@
 .glass-dropdown-trigger {
   width: 100%;
   padding: 13px 16px;
-  background: alpha(white, 0.08);
-  border: 1px solid alpha(white, 0.25);
+  background: rgba(white, 0.08);
+  border: 1px solid rgba(white, 0.25);
   border-radius: 10px;
   color: white;
   cursor: pointer;
@@ -243,7 +254,7 @@
   transition: $transition-smooth;
 
   &:hover {
-    background: alpha(white, 0.08);
+    background: rgba(white, 0.08);
     border-color: alpha($accent-primary, 0.4);
     box-shadow: 0 0 15px alpha($accent-primary, 0.1);
   }
@@ -297,10 +308,10 @@
   top: calc(100% + 10px);
   left: 0;
   width: 100%;
-  background: alpha(#0f172a, 0.98); // More opaque to block bright background buttons
+  background: rgba(#0f172a, 0.98); // More opaque to block bright background buttons
   backdrop-filter: blur(25px);
-  border: 1px solid alpha(white, 0.25);
-  border-top-color: alpha(white, 0.4); // Rim light effect
+  border: 1px solid rgba(white, 0.25);
+  border-top-color: rgba(white, 0.4); // Rim light effect
   border-radius: 12px;
   padding: 6px;
   z-index: 1200;
@@ -314,7 +325,7 @@
     cursor: pointer;
     font-size: 0.9rem;
     transition: all 0.2s ease;
-    color: alpha(white, 0.7);
+    color: rgba(white, 0.7);
     outline: none;
     display: flex;
     align-items: center;
@@ -353,13 +364,13 @@
 }
 
 .skeleton {
-  background: alpha(white, 0.08);
+  background: rgba(white, 0.08);
   background-image: linear-gradient(
     90deg, 
-    alpha(white, 0) 0%, 
+    rgba(white, 0) 0%, 
     alpha($accent-primary, 0.05) 20%, 
     alpha($accent-primary, 0.1) 60%, 
-    alpha(white, 0) 100%
+    rgba(white, 0) 100%
   );
   background-size: 800px 100%;
   background-repeat: no-repeat;
@@ -429,7 +440,7 @@
   .scanning-bar {
     width: 100%;
     height: 2px;
-    background: alpha(white, 0.1);
+    background: rgba(white, 0.1);
     border-radius: 10px;
     overflow: hidden;
     position: relative;

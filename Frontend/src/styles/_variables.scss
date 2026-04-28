@@ -34,15 +34,6 @@
   --accent-secondary: #ff9de2;
 }
 
-// Helper for CSS Variable Alpha (supporting both literals and CSS variables)
-@function alpha($color, $opacity) {
-  @if type-of($color) == 'color' {
-    @return rgba($color, $opacity);
-  } @else {
-    @return color-mix(in srgb, #{$color} #{$opacity * 100}%, transparent #{(1 - $opacity) * 100}%);
-  }
-}
-
 // Colors
 $bg-primary: var(--bg-primary);
 $bg-secondary: var(--bg-secondary);
@@ -52,7 +43,7 @@ $color-danger: var(--color-danger);
 $color-success: var(--color-success);
 $color-warning: var(--color-warning);
 $text-primary: #ffffff;
-$text-secondary: alpha(white, 0.7);
+$text-secondary: rgba(white, 0.7);
 
 // Gradients
 $gradient-primary: linear-gradient(135deg, $accent-primary, $accent-secondary);
@@ -64,10 +55,10 @@ $font-family-display: 'Orbitron', 'Inter', sans-serif;
 $letter-spacing-hud: 0.05rem;
 
 // Glassmorphism
-$glass-bg: alpha(white, 0.1);
-$glass-border: alpha(white, 0.25);
+$glass-bg: rgba(white, 0.1);
+$glass-border: rgba(white, 0.25);
 $glass-blur: blur(16px);
-$glass-shadow: 0 8px 32px 0 alpha(black, 0.5);
+$glass-shadow: 0 8px 32px 0 rgba(black, 0.5);
 
 // Transitions
 $transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

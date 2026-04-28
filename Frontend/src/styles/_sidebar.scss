@@ -4,7 +4,7 @@
 .sidebar-overlay {
   position: fixed;
   inset: 0;
-  background: alpha(black, 0.4);
+  background: rgba(black, 0.4);
   backdrop-filter: blur(4px);
   z-index: 850;
   opacity: 0;
@@ -30,7 +30,7 @@
   background: alpha($bg-primary, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-right: 1px solid alpha(white, 0.1);
+  border-right: 1px solid rgba(white, 0.1);
   display: flex;
   flex-direction: column;
   padding: 1.5rem;
@@ -60,8 +60,8 @@
       align-items: center;
       gap: 1rem;
       padding: 1rem;
-      background: alpha(white, 0.07);
-      border: 1px solid alpha(white, 0.1);
+      background: rgba(white, 0.07);
+      border: 1px solid rgba(white, 0.1);
       border-radius: 12px;
 
       .avatar-mini {
@@ -136,7 +136,7 @@
 
       &:hover,
       &:focus-visible {
-        background: alpha(white, 0.1);
+        background: rgba(white, 0.1);
         color: white;
         outline: none;
         box-shadow: 0 0 0 2px alpha($accent-primary, 0.5);

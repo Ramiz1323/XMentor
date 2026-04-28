@@ -60,7 +60,7 @@
         border-radius: 50%;
         overflow: hidden;
         border: 2px solid $accent-primary;
-        background: alpha(white, 0.05);
+        background: rgba(white, 0.05);
         @include flex-center;
 
         @media (max-width: 480px) {

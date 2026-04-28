@@ -69,10 +69,11 @@ const ProfilePage = () => {
       setSuccess('');
       setIsUpdatingTheme(true);
       
-      // Artifical delay for "recalibration" feel
+      // Artificial delay for "recalibration" feel
       await new Promise(resolve => setTimeout(resolve, 800));
       
-      await updateProfile({ theme: themeId });
+      const data = await updateProfile({ theme: themeId });
+      setUser(data.data); // Keep auth store synced
       setSuccess('Tactical interface recalibrated successfully.');
     } catch (err) {
       alert(err.message);
@@ -205,18 +206,21 @@ const ProfilePage = () => {
           ].map((t) => (
             <button
               key={t.id}
-              onClick={() => handleUpdateTheme(t.id)}
-              className={`theme-swatch ${currentUser?.theme === t.id ? 'active' : ''}`}
+              onClick={() => !isUpdatingTheme && handleUpdateTheme(t.id)}
+              disabled={isUpdatingTheme}
+              className={`theme-swatch ${currentUser?.theme === t.id ? 'active' : ''} ${isUpdatingTheme ? 'updating' : ''}`}
+              aria-busy={isUpdatingTheme && currentUser?.theme === t.id}
               style={{
                 background: t.color,
                 width: '45px',
                 height: '45px',
                 borderRadius: '10px',
                 border: currentUser?.theme === t.id ? '2px solid white' : '2px solid transparent',
-                cursor: 'pointer',
+                cursor: isUpdatingTheme ? 'not-allowed' : 'pointer',
                 transition: 'all 0.3s ease',
                 boxShadow: currentUser?.theme === t.id ? `0 0 15px ${t.glow}` : 'none',
-                position: 'relative'
+                position: 'relative',
+                opacity: isUpdatingTheme && currentUser?.theme !== t.id ? 0.5 : 1
               }}
               title={t.label}
             >
