@@ -817,42 +817,86 @@
 
   .targeting-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
     margin-top: 1.5rem;
 
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr;
+    }
+
     .student-select-card {
-      padding: 1rem;
+      padding: 0.8rem 1rem;
       @include glass-card;
-      @include flex-center;
-      justify-content: flex-start;
-      gap: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
       cursor: pointer;
       transition: $transition-smooth;
       border: 1px solid rgba(255,255,255,0.05);
       min-width: 0;
 
-      &:hover { border-color: rgba($accent-secondary, 0.3); }
+      &:hover { 
+        border-color: rgba($accent-secondary, 0.4); 
+        transform: translateX(4px);
+      }
 
       &.selected {
         background: rgba($accent-secondary, 0.1);
         border-color: $accent-secondary;
+        box-shadow: 0 0 15px rgba($accent-secondary, 0.1);
+        
+        &::after {
+          content: 'SELECTED';
+          font-size: 0.5rem;
+          font-weight: 900;
+          color: $accent-secondary;
+          margin-left: auto;
+          background: rgba($accent-secondary, 0.1);
+          padding: 2px 6px;
+          border-radius: 4px;
+        }
       }
 
       .avatar {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background: $gradient-primary;
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: rgba($accent-primary, 0.1);
+        color: $accent-primary;
         @include flex-center;
         font-weight: 700;
-        font-size: 0.9rem;
-        overflow: hidden;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+        border: 1px solid rgba($accent-primary, 0.2);
 
         img {
           width: 100%;
           height: 100%;
           object-fit: cover;
+        }
+      }
+
+      .student-info {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+
+        .student-name {
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: white;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .student-handle {
+          font-size: 0.75rem;
+          color: $text-secondary;
+          opacity: 0.6;
+          font-family: $font-family-base;
         }
       }
     }
@@ -1337,6 +1381,128 @@
 
       &.critical { color: $color-danger; border-color: rgba($color-danger, 0.3); }
       &.fluid { background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.6); border-color: rgba(255, 255, 255, 0.1); }
+    }
+  }
+
+  .test-lobby-container {
+    @include flex-center;
+    min-height: 70vh;
+    padding: 1rem;
+
+    .lobby-card {
+      max-width: 500px;
+      width: 100%;
+      padding: 3rem 2rem;
+      text-align: center;
+      animation: slide-up 0.4s ease-out;
+
+      @media (max-width: 480px) { padding: 2rem 1.25rem; }
+
+      .lobby-header {
+        margin-bottom: 2.5rem;
+        
+        .icon-ring {
+          width: 70px;
+          height: 70px;
+          border-radius: 50%;
+          background: rgba($accent-primary, 0.1);
+          border: 1px solid rgba($accent-primary, 0.2);
+          @include flex-center;
+          margin: 0 auto 1.5rem;
+          position: relative;
+          
+          &::after {
+            content: '';
+            position: absolute;
+            inset: -5px;
+            border-radius: 50%;
+            border: 1px dashed rgba($accent-primary, 0.3);
+            animation: rotate 10s linear infinite;
+          }
+        }
+
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        p { color: $text-secondary; font-size: 0.9rem; }
+      }
+
+      .lobby-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 2.5rem;
+
+        .lobby-stat {
+          @include flex-column;
+          gap: 0.5rem;
+          padding: 1rem;
+          background: rgba(255, 255, 255, 0.03);
+          border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.05);
+
+          svg { color: $accent-secondary; opacity: 0.8; }
+          .val { font-family: $font-family-display; font-size: 1.25rem; font-weight: 700; }
+          .lab { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.5; }
+        }
+      }
+
+      .lobby-rules {
+        text-align: left;
+        background: rgba(255, 255, 255, 0.02);
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.03);
+
+        h3 { font-size: 0.9rem; margin-bottom: 1rem; color: $accent-secondary; }
+        ul {
+          list-style: none;
+          li {
+            font-size: 0.85rem;
+            color: $text-secondary;
+            margin-bottom: 0.75rem;
+            display: flex;
+            gap: 0.75rem;
+            line-height: 1.4;
+
+            &::before {
+              content: '▶';
+              color: $accent-secondary;
+              font-size: 0.6rem;
+              margin-top: 0.2rem;
+            }
+            
+            strong { color: white; }
+          }
+        }
+      }
+
+      .lobby-footer {
+        display: flex;
+        gap: 1rem;
+        button { flex: 1; }
+        @media (max-width: 480px) { flex-direction: column; }
+      }
+    }
+  }
+
+  .skipped-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 1rem;
+    background: rgba($color-danger, 0.08);
+    border: 1px solid rgba($color-danger, 0.2);
+    border-radius: 10px;
+    color: #ff4d4d;
+    font-size: 0.8rem;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    
+    svg {
+      flex-shrink: 0;
+      animation: pulse-red 2s infinite;
     }
   }
 

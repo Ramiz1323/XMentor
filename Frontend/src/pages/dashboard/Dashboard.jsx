@@ -1,17 +1,24 @@
 import { useEffect } from 'react';
 import useAuthStore from '../../store/useAuthStore';
 import useUserStore from '../../store/useUserStore';
-import { BookOpen, Users, Trophy, MessageSquare, Target, CheckCircle } from 'lucide-react';
+import useMCQStore from '../../store/useMCQStore';
+import { BookOpen, Users, Trophy, MessageSquare, Target, CheckCircle, Clock, ArrowRight, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Skeleton from '../../components/ui/Skeleton';
 
 const Dashboard = () => {
   const { user } = useAuthStore();
   const { stats, fetchStats, isLoading } = useUserStore();
+  const { tests, fetchMyTests, isLoading: testsLoading } = useMCQStore();
 
   useEffect(() => {
     fetchStats();
-  }, [fetchStats]);
+    if (user?.role === 'STUDENT') {
+      fetchMyTests();
+    }
+  }, [fetchStats, fetchMyTests, user?.role]);
+
+  const pendingTests = tests.filter(t => !t.isSubmitted).slice(0, 3);
 
   return (
     <div className="dashboard-container">
@@ -25,6 +32,34 @@ const Dashboard = () => {
           <span>Leaderboard</span>
         </Link>
       </header>
+
+      {user?.role === 'STUDENT' && pendingTests.length > 0 && (
+        <section className="pending-tasks-section top-priority">
+          <h2 className="section-title">
+            <Clock size={18} />
+            <span>Pending Operations</span>
+          </h2>
+          <div className="pending-grid">
+            {pendingTests.map(test => (
+              <Link key={test._id} to={`/mcq/${test._id}`} className="pending-task-card glass-card">
+                <div className="task-info">
+                  <div className="task-type-tag">{test.subject}</div>
+                  <h3>{test.title}</h3>
+                  {test.deadline && (
+                    <div className="deadline-alert">
+                      <AlertCircle size={12} />
+                      <span>Ends: {new Date(test.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="action-button">
+                  <ArrowRight size={20} />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="stats-grid">
         {/* Community Stats */}
@@ -113,8 +148,6 @@ const Dashboard = () => {
             </Link>
           </div>
         </section>
-
-        {/* Recent Performance can be added here if needed */}
       </div>
     </div>
   );

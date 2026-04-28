@@ -17,6 +17,8 @@ const MCQTest = () => {
   const [result, setResult] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [showResultModal, setShowResultModal] = useState(false);
+  const [isReady, setIsReady] = useState(false);
+
 
   const answersRef = useRef([]);
   const timeLeftRef = useRef(null);
@@ -74,9 +76,18 @@ const MCQTest = () => {
 
   const handleSubmit = useCallback(async (autoSubmit = false) => {
     if (submitting || result || !testRef.current) return;
+    
+    // Check for unanswered questions
+    const currentAnswers = autoSubmit ? answersRef.current : answers;
+    const unansweredCount = currentAnswers.filter(a => a === -1).length;
+
+    if (!autoSubmit && unansweredCount > 0) {
+      const confirmSubmit = window.confirm(`Tactical Alert: You have ${unansweredCount} unanswered questions. These will be logged as INCORRECT. Proceed with submission?`);
+      if (!confirmSubmit) return;
+    }
+
     try {
       setSubmitting(true);
-      const currentAnswers = autoSubmit ? answersRef.current : answers;
       
       const timeTaken = testRef.current.hasTimer 
         ? (testRef.current.duration * 60 - (timeLeftRef.current || 0))
@@ -98,7 +109,7 @@ const MCQTest = () => {
   }, [id, submitting, result, answers, elapsedTime, submitTest, fetchTestById]);
 
   useEffect(() => {
-    if (!timeLeft || timeLeft <= 0 || result || test?.isSubmitted || !test?.hasTimer) return;
+    if (!timeLeft || timeLeft <= 0 || result || test?.isSubmitted || !test?.hasTimer || !isReady) return;
     
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -135,7 +146,7 @@ const MCQTest = () => {
   }, [showResultModal, result]);
 
   useEffect(() => {
-    if (test?.hasTimer || result || test?.isSubmitted || isLoading || !test) return;
+    if (test?.hasTimer || result || test?.isSubmitted || isLoading || !test || !isReady) return;
     
     const ticker = setInterval(() => {
       setElapsedTime(prev => prev + 1);
@@ -196,6 +207,61 @@ const MCQTest = () => {
   };
 
   const isCritical = timeLeft < 60;
+
+  if (!isReady && !test.isSubmitted && !result) {
+    return (
+      <div className="mcq-page">
+        <div className="test-lobby-container">
+          <div className="lobby-card glass-card">
+            <div className="lobby-header">
+              <div className="icon-ring">
+                <Target size={32} className="accent-glow" />
+              </div>
+              <h1 className="glow-text">Mission Briefing</h1>
+              <p>Deployment authorized for: <strong>{test.title}</strong></p>
+            </div>
+
+            <div className="lobby-stats">
+              <div className="lobby-stat">
+                <Target size={20} />
+                <div className="val">{test.totalQuestions}</div>
+                <div className="lab">Targets</div>
+              </div>
+              <div className="lobby-stat">
+                <Clock size={20} />
+                <div className="val">{test.duration}m</div>
+                <div className="lab">Window</div>
+              </div>
+              <div className="lobby-stat">
+                <HelpCircle size={20} />
+                <div className="val">{test.subject}</div>
+                <div className="lab">Sector</div>
+              </div>
+            </div>
+
+            <div className="lobby-rules">
+              <h3>Rules of Engagement</h3>
+              <ul>
+                <li>The timer starts the moment you initialize the uplink.</li>
+                <li>Unanswered questions are counted as <strong>failed tactical nodes</strong>.</li>
+                <li>Do not refresh the page during the operation.</li>
+                <li>Ensure a stable connection before proceeding.</li>
+              </ul>
+            </div>
+
+            <div className="lobby-footer">
+              <button onClick={() => navigate('/mcq')} className="btn-sec">
+                Abort Mission
+              </button>
+              <button onClick={() => setIsReady(true)} className="btn-primary">
+                Initialize Uplink <ArrowRight size={18} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mcq-page">
@@ -292,6 +358,13 @@ const MCQTest = () => {
           <span className="q-num">{currentIdx + 1}.</span>
           {currentQuestion?.q}
         </h3>
+
+        {result && result.answers[currentIdx] === -1 && (
+          <div className="skipped-badge">
+             <AlertCircle size={14} /> 
+             <span>Skipped - Counted as Incorrect</span>
+          </div>
+        )}
 
         <div className="options-list">
           {currentQuestion?.options.map((option, idx) => {

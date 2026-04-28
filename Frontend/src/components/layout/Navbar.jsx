@@ -5,9 +5,15 @@ import logo from '../../assets/logo.png';
 import { LogOut, Bell, Menu } from 'lucide-react';
 
 const Navbar = ({ onMenuClick }) => {
-  const { isAuthenticated, logout } = useAuthStore();
+  const { isAuthenticated, logout, isLoading } = useAuthStore();
   // Mock notification state - in a real app this would come from a notification store or API
   const [hasNotifications] = useState(true);
+
+  const handleLogout = async () => {
+    if (window.confirm('Are you sure you want to terminate your strategic session?')) {
+      await logout();
+    }
+  };
 
   if (!isAuthenticated) return null;
 
@@ -41,12 +47,13 @@ const Navbar = ({ onMenuClick }) => {
           </button>
 
           <button 
-            onClick={logout} 
-            className="logout-btn header-logout"
+            onClick={handleLogout} 
+            disabled={isLoading}
+            className={`logout-btn header-logout ${isLoading ? 'loading' : ''}`}
             aria-label="Terminate current session"
           >
             <LogOut size={18} />
-            <span className="btn-text">Log Out</span>
+            <span className="btn-text">{isLoading ? 'Logging out...' : 'Log Out'}</span>
           </button>
         </div>
       </div>

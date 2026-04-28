@@ -5,6 +5,7 @@ import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
 import useHUDNotifications from './hooks/useHUDNotifications';
 import { Toaster } from 'react-hot-toast';
+import LoadingOverlay from './components/ui/LoadingOverlay';
 
 import LoginPage from './pages/login/LoginPage';
 import RegisterPage from './pages/register/RegisterPage';
@@ -40,7 +41,7 @@ const AuthRoute = ({ children }) => {
 };
 
 function AppContent({ isAuthenticated }) {
-  const { isServerDown } = useAuthStore();
+  const { isServerDown, isLoading } = useAuthStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
 
@@ -61,6 +62,7 @@ function AppContent({ isAuthenticated }) {
 
   return (
     <div className={`app-container ${isAuthenticated ? 'with-sidebar' : 'auth-mode'} ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+      {isLoading && <LoadingOverlay message="Terminating Strategic Session..." />}
       {isAuthenticated && (
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       )}
