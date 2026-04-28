@@ -1067,6 +1067,10 @@
       gap: 1rem;
       align-items: end;
 
+      &.two-cols { grid-template-columns: 1fr 1fr; }
+      &.three-cols { grid-template-columns: 1fr 1fr 1fr; }
+      &.mixed-cols { grid-template-columns: 1.5fr 1fr; }
+
       @media (max-width: 640px) {
           grid-template-columns: 1fr !important;
           gap: 0.75rem;
@@ -1190,6 +1194,21 @@
       margin-top: 0.5rem;
       font-style: italic;
   }
+
+  .toggle-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: 1fr 1fr;
+
+      &.three-cols {
+          grid-template-columns: 1fr 0.7fr 1fr;
+      }
+
+      @media (max-width: 640px) {
+          grid-template-columns: 1fr !important;
+          gap: 0.75rem;
+      }
+  }
 }
 
 // TOGGLE SWITCH
@@ -1249,6 +1268,44 @@
         input:checked + .slider:before {
             transform: translateX(16px);
         }
+    }
+
+    .inline-duration-input {
+        width: 40px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+        color: white;
+        text-align: center;
+        font-size: 0.85rem;
+        font-weight: 700;
+        padding: 4px 0;
+        outline: none;
+        transition: all 0.3s ease;
+
+        &:focus {
+            border-color: #ff4d4d;
+            background: rgba(#ff4d4d, 0.05);
+            box-shadow: 0 0 10px rgba(#ff4d4d, 0.1);
+        }
+
+        &::-webkit-inner-spin-button, 
+        &::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+    }
+
+    .duration-unit {
+        font-size: 0.7rem;
+        opacity: 0.5;
+        font-weight: 600;
+    }
+
+    .duration-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
     }
 }
 
@@ -1709,6 +1766,14 @@
             }
             &.pending {
               color: #f59e0b;
+            }
+          }
+
+          &.last-active {
+            .value {
+              font-size: 0.8rem;
+              color: rgba(255, 255, 255, 0.4);
+              font-weight: 600;
             }
           }
         }

@@ -208,12 +208,9 @@ export const getTeacherOverview = async (teacherId) => {
       !completedTestIds.has(test._id.toString())
     );
 
-    return {
-      student,
-      completedCount: studentResults.length,
-      pendingCount: pendingTasks.length,
-      pendingTasks: pendingTasks.map(t => ({ _id: t._id, title: t.title, subject: t.subject })),
-      results: studentResults.map(r => {
+    // Sort student results by date (most recent first)
+    const sortedResults = studentResults
+      .map(r => {
         const test = tests.find(t => t._id.toString() === r.testId.toString());
         return {
           ...r,
@@ -221,7 +218,25 @@ export const getTeacherOverview = async (teacherId) => {
           subject: test?.subject || 'OTHERS'
         };
       })
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    return {
+      student,
+      completedCount: sortedResults.length,
+      pendingCount: pendingTasks.length,
+      pendingTasks: pendingTasks.map(t => ({ _id: t._id, title: t.title, subject: t.subject })),
+      results: sortedResults,
+      lastSubmissionAt: sortedResults.length > 0 ? sortedResults[0].createdAt : null
     };
+  });
+
+  // Sort overall studentStats by lastSubmissionAt (most recent first)
+  // Students with no submissions go to the bottom
+  studentStats.sort((a, b) => {
+    if (!a.lastSubmissionAt && !b.lastSubmissionAt) return 0;
+    if (!a.lastSubmissionAt) return 1;
+    if (!b.lastSubmissionAt) return -1;
+    return new Date(b.lastSubmissionAt) - new Date(a.lastSubmissionAt);
   });
 
   return {

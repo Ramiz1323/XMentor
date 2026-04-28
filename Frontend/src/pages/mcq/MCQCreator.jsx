@@ -33,6 +33,7 @@ const MCQCreator = () => {
     count: 10,
     jsonText: '',
     hasTimer: true,
+    duration: 10,
     board: 'CBSE',
     classLevel: '12',
     marksPerQ: 4,
@@ -124,6 +125,7 @@ const MCQCreator = () => {
         title: importData.topic,
         subject: importData.subject,
         hasTimer: importData.hasTimer,
+        duration: parseInt(importData.duration) || 10,
         deadline: importData.deadline,
         language: importData.language,
         questions: formattedQs
@@ -138,7 +140,7 @@ const MCQCreator = () => {
 
   const copyPrompt = () => {
     const complexityTxt = importData.isLengthy 
-      ? 'Focus on lengthy, multi-step calculative problems where students need to solve on paper before selecting the option (JEE Style).' 
+      ? 'Focus on lengthy, multi-step calculative and theory based problems where students need to solve on paper before selecting the option (JEE/NEET/WBCHSE Style).' 
       : 'Focus on conceptual clarity and rapid theoretical analysis.';
 
     const prompt = `Act as a high-level academic curriculum architect. Generate a JSON array of ${importData.count} MCQ questions for class ${importData.classLevel} students studying ${importData.board || 'Standards'}.
@@ -284,7 +286,7 @@ Keep double check that the questions should be easy to understand and in simple 
 
             <div className="import-form-grid">
               <div className="input-stack">
-                <div className="input-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="input-grid two-cols">
                   <GlassDropdown 
                     label="Subject"
                     options={subjectOptions}
@@ -301,7 +303,7 @@ Keep double check that the questions should be easy to understand and in simple 
                   />
                 </div>
                 
-                <div className="input-grid" style={{ gridTemplateColumns: '1.5fr 1fr', gap: '1rem' }}>
+                <div className="input-grid mixed-cols">
                   <div className="input-group">
                     <label>Topic Name</label>
                     <input 
@@ -322,7 +324,7 @@ Keep double check that the questions should be easy to understand and in simple 
                   </div>
                 </div>
 
-                <div className="input-grid" style={{ gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                <div className="input-grid three-cols">
                    <GlassDropdown 
                     label="Proficiency"
                     options={difficultyOptions}
@@ -348,7 +350,7 @@ Keep double check that the questions should be easy to understand and in simple 
                   />
                 </div>
 
-                <div className="input-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="input-grid two-cols">
                   <div className="input-group">
                     <label>Marks / Q</label>
                     <input 
@@ -369,7 +371,7 @@ Keep double check that the questions should be easy to understand and in simple 
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className={`toggle-grid ${importData.hasTimer ? 'three-cols' : ''}`}>
                   <div className="tactical-toggle mt-2">
                     <span>Timed Task</span>
                     <label className="switch">
@@ -381,6 +383,19 @@ Keep double check that the questions should be easy to understand and in simple 
                         <span className="slider"></span>
                     </label>
                   </div>
+                  {importData.hasTimer && (
+                    <div className="tactical-toggle mt-2 duration-toggle">
+                      <div className="duration-controls">
+                        <input 
+                          type="number"
+                          className="inline-duration-input" 
+                          value={importData.duration}
+                          onChange={(e) => setImportData({...importData, duration: e.target.value})}
+                        />
+                        <span className="duration-unit">min</span>
+                      </div>
+                    </div>
+                  )}
                   <div className="tactical-toggle mt-2">
                     <span>Lengthy</span>
                     <label className="switch">
@@ -472,18 +487,20 @@ Keep double check that the questions should be easy to understand and in simple 
                 />
               </div>
               <div className="input-grid">
-                <div className="input-group">
-                  <label>Duration (Minutes)</label>
-                  <input 
-                    type="number"
-                    value={testData.duration}
-                    onChange={(e) => {
-                      const val = parseInt(e.target.value);
-                      setTestData({...testData, duration: isNaN(val) ? 0 : val});
-                    }}
-                    className="glass-input" 
-                  />
-                </div>
+                {testData.hasTimer && (
+                  <div className="input-group">
+                    <label>Duration (Minutes)</label>
+                    <input 
+                      type="number"
+                      value={testData.duration}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        setTestData({...testData, duration: isNaN(val) ? 0 : val});
+                      }}
+                      className="glass-input" 
+                    />
+                  </div>
+                )}
                 <div className="input-group">
                   <label>Deadline</label>
                   <input 

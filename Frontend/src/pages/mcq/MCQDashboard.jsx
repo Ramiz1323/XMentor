@@ -56,10 +56,12 @@ const MCQDashboard = () => {
             </div>
             <h3>{test.title}</h3>
           </div>
-          <div className="duration-box">
-             <p className="label">Duration</p>
-             <p className="value">{test.duration}m</p>
-          </div>
+          {test.hasTimer && (
+            <div className="duration-box">
+               <p className="label">Duration</p>
+               <p className="value">{test.duration}m</p>
+            </div>
+          )}
         </div>
 
         <div className="card-meta" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem 1rem' }}>
@@ -148,7 +150,7 @@ const MCQDashboard = () => {
         {data.studentStats.length === 0 ? (
           <div className="empty-section-msg">No students detected in your cohort.</div>
         ) : (
-          data.studentStats.map(({ student, completedCount, pendingCount, pendingTasks, results }) => (
+          data.studentStats.map(({ student, completedCount, pendingCount, pendingTasks, results, lastSubmissionAt }) => (
             <div key={student._id} className="student-container">
               <div 
                 className={`glass-card student-card ${expandedStudentId === student._id ? 'expanded' : ''}`} 
@@ -167,6 +169,14 @@ const MCQDashboard = () => {
                 <div className="spacer" />
 
                 <div className="stats">
+                  {lastSubmissionAt && (
+                    <div className="stat-item last-active">
+                      <div className="label">Last Solve</div>
+                      <div className="value">
+                        {new Date(lastSubmissionAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
+                      </div>
+                    </div>
+                  )}
                   <div className="stat-item">
                     <div className="label">Completed</div>
                     <div className="value completed">{completedCount}</div>
