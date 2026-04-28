@@ -4,8 +4,8 @@
 .sidebar-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(black, 0.4);
-  backdrop-filter: blur(4px);
+  background: rgba(black, 0.6); // Darker overlay
+  backdrop-filter: blur(8px); // Increased blur depth
   z-index: 850;
   opacity: 0;
   visibility: hidden;
@@ -159,10 +159,14 @@
   @media (max-width: 768px) {
     transform: translateX(-100%);
     z-index: 1100;
+    background: rgba(#0a0f1e, 0.98) !important;
+    backdrop-filter: blur(40px) !important;
+    -webkit-backdrop-filter: blur(40px) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
 
     &.mobile-open {
       transform: translateX(0);
-      box-shadow: 20px 0 50px alpha(black, 0.5);
+      box-shadow: 20px 0 80px rgba(0, 0, 0, 0.8);
     }
   }
 
