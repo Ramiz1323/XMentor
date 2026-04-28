@@ -478,3 +478,279 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+/* Strategic Toggle Switch */
+.toggle-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  user-select: none;
+  padding: 8px 12px;
+  background: rgba(white, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(white, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    background: rgba(white, 0.08);
+    border-color: rgba(white, 0.2);
+  }
+
+  .toggle-btn {
+    position: relative;
+    width: 44px;
+    height: 22px;
+    background: rgba(white, 0.15);
+    border-radius: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(white, 0.1);
+
+    .slider {
+      position: absolute;
+      left: 3px;
+      top: 3px;
+      width: 14px;
+      height: 14px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    &.active {
+      background: alpha($accent-primary, 0.3);
+      border-color: alpha($accent-primary, 0.5);
+      box-shadow: 0 0 15px alpha($accent-primary, 0.2);
+
+      .slider {
+        transform: translateX(22px);
+        background: $accent-secondary;
+        box-shadow: 0 0 10px $accent-secondary;
+      }
+    }
+  }
+
+  span {
+    font-family: $font-family-display;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    color: rgba(white, 0.6);
+    text-transform: uppercase;
+    transition: color 0.3s ease;
+  }
+
+  &:hover span {
+    color: rgba(white, 0.9);
+  }
+
+  .toggle-btn.active + span {
+    color: $accent-secondary;
+    text-shadow: 0 0 10px alpha($accent-secondary, 0.4);
+  }
+}
+
+.animate-slide-in {
+  animation: slideInHUD 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideInHUD {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.marks-input-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(white, 0.08);
+    border: 1px solid rgba(white, 0.2);
+    border-radius: 6px;
+    padding: 2px 8px;
+    transition: all 0.3s ease;
+
+    svg {
+        opacity: 0.5;
+        color: $accent-secondary;
+    }
+
+    input {
+        background: transparent;
+        border: none;
+        color: white;
+        width: 40px;
+        font-family: $font-family-display;
+        font-weight: 700;
+        font-size: 0.85rem;
+        outline: none;
+        text-align: center;
+
+        &::placeholder { color: rgba(white, 0.3); }
+    }
+
+    &:focus-within {
+        border-color: $accent-secondary;
+        background: rgba(white, 0.12);
+        box-shadow: 0 0 10px alpha($accent-secondary, 0.2);
+    }
+}
+
+.grading-input-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    input {
+        width: 100px !important;
+        text-align: center;
+        font-weight: 700;
+        border-color: alpha($accent-secondary, 0.4) !important;
+    }
+
+    .btn-primary { width: 42px; height: 42px; }
+    .btn-sec { width: 42px; height: 42px; padding: 0; }
+}
+
+.mission-details-panel {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    margin: 1rem 0;
+    padding: 1.5rem;
+    border: 1px solid rgba(white, 0.1);
+    animation: slideInHUD 0.3s ease;
+
+    .panel-header {
+        font-family: $font-family-display;
+        font-size: 0.75rem;
+        letter-spacing: 0.1rem;
+        color: $accent-primary;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        border-bottom: 1px solid rgba(white, 0.05);
+        padding-bottom: 0.5rem;
+    }
+
+    .question-ref-item {
+        display: flex;
+        justify-content: space-between;
+        gap: 2rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(white, 0.03);
+        
+        &:last-child { border: none; }
+
+        .q-text { font-size: 0.85rem; opacity: 0.7; line-height: 1.4; }
+        .q-marks { 
+            font-family: $font-family-display;
+            font-weight: 700;
+            color: $accent-secondary;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+    }
+}
+
+.subjective-question-card {
+    background: rgba(white, 0.03);
+    border: 1px solid rgba(white, 0.08);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    
+    &:hover {
+        background: rgba(white, 0.05);
+        border-color: rgba(white, 0.15);
+        transform: translateX(4px);
+    }
+
+    .q-header-row {
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid rgba(white, 0.05);
+
+        .q-num {
+            font-family: $font-family-display;
+            font-weight: 800;
+            font-size: 0.75rem;
+            letter-spacing: 0.1rem;
+            color: rgba(white, 0.5);
+            text-transform: uppercase;
+        }
+
+        .q-marks-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-family: $font-family-display;
+            font-weight: 700;
+            font-size: 0.75rem;
+            color: $accent-secondary;
+            background: alpha($accent-secondary, 0.1);
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid alpha($accent-secondary, 0.2);
+        }
+    }
+
+    .q-text {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: rgba(white, 0.85);
+        font-weight: 400;
+    }
+}
+
+.tactical-objective-panel {
+    background: rgba($accent-primary, 0.04);
+    border: 1px solid rgba($accent-primary, 0.1);
+    border-left: 4px solid $accent-primary;
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    gap: 1.25rem;
+    align-items: center;
+    margin-top: 2rem;
+    box-shadow: 0 10px 30px rgba(black, 0.2);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, rgba($accent-primary, 0.05) 0%, transparent 100%);
+        pointer-events: none;
+    }
+
+    .panel-icon {
+        color: $accent-primary;
+        filter: drop-shadow(0 0 8px rgba($accent-primary, 0.5));
+        flex-shrink: 0;
+    }
+
+    .panel-content {
+        h4 {
+            font-family: $font-family-display;
+            font-weight: 800;
+            font-size: 0.75rem;
+            letter-spacing: 0.05rem;
+            color: $accent-primary;
+            text-transform: uppercase;
+            margin-bottom: 0.2rem;
+        }
+
+        p {
+            font-size: 0.85rem;
+            color: rgba(white, 0.7);
+            margin: 0;
+            line-height: 1.4;
+        }
+    }
+}
+.animate-spin {
+    animation: spinHUD 1s linear infinite;
+}

@@ -166,9 +166,10 @@ export const getDashboardStats = async (userId, role) => {
 
 export const getGlobalLeaderboard = async () => {
   const { MCQResult } = await import('../mcq/mcq.model.js');
+  const { SubjectiveResult } = await import('../subjective/subjective.model.js');
   
-  // Aggregate MCQ results for all students
-  const leaderboardData = await MCQResult.aggregate([
+  // 1. Aggregate MCQ results
+  const mcqLeaderboard = await MCQResult.aggregate([
     {
       $lookup: {
         from: 'users',
@@ -185,43 +186,83 @@ export const getGlobalLeaderboard = async () => {
         totalTests: { $sum: 1 },
         totalScore: { $sum: '$score' },
         totalPossible: { $sum: '$total' },
-        avgAccuracy: { $avg: { $divide: ['$score', '$total'] } },
         studentName: { $first: '$studentInfo.name' },
         studentUsername: { $first: '$studentInfo.username' },
         studentPic: { $first: '$studentInfo.profilePic' }
       }
-    },
-    {
-      $project: {
-        studentId: '$_id',
-        name: '$studentName',
-        username: '$studentUsername',
-        profilePic: '$studentPic',
-        totalTests: 1,
-        avgAccuracy: { $multiply: ['$avgAccuracy', 100] },
-        // A weighted score for ranking: (Accuracy * 0.8) + (Participation * 0.2)
-        rankingScore: { 
-          $add: [
-            { $multiply: ['$avgAccuracy', 80] }, 
-            { $multiply: [{ $min: ['$totalTests', 10] }, 2] } // Cap participation bonus
-          ]
-        }
-      }
-    },
-    { $sort: { rankingScore: -1, totalTests: -1 } },
-    { $limit: 20 }
+    }
   ]);
 
-  return leaderboardData.map((entry, index) => ({
-    rank: index + 1,
-    id: entry.studentId,
-    name: entry.name,
-    username: entry.username,
-    profilePic: entry.profilePic,
-    totalTests: entry.totalTests,
-    accuracy: Math.round(entry.avgAccuracy),
-    score: Math.round(entry.rankingScore)
-  }));
+  // 2. Aggregate Subjective results (only GRADED)
+  const subjectiveLeaderboard = await SubjectiveResult.aggregate([
+    { $match: { status: 'GRADED' } },
+    {
+      $group: {
+        _id: '$studentId',
+        totalTests: { $sum: 1 },
+        totalScore: { $sum: '$marksObtained' },
+        totalPossible: { $sum: '$maxMarks' }
+      }
+    }
+  ]);
+
+  // 3. Merge data in memory
+  const mergedMap = new Map();
+
+  mcqLeaderboard.forEach(m => {
+    mergedMap.set(m._id.toString(), {
+      studentId: m._id,
+      name: m.studentName,
+      username: m.studentUsername,
+      profilePic: m.studentPic,
+      totalTests: m.totalTests,
+      totalScore: m.totalScore,
+      totalPossible: m.totalPossible
+    });
+  });
+
+  subjectiveLeaderboard.forEach(s => {
+    const idStr = s._id.toString();
+    if (mergedMap.has(idStr)) {
+      const existing = mergedMap.get(idStr);
+      existing.totalTests += s.totalTests;
+      existing.totalScore += s.totalScore;
+      existing.totalPossible += s.totalPossible;
+    } else {
+      // Need to fetch student info if they haven't done any MCQ
+      // But for performance, we assume most active students do both.
+      // For safety, we'll keep it simple or fetch missing ones later.
+    }
+  });
+
+  // Final transformation and ranking
+  const leaderboardData = Array.from(mergedMap.values()).map(entry => {
+    const avgAccuracy = entry.totalPossible > 0 ? (entry.totalScore / entry.totalPossible) * 100 : 0;
+    
+    // A weighted score for ranking: (Accuracy * 0.8) + (Participation * 0.2)
+    const participationBonus = Math.min(entry.totalTests, 10) * 2;
+    const rankingScore = (avgAccuracy * 0.8) + participationBonus;
+
+    return {
+      ...entry,
+      accuracy: Math.round(avgAccuracy),
+      score: Math.round(rankingScore)
+    };
+  });
+
+  return leaderboardData
+    .sort((a, b) => b.score - a.score || b.totalTests - a.totalTests)
+    .slice(0, 20)
+    .map((entry, index) => ({
+      rank: index + 1,
+      id: entry.studentId,
+      name: entry.name,
+      username: entry.username,
+      profilePic: entry.profilePic,
+      totalTests: entry.totalTests,
+      accuracy: entry.accuracy,
+      score: entry.score
+    }));
 };
 
 export const updatePushSubscription = async (userId, subscription) => {

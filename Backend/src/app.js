@@ -12,6 +12,7 @@ import userRoutes from './modules/user/user.routes.js';
 import communityRoutes from './modules/community/community.routes.js';
 import mcqRoutes from './modules/mcq/mcq.routes.js';
 import doubtRoutes from './modules/doubt/doubt.routes.js';
+import subjectiveRoutes from './modules/subjective/subjective.routes.js';
 
 const app = express();
 
@@ -53,6 +54,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/community', communityRoutes);
 app.use('/api/mcq', mcqRoutes);
 app.use('/api/doubt', doubtRoutes);
+app.use('/api/subjective', subjectiveRoutes);
 
 app.get('/api/health', (req, res) => {
   const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';

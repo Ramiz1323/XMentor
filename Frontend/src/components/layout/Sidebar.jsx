@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Users, BookOpen, Settings, LayoutDashboard, X, Target, HelpCircle, Trophy, Download } from 'lucide-react';
+import { Users, BookOpen, Settings, LayoutDashboard, X, Target, HelpCircle, Trophy, Download, CheckCircle2 } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
 
 const Sidebar = ({ isOpen, onClose }) => {
@@ -93,6 +93,7 @@ const Sidebar = ({ isOpen, onClose }) => {
 
           <NavLink
             to="/mcq"
+            end
             onClick={handleLinkClick}
             className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
           >
@@ -107,6 +108,29 @@ const Sidebar = ({ isOpen, onClose }) => {
           >
             <Trophy size={20} aria-hidden="true" />
             <span>Leaderboard</span>
+          </NavLink>
+
+          <div className="sidebar-divider" role="presentation">Subjective</div>
+
+          {user?.role === 'TEACHER' && (
+            <NavLink
+              to="/subjective/review"
+              onClick={handleLinkClick}
+              className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
+            >
+              <CheckCircle2 size={20} aria-hidden="true" />
+              <span>Review Center</span>
+            </NavLink>
+          )}
+
+          <NavLink
+            to='/subjective'
+            end
+            onClick={handleLinkClick}
+            className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
+          >
+            <BookOpen size={20} aria-hidden="true" />
+            <span>{user?.role === 'TEACHER' ? 'Architect Task' : 'Subjective Hub'}</span>
           </NavLink>
 
           <div className="sidebar-divider" role="presentation">Settings</div>
