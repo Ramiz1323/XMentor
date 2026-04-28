@@ -74,24 +74,24 @@
       label {
         font-family: $font-family-display;
         font-size: 0.8rem;
-        color: rgba($accent-secondary, 0.9);
+        color: alpha($accent-secondary, 0.9);
         text-transform: uppercase;
         letter-spacing: 0.1rem;
         font-weight: 600;
         margin-left: 2px;
-        text-shadow: 0 0 10px rgba($accent-secondary, 0.2);
+        text-shadow: 0 0 10px alpha($accent-secondary, 0.2);
       }
     }
 
     // Scoped input overrides for auth form consistency
     input {
-      background: rgba(15, 23, 42, 0.6); // Deeper blue-black background
-      border: 1px solid rgba($accent-primary, 0.2);
+      background: alpha(#0f172a, 0.6); // Deeper blue-black background
+      border: 1px solid alpha($accent-primary, 0.2);
       
       &:focus {
-        background: rgba(15, 23, 42, 0.8);
+        background: alpha(#0f172a, 0.8);
         border-color: $accent-secondary;
-        box-shadow: 0 0 20px rgba($accent-secondary, 0.15);
+        box-shadow: 0 0 20px alpha($accent-secondary, 0.15);
       }
 
       &.with-toggle {
@@ -106,7 +106,7 @@
       transform: translateY(-50%);
       background: none;
       border: none;
-      color: rgba(255, 255, 255, 0.4);
+      color: alpha(white, 0.4);
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -133,19 +133,19 @@
   }
 
   .auth-error {
-    background: rgba($color-danger, 0);
-    border: 1px solid rgba($color-danger, 0.2);
+    background: transparent;
+    border: 1px solid alpha($color-danger, 0.2);
     backdrop-filter: blur(10px);
     padding: 0.85rem 1.25rem;
     border-radius: 0.75rem;
-    color: color.adjust($color-danger, $lightness: 15%);
+    color: color-mix(in srgb, var(--color-danger), white 15%);
     font-size: 0.9rem;
     display: flex;
     align-items: center;
     gap: 0.75rem;
     animation: authErrorSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 
-                inset 0 0 15px rgba($color-danger, 0.05);
+                inset 0 0 15px alpha($color-danger, 0.05);
 
     span {
       font-weight: 500;
@@ -154,7 +154,7 @@
 
     svg {
       flex-shrink: 0;
-      filter: drop-shadow(0 0 8px rgba($color-danger, 0.4));
+      filter: drop-shadow(0 0 8px alpha($color-danger, 0.4));
     }
 
     @media (max-width: 480px) {

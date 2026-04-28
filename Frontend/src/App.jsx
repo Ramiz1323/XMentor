@@ -41,7 +41,7 @@ const AuthRoute = ({ children }) => {
 };
 
 function AppContent({ isAuthenticated }) {
-  const { isServerDown, isLoading } = useAuthStore();
+  const { isServerDown, isLoading, user } = useAuthStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
 
@@ -66,7 +66,7 @@ function AppContent({ isAuthenticated }) {
                         location.pathname !== '/mcq/create';
 
   return (
-    <div className={`app-container ${isAuthenticated ? 'with-sidebar' : 'auth-mode'} ${isSidebarOpen ? 'sidebar-open' : ''} ${isMCQTestPage ? 'tactical-mode' : ''}`}>
+    <div className={`app-container ${isAuthenticated ? 'with-sidebar' : 'auth-mode'} ${isSidebarOpen ? 'sidebar-open' : ''} ${isMCQTestPage ? 'tactical-mode' : ''} theme-${user?.theme || 'blue'}`}>
       {isLoading && <LoadingOverlay message="Terminating Strategic Session..." />}
       {isAuthenticated && !isMCQTestPage && (
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />

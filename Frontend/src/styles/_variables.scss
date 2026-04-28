@@ -1,28 +1,73 @@
+:root {
+  // Default (Blue)
+  --accent-primary: #3b82f6;
+  --accent-secondary: #22d3ee;
+  --bg-primary: #0b0f1a;
+  --bg-secondary: #0f172a;
+  --color-danger: #ff4d4d;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+}
+
+.theme-red {
+  --accent-primary: #ef4444;
+  --accent-secondary: #f97316;
+}
+
+.theme-emerald {
+  --accent-primary: #10b981;
+  --accent-secondary: #34d399;
+}
+
+.theme-purple {
+  --accent-primary: #8b5cf6;
+  --accent-secondary: #ec4899;
+}
+
+.theme-amber {
+  --accent-primary: #f59e0b;
+  --accent-secondary: #fbbf24;
+}
+
+.theme-bts {
+  --accent-primary: #9b6dff;
+  --accent-secondary: #ff9de2;
+}
+
+// Helper for CSS Variable Alpha (supporting both literals and CSS variables)
+@function alpha($color, $opacity) {
+  @if type-of($color) == 'color' {
+    @return rgba($color, $opacity);
+  } @else {
+    @return color-mix(in srgb, #{$color} #{$opacity * 100}%, transparent #{(1 - $opacity) * 100}%);
+  }
+}
+
 // Colors
-$bg-primary: #0b0f1a;
-$bg-secondary: #0f172a;
-$accent-primary: #3b82f6;
-$accent-secondary: #22d3ee;
-$color-danger: #ff4d4d;
-$color-success: #22c55e;
-$color-warning: #f59e0b;
+$bg-primary: var(--bg-primary);
+$bg-secondary: var(--bg-secondary);
+$accent-primary: var(--accent-primary);
+$accent-secondary: var(--accent-secondary);
+$color-danger: var(--color-danger);
+$color-success: var(--color-success);
+$color-warning: var(--color-warning);
 $text-primary: #ffffff;
-$text-secondary: rgba(255, 255, 255, 0.7);
+$text-secondary: alpha(white, 0.7);
 
 // Gradients
 $gradient-primary: linear-gradient(135deg, $accent-primary, $accent-secondary);
 $gradient-dark: linear-gradient(135deg, $bg-primary, $bg-secondary);
 
 // Typography
-$font-family-base: 'Inter', sans-serif;
-$font-family-display: 'Space Grotesk', sans-serif;
+$font-family-base: 'Inter', system-ui, -apple-system, sans-serif;
+$font-family-display: 'Orbitron', 'Inter', sans-serif;
 $letter-spacing-hud: 0.05rem;
 
 // Glassmorphism
-$glass-bg: rgba(255, 255, 255, 0.05);
-$glass-border: rgba(255, 255, 255, 0.1);
+$glass-bg: alpha(white, 0.1);
+$glass-border: alpha(white, 0.25);
 $glass-blur: blur(16px);
-$glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+$glass-shadow: 0 8px 32px 0 alpha(black, 0.5);
 
 // Transitions
 $transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

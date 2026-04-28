@@ -26,9 +26,9 @@
 @mixin glass-input {
   width: 100%;
   padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  background: alpha(white, 0.08) !important;
+  border: 1px solid alpha(white, 0.3) !important;
+  border-radius: 10px;
   color: white !important;
   outline: none;
   font-family: $font-family-base;
@@ -36,16 +36,21 @@
   font-size: 0.95rem;
 
   &::placeholder {
-    color: rgba(255, 255, 255, 0.3);
+    color: alpha(white, 0.3);
   }
 
   &:focus {
-    border-color: $accent-primary;
-    background: rgba(255, 255, 255, 0.08) !important;
-    box-shadow: 0 0 10px rgba($accent-primary, 0.2);
+    border-color: $accent-primary !important;
+    background: alpha(white, 0.12) !important;
+    box-shadow: 0 0 15px alpha($accent-primary, 0.3);
   }
 
-  // Handle Chrome Autofill white backgrounds
+  &:disabled, &.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: alpha(white, 0.04) !important;
+    border-color: alpha(white, 0.15) !important;
+  }
   &:-webkit-autofill,
   &:-webkit-autofill:hover, 
   &:-webkit-autofill:focus, 
@@ -65,13 +70,14 @@
   background: $glass-bg;
   backdrop-filter: $glass-blur;
   border: 1px solid $glass-border;
-  border-radius: 12px;
+  border-top: 1px solid alpha(white, 0.2); // Tactical rim light
+  border-radius: 16px;
   box-shadow: $glass-shadow;
   transition: $transition-smooth;
 
   &:hover {
-    border-color: rgba($accent-primary, 0.3);
-    box-shadow: 0 8px 32px 0 rgba($accent-primary, 0.1);
+    border-color: alpha($accent-primary, 0.3);
+    box-shadow: 0 8px 32px 0 alpha($accent-primary, 0.1);
   }
 }
 
@@ -114,8 +120,8 @@
 }
 
 @mixin alert-error {
-  background: rgba($color-danger, 0.1);
-  border: 1px solid rgba($color-danger, 0.3);
+  background: alpha($color-danger, 0.15);
+  border: 1px solid alpha($color-danger, 0.4);
   color: $color-danger;
   padding: 0.75rem;
   border-radius: 8px;
@@ -128,7 +134,7 @@
   background: linear-gradient(135deg, $text-primary, $accent-secondary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 10px rgba($accent-secondary, 0.3));
+  filter: drop-shadow(0 0 10px alpha($accent-secondary, 0.3));
 }
 
 @mixin btn-primary {
@@ -146,18 +152,18 @@
   font-weight: 600;
   cursor: pointer;
   transition: $transition-smooth;
-  box-shadow: 0 4px 15px rgba($accent-primary, 0.3);
+  box-shadow: 0 4px 15px alpha($accent-primary, 0.3);
   text-decoration: none;
 
   &:hover:not(:disabled) {
     opacity: 0.9;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba($accent-primary, 0.4);
+    box-shadow: 0 6px 20px alpha($accent-primary, 0.4);
   }
 
   &:focus-visible:not(:disabled) {
     outline: none;
-    box-shadow: 0 0 0 3px rgba($accent-secondary, 0.5), 0 6px 20px rgba($accent-primary, 0.4);
+    box-shadow: 0 0 0 3px alpha($accent-secondary, 0.5), 0 6px 20px alpha($accent-primary, 0.4);
   }
 
   &:disabled {
@@ -190,7 +196,7 @@
 .close-btn, .modal-close {
   background: transparent !important;
   border: none !important;
-  color: rgba(255, 255, 255, 0.4);
+  color: alpha(white, 0.4);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -200,7 +206,7 @@
   border-radius: 8px;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05) !important;
+    background: alpha(white, 0.05) !important;
     color: white;
   }
 }
@@ -216,7 +222,7 @@
   .dropdown-label {
     font-family: $font-family-display;
     font-size: 0.75rem;
-    color: rgba($accent-secondary, 0.8);
+    color: alpha($accent-secondary, 0.8);
     text-transform: uppercase;
     letter-spacing: 0.12rem;
     font-weight: 700;
@@ -226,8 +232,8 @@
 .glass-dropdown-trigger {
   width: 100%;
   padding: 13px 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: alpha(white, 0.08);
+  border: 1px solid alpha(white, 0.25);
   border-radius: 10px;
   color: white;
   cursor: pointer;
@@ -237,21 +243,21 @@
   transition: $transition-smooth;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba($accent-primary, 0.4);
-    box-shadow: 0 0 15px rgba($accent-primary, 0.1);
+    background: alpha(white, 0.08);
+    border-color: alpha($accent-primary, 0.4);
+    box-shadow: 0 0 15px alpha($accent-primary, 0.1);
   }
 
   &:focus-visible {
     outline: none;
     border-color: $accent-primary;
-    box-shadow: 0 0 0 3px rgba($accent-primary, 0.2);
+    box-shadow: 0 0 0 3px alpha($accent-primary, 0.2);
   }
 
   &.open {
-    background: rgba($bg-secondary, 0.5);
+    background: alpha($bg-secondary, 0.5);
     border-color: $accent-primary;
-    box-shadow: 0 0 20px rgba($accent-primary, 0.15);
+    box-shadow: 0 0 20px alpha($accent-primary, 0.15);
   }
 
   .trigger-content {
@@ -262,7 +268,7 @@
     .trigger-icon {
       opacity: 0.6;
       color: $accent-primary;
-      filter: drop-shadow(0 0 5px rgba($accent-primary, 0.3));
+      filter: drop-shadow(0 0 5px alpha($accent-primary, 0.3));
     }
 
     span {
@@ -291,10 +297,10 @@
   top: calc(100% + 10px);
   left: 0;
   width: 100%;
-  background: rgba(#0f172a, 0.98); // More opaque to block bright background buttons
+  background: alpha(#0f172a, 0.98); // More opaque to block bright background buttons
   backdrop-filter: blur(25px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-top-color: rgba(255, 255, 255, 0.2); // Rim light effect
+  border: 1px solid alpha(white, 0.25);
+  border-top-color: alpha(white, 0.4); // Rim light effect
   border-radius: 12px;
   padding: 6px;
   z-index: 1200;
@@ -308,20 +314,20 @@
     cursor: pointer;
     font-size: 0.9rem;
     transition: all 0.2s ease;
-    color: rgba(255, 255, 255, 0.7);
+    color: alpha(white, 0.7);
     outline: none;
     display: flex;
     align-items: center;
     gap: 0.75rem;
 
     &:hover, &:focus-visible {
-      background: rgba($accent-primary, 0.2);
+      background: alpha($accent-primary, 0.2);
       color: white;
       padding-left: 18px; // Interactive shift
     }
 
     &.selected {
-      background: rgba($accent-primary, 0.15);
+      background: alpha($accent-primary, 0.15);
       color: $accent-secondary;
       font-weight: 600;
       &::after {
@@ -347,20 +353,20 @@
 }
 
 .skeleton {
-  background: rgba(255, 255, 255, 0.05);
+  background: alpha(white, 0.08);
   background-image: linear-gradient(
     90deg, 
-    rgba(255, 255, 255, 0) 0%, 
-    rgba(255, 255, 255, 0.03) 20%, 
-    rgba(255, 255, 255, 0.05) 60%, 
-    rgba(255, 255, 255, 0) 100%
+    alpha(white, 0) 0%, 
+    alpha($accent-primary, 0.05) 20%, 
+    alpha($accent-primary, 0.1) 60%, 
+    alpha(white, 0) 100%
   );
   background-size: 800px 100%;
   background-repeat: no-repeat;
   display: inline-block;
   line-height: 1;
   border-radius: 4px;
-  animation: shimmer 1.5s infinite linear;
+  animation: shimmer 2s infinite linear;
   
   &.circle { border-radius: 50%; }
   &.rect { border-radius: 8px; }
@@ -373,7 +379,7 @@
   left: 0;
   width: 100%;
   height: 100vh;
-  background: rgba($bg-primary, 0.95);
+  background: alpha($bg-primary, 0.95);
   backdrop-filter: blur(10px);
   z-index: 9999;
   @include flex-center;
@@ -398,7 +404,7 @@
     .spinning-icon {
       color: $accent-secondary;
       animation: spinHUD 1s linear infinite;
-      filter: drop-shadow(0 0 15px rgba($accent-secondary, 0.5));
+      filter: drop-shadow(0 0 15px alpha($accent-secondary, 0.5));
     }
 
     .inner-pulse {
@@ -423,7 +429,7 @@
   .scanning-bar {
     width: 100%;
     height: 2px;
-    background: rgba(255, 255, 255, 0.1);
+    background: alpha(white, 0.1);
     border-radius: 10px;
     overflow: hidden;
     position: relative;

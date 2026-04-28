@@ -60,8 +60,8 @@
       &.clickable-badge {
         cursor: pointer;
         &:hover {
-          background: rgba($accent-secondary, 0.15);
-          border-color: rgba($accent-secondary, 0.4);
+          background: alpha($accent-secondary, 0.15);
+          border-color: alpha($accent-secondary, 0.4);
         }
       }
 
@@ -93,7 +93,7 @@
 
     &:hover {
       transform: translateY(-5px);
-      border-color: rgba($accent-secondary, 0.4);
+      border-color: alpha($accent-secondary, 0.4);
     }
 
     .stat-header {
@@ -108,9 +108,9 @@
         border-radius: 10px;
         flex-shrink: 0;
 
-        &.blue { background: rgba($accent-primary, 0.1); color: $accent-primary; }
-        &.cyan { background: rgba($accent-secondary, 0.1); color: $accent-secondary; }
-        &.purple { background: rgba(#a855f7, 0.1); color: #a855f7; }
+        &.blue { background: alpha($accent-primary, 0.1); color: $accent-primary; }
+        &.cyan { background: alpha($accent-secondary, 0.1); color: $accent-secondary; }
+        &.purple { background: alpha(#a855f7, 0.1); color: #a855f7; }
 
         svg { width: 20px; height: 20px; }
       }
@@ -143,14 +143,14 @@
 
     .stat-progress-bar {
       height: 4px;
-      background: rgba(255, 255, 255, 0.1);
+      background: alpha(white, 0.1);
       border-radius: 10px;
       overflow: hidden;
 
       .progress {
         height: 100%;
         background: $accent-secondary;
-        box-shadow: 0 0 10px rgba($accent-secondary, 0.5);
+        box-shadow: 0 0 10px alpha($accent-secondary, 0.5);
       }
     }
   }
@@ -172,7 +172,7 @@
       &::after {
         content: '';
         height: 1px;
-        background: rgba(255, 255, 255, 0.1);
+        background: alpha(white, 0.1);
         flex: 1;
       }
     }
@@ -202,7 +202,7 @@
         }
 
         &:hover {
-          background: rgba(255, 255, 255, 0.05);
+          background: alpha(white, 0.1);
           transform: translateX(5px);
           
           .arrow { 
@@ -215,7 +215,7 @@
           width: 48px;
           height: 48px;
           @include flex-center;
-          background: rgba(255, 255, 255, 0.05);
+          background: alpha(white, 0.1);
           border-radius: 12px;
           color: $accent-secondary;
           flex-shrink: 0;
@@ -230,7 +230,7 @@
         }
 
         .arrow {
-          color: rgba(255, 255, 255, 0.2);
+          color: alpha(white, 0.2);
           transition: all 0.3s ease;
           flex-shrink: 0;
         }
@@ -253,7 +253,7 @@
         flex-shrink: 0;
         margin-right: 0.5rem;
         color: $accent-secondary;
-        filter: drop-shadow(0 0 8px rgba($accent-secondary, 0.4));
+        filter: drop-shadow(0 0 8px alpha($accent-secondary, 0.4));
       }
     }
 
@@ -269,8 +269,8 @@
 
     .pending-task-card {
       padding: 1.75rem 2rem;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: alpha(white, 0.05);
+      border: 1px solid alpha(white, 0.1);
       backdrop-filter: blur(12px);
       display: flex;
       justify-content: space-between;
@@ -295,8 +295,8 @@
       }
 
       &:hover {
-        background: rgba(255, 255, 255, 0.05);
-        border-color: rgba($accent-secondary, 0.3);
+        background: alpha(white, 0.1);
+        border-color: alpha($accent-secondary, 0.3);
         transform: translateY(-4px) scale(1.01);
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 
@@ -315,10 +315,10 @@
 
       &:focus-visible {
         outline: none;
-        background: rgba(255, 255, 255, 0.05);
-        border-color: rgba($accent-secondary, 0.6);
+        background: alpha(white, 0.1);
+        border-color: alpha($accent-secondary, 0.6);
         transform: translateY(-4px);
-        box-shadow: 0 0 0 3px rgba($accent-secondary, 0.2), 0 10px 30px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 0 0 3px alpha($accent-secondary, 0.2), 0 10px 30px rgba(0, 0, 0, 0.3);
 
         &::before {
           opacity: 1;
@@ -369,8 +369,8 @@
         width: 44px;
         height: 44px;
         border-radius: 12px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: alpha(white, 0.1);
+        border: 1px solid alpha(white, 0.1);
         @include flex-center;
         transition: $transition-smooth;
         color: white;

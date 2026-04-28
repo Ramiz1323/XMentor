@@ -32,6 +32,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    theme: {
+      type: String,
+      enum: ['blue', 'red', 'emerald', 'purple', 'amber', 'bts'],
+      default: 'blue',
+    },
     boardInfo: {
       board: {
         type: String,

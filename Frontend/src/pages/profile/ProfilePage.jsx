@@ -5,6 +5,7 @@ import api from '../../lib/api';
 import { User, Camera, Save, Mail, GraduationCap } from 'lucide-react';
 import GlassDropdown from '../../components/ui/GlassDropdown';
 import ProfileSkeleton from '../../components/skeletons/ProfileSkeleton';
+import LoadingOverlay from '../../components/ui/LoadingOverlay';
 
 const ProfilePage = () => {
   const { user, setUser } = useAuthStore();
@@ -15,6 +16,7 @@ const ProfilePage = () => {
     board: 'NONE',
     class: '10',
   });
+  const [isUpdatingTheme, setIsUpdatingTheme] = useState(false);
   const [studentUsername, setStudentUsername] = useState('');
 
   const boardOptions = [
@@ -62,6 +64,23 @@ const ProfilePage = () => {
     }
   };
 
+  const handleUpdateTheme = async (themeId) => {
+    try {
+      setSuccess('');
+      setIsUpdatingTheme(true);
+      
+      // Artifical delay for "recalibration" feel
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      await updateProfile({ theme: themeId });
+      setSuccess('Tactical interface recalibrated successfully.');
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setIsUpdatingTheme(false);
+    }
+  };
+
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -83,6 +102,7 @@ const ProfilePage = () => {
 
   return (
     <div className="profile-page">
+      {isUpdatingTheme && <LoadingOverlay message="Recalibrating Tactical Interface..." />}
       <header>
         <h1 className="glow-text">Profile Settings</h1>
         <p>Manage your account and preferences.</p>
@@ -166,6 +186,60 @@ const ProfilePage = () => {
             {isLoading ? 'Saving...' : <><Save size={18} /> Save Changes</>}
           </button>
         </form>
+      </div>
+
+      <div className="profile-card" style={{ marginTop: '2rem' }}>
+        <header style={{ marginBottom: '1.5rem' }}>
+          <h3 className="glow-text">Tactical Visual Interface</h3>
+          <p style={{ fontSize: '0.8rem', opacity: 0.6 }}>Calibrate the environment's color signature for optimal tactical focus.</p>
+        </header>
+
+        <div className="theme-selector" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          {[
+            { id: 'blue', label: 'Blue', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.5)' },
+            { id: 'red', label: 'Red', color: '#ef4444', glow: 'rgba(239, 68, 68, 0.5)' },
+            { id: 'emerald', label: 'Emerald', color: '#10b981', glow: 'rgba(16, 185, 129, 0.5)' },
+            { id: 'purple', label: 'Purple', color: '#8b5cf6', glow: 'rgba(139, 92, 246, 0.5)' },
+            { id: 'bts', label: 'Borahae (BTS)', color: '#9b6dff', glow: 'rgba(155, 109, 255, 0.5)' },
+            { id: 'amber', label: 'Amber', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)' },
+          ].map((t) => (
+            <button
+              key={t.id}
+              onClick={() => handleUpdateTheme(t.id)}
+              className={`theme-swatch ${currentUser?.theme === t.id ? 'active' : ''}`}
+              style={{
+                background: t.color,
+                width: '45px',
+                height: '45px',
+                borderRadius: '10px',
+                border: currentUser?.theme === t.id ? '2px solid white' : '2px solid transparent',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                boxShadow: currentUser?.theme === t.id ? `0 0 15px ${t.glow}` : 'none',
+                position: 'relative'
+              }}
+              title={t.label}
+            >
+              {currentUser?.theme === t.id && (
+                <div style={{
+                  position: 'absolute',
+                  top: '-5px',
+                  right: '-5px',
+                  background: 'white',
+                  borderRadius: '50%',
+                  width: '14px',
+                  height: '14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: t.color,
+                  fontSize: '10px',
+                  fontWeight: 'bold'
+                }}>✓</div>
+              )}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="profile-card" style={{ marginTop: '2rem' }}>

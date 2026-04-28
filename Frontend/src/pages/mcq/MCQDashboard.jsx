@@ -375,6 +375,8 @@ const MCQDashboard = () => {
 
         {viewMode === 'TASK_WISE' && (
           <>
+            {user.role === 'STUDENT' && <StudentAnalytics tests={tests} />}
+
             <section className="dashboard-section">
               <div className="section-header">
                 <h2 className="section-title">
@@ -398,8 +400,6 @@ const MCQDashboard = () => {
                 </div>
               )}
             </section>
-
-            {user.role === 'STUDENT' && <StudentAnalytics tests={tests} />}
 
             {completedTests.length > 0 && (
               <section className="dashboard-section">

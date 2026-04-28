@@ -21,7 +21,7 @@
 
     .header-text {
       h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
-      p { color: rgba(255, 255, 255, 0.6); }
+      p { color: alpha(white, 0.6); }
     }
 
     .ask-btn {
@@ -40,8 +40,8 @@
     padding: 1.5rem 2.5rem;
     max-width: 1000px;
     border-radius: 20px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: alpha(white, 0.02);
+    border: 1px solid alpha(white, 0.25);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
 
     @media (max-width: 768px) {
@@ -61,13 +61,13 @@
         font-size: 0.75rem;
         text-transform: uppercase;
         letter-spacing: 1px;
-        color: rgba(255, 255, 255, 0.4);
+        color: alpha(white, 0.4);
         font-weight: 600;
       }
 
       select {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: alpha(white, 0.05);
+        border: 1px solid alpha(white, 0.1);
         color: white;
         padding: 0.6rem 1rem;
         border-radius: 10px;
@@ -88,7 +88,7 @@
 
         &:focus {
           border-color: var(--accent-primary);
-          background: rgba(255, 255, 255, 0.08);
+          background: alpha(white, 0.08);
         }
       }
     }
@@ -98,12 +98,12 @@
     grid-column: 1 / -1;
     text-align: center;
     padding: 10rem 2rem;
-    color: rgba(255, 255, 255, 0.6);
+    color: alpha(white, 0.6);
     font-size: 1.1rem;
-    background: rgba(255, 255, 255, 0.02);
+    background: alpha(white, 0.02);
     border-radius: 20px;
-    border: 1px dashed rgba(255, 255, 255, 0.1);
-    text-shadow: 0 0 20px rgba(var(--accent-primary-rgb), 0.2);
+    border: 1px dashed alpha(white, 0.1);
+    text-shadow: 0 0 20px alpha($accent-primary, 0.2);
   }
 
   .doubts-grid {
@@ -121,8 +121,8 @@
   }
 
   .doubt-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: alpha(white, 0.03);
+    border: 1px solid alpha(white, 0.25);
     border-radius: 16px;
     padding: 1.5rem;
     display: flex;
@@ -134,8 +134,8 @@
 
     &:hover {
       transform: translateY(-5px);
-      background: rgba(255, 255, 255, 0.05);
-      border-color: rgba(var(--accent-primary-rgb), 0.3);
+      background: alpha(white, 0.05);
+      border-color: alpha($accent-primary, 0.3);
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     }
 
@@ -154,8 +154,8 @@
 
       .subject-tag {
         font-size: 0.7rem;
-        background: rgba(var(--accent-primary-rgb), 0.1);
-        color: var(--accent-primary);
+        background: alpha($accent-primary, 0.1);
+        color: $accent-primary;
         padding: 0.2rem 0.6rem;
         border-radius: 4px;
         text-transform: uppercase;
@@ -170,8 +170,8 @@
         align-items: center;
         gap: 0.3rem;
 
-        &.PENDING { color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
-        &.RESOLVED { color: #10b981; background: rgba(16, 185, 129, 0.1); }
+        &.PENDING { color: #f59e0b; background: alpha($color-warning, 0.1); }
+        &.RESOLVED { color: #10b981; background: alpha($color-success, 0.1); }
       }
     }
 
@@ -183,7 +183,7 @@
     }
 
     .doubt-preview {
-      color: rgba(255, 255, 255, 0.6);
+      color: alpha(white, 0.6);
       font-size: 0.9rem;
       line-height: 1.5;
       display: -webkit-box;
@@ -193,11 +193,11 @@
     }
 
     .resolution-section {
-      background: rgba(16, 185, 129, 0.05);
+      background: alpha($color-success, 0.05);
       border-radius: 8px;
       padding: 0.75rem;
       margin-top: 0.5rem;
-      border: 1px solid rgba(16, 185, 129, 0.1);
+      border: 1px solid alpha($color-success, 0.1);
 
       .res-header {
         display: flex;
@@ -211,7 +211,7 @@
 
       .res-content {
         font-size: 0.85rem;
-        color: rgba(255, 255, 255, 0.7);
+        color: alpha(white, 0.7);
         line-height: 1.4;
       }
     }
@@ -219,7 +219,7 @@
     .card-footer {
       margin-top: auto;
       padding-top: 1rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      border-top: 1px solid alpha(white, 0.05);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -229,21 +229,21 @@
         align-items: center;
         gap: 0.5rem;
         font-size: 0.85rem;
-        color: rgba(255, 255, 255, 0.7);
+        color: alpha(white, 0.7);
 
         .avatar-mini {
           width: 24px;
           height: 24px;
           border-radius: 50%;
-          background: rgba(255, 255, 255, 0.05);
+          background: alpha(white, 0.05);
           display: flex;
           align-items: center;
           justify-content: center;
           overflow: hidden;
           font-size: 0.6rem;
           font-weight: bold;
-          color: var(--accent-secondary);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: $accent-secondary;
+          border: 1px solid alpha(white, 0.1);
 
           img {
             width: 100%;
@@ -255,7 +255,7 @@
 
       .timestamp {
         font-size: 0.75rem;
-        color: rgba(255, 255, 255, 0.4);
+        color: alpha(white, 0.4);
       }
     }
 
@@ -263,7 +263,7 @@
       margin-top: 0.5rem;
       border-radius: 12px;
       overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      border: 1px solid alpha(white, 0.25);
       max-height: 250px;
       background: #000;
       position: relative;
@@ -300,15 +300,15 @@
     .delete-btn-minimal {
       background: transparent;
       border: none;
-      color: rgba(255, 255, 255, 0.2);
+      color: alpha(white, 0.2);
       cursor: pointer;
       padding: 0.4rem;
       border-radius: 6px;
       transition: all 0.2s;
 
       &:hover {
-        color: #ef4444;
-        background: rgba(239, 68, 68, 0.1);
+        color: $color-danger;
+        background: alpha($color-danger, 0.1);
       }
     }
   }
@@ -321,14 +321,14 @@
     padding-bottom: 2.5rem;
 
     &::-webkit-scrollbar { width: 6px; }
-    &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+    &::-webkit-scrollbar-thumb { background: alpha(white, 0.1); border-radius: 10px; }
   }
 
   .img-hint {
     display: block;
     text-align: center;
     font-size: 0.7rem;
-    color: rgba(255, 255, 255, 0.3);
+    color: alpha(white, 0.3);
     margin-top: 0.5rem;
   }
 
@@ -341,15 +341,15 @@
       align-items: center;
       gap: 0.75rem;
       margin-bottom: 1.2rem;
-      color: rgba(255, 255, 255, 0.5);
+      color: alpha(white, 0.5);
 
-      &.success { color: #10b981; }
+      &.success { color: $color-success; }
       h4 { margin: 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
     }
 
     .resolution-bubble {
-      background: rgba(16, 185, 129, 0.05);
-      border: 1px solid rgba(16, 185, 129, 0.1);
+      background: alpha($color-success, 0.05);
+      border: 1px solid alpha($color-success, 0.1);
       padding: 2rem;
       border-radius: 20px;
       position: relative;
@@ -357,19 +357,19 @@
       p {
         font-size: 1.05rem;
         line-height: 1.7;
-        color: rgba(255, 255, 255, 0.9);
+        color: alpha(white, 0.9);
         white-space: pre-wrap;
       }
 
       .bubble-footer {
         margin-top: 1.5rem;
         padding-top: 1rem;
-        border-top: 1px solid rgba(255,255,255,0.05);
+        border-top: 1px solid alpha(white, 0.05);
         display: flex;
         align-items: center;
         gap: 0.5rem;
         font-size: 0.75rem;
-        color: rgba(255, 255, 255, 0.4);
+        color: alpha(white, 0.4);
 
         .spacer { opacity: 0.2; }
       }
@@ -379,16 +379,16 @@
   .pending-status-msg {
     margin: 2rem 2.5rem;
     padding: 2rem;
-    background: rgba(245, 158, 11, 0.05);
-    border: 1px dashed rgba(245, 158, 11, 0.2);
+    background: alpha($color-warning, 0.05);
+    border: 1px dashed alpha($color-warning, 0.2);
     border-radius: 20px;
     display: flex;
     gap: 1.5rem;
     align-items: center;
-    color: #f59e0b;
+    color: $color-warning;
 
-    h4 { margin-bottom: 0.25rem; color: #fbbf24; }
-    p { margin: 0; font-size: 0.9rem; color: rgba(255, 255, 255, 0.6); }
+    h4 { margin-bottom: 0.25rem; color: $color-warning; }
+    p { margin: 0; font-size: 0.9rem; color: alpha(white, 0.6); }
   }
 }
 
@@ -430,15 +430,15 @@
 
       label {
         font-size: 0.75rem;
-        color: rgba(255, 255, 255, 0.4);
+        color: alpha(white, 0.4);
         text-transform: uppercase;
         letter-spacing: 1px;
         font-weight: 600;
       }
 
       input, textarea, select {
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: alpha(white, 0.04);
+        border: 1px solid alpha(white, 0.1);
         padding: 0.8rem 1rem;
         border-radius: 12px;
         color: white;
@@ -448,8 +448,8 @@
 
         &:focus {
           border-color: var(--accent-primary);
-          background: rgba(255, 255, 255, 0.08);
-          box-shadow: 0 0 15px rgba(var(--accent-primary-rgb), 0.1);
+          background: alpha(white, 0.08);
+          box-shadow: 0 0 15px alpha($accent-primary, 0.1);
         }
       }
 
@@ -482,8 +482,8 @@
 
   .modal-header {
     padding: 1.5rem 2.5rem;
-    background: rgba(255, 255, 255, 0.03);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: alpha(white, 0.03);
+    border-bottom: 1px solid alpha(white, 0.05);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -502,7 +502,7 @@
   .close-btn-ghost {
     background: transparent;
     border: none;
-    color: rgba(255, 255, 255, 0.4);
+    color: alpha(white, 0.4);
     cursor: pointer;
     padding: 0.5rem;
     border-radius: 8px;
@@ -512,7 +512,7 @@
     justify-content: center;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.05);
+      background: alpha(white, 0.05);
       color: white;
     }
   }
@@ -531,17 +531,17 @@
       letter-spacing: 0.1em;
       font-weight: 700;
 
-      .subject { color: var(--accent-secondary); }
+      .subject { color: $accent-secondary; }
       .chapter { color: white; }
-      .student { color: rgba(255, 255, 255, 0.4); }
-      .divider { color: rgba(255, 255, 255, 0.1); }
+      .student { color: alpha(white, 0.4); }
+      .divider { color: alpha(white, 0.1); }
     }
 
     .ticket-body {
       p {
         font-size: 1.1rem;
         line-height: 1.7;
-        color: rgba(255, 255, 255, 0.9);
+        color: alpha(white, 0.9);
         margin: 0;
       }
     }
@@ -555,7 +555,7 @@
       align-items: center;
       gap: 0.75rem;
       margin-bottom: 1.2rem;
-      color: rgba(255, 255, 255, 0.5);
+      color: alpha(white, 0.5);
 
       h4 { margin: 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
     }
@@ -563,7 +563,7 @@
     textarea {
       width: 100%;
       background: rgba(0, 0, 0, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid alpha(white, 0.1);
       padding: 1.5rem;
       border-radius: 16px;
       color: white;
@@ -577,7 +577,7 @@
       &:focus {
         border-color: var(--accent-primary);
         background: rgba(0, 0, 0, 0.3);
-        box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3), 0 0 20px rgba(var(--accent-primary-rgb), 0.1);
+        box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3), 0 0 20px alpha($accent-primary, 0.1);
       }
     }
 
@@ -605,22 +605,22 @@
 
   .file-label {
     display: block;
-    background: rgba(255, 255, 255, 0.03) !important;
-    border: 1px dashed rgba(255, 255, 255, 0.2) !important;
+    background: alpha(white, 0.03) !important;
+    border: 1px dashed alpha(white, 0.2) !important;
     padding: 1.2rem !important;
     text-align: center;
     border-radius: 12px;
     cursor: pointer;
     text-transform: none !important;
     font-size: 0.9rem !important;
-    color: rgba(255, 255, 255, 0.6) !important;
+    color: alpha(white, 0.6) !important;
     transition: all 0.3s ease;
 
     &:hover {
-      background: rgba(var(--accent-primary-rgb), 0.05) !important;
+      background: alpha($accent-primary, 0.05) !important;
       border-color: var(--accent-primary) !important;
       color: white !important;
-      box-shadow: 0 0 20px rgba(var(--accent-primary-rgb), 0.1);
+      box-shadow: 0 0 20px alpha($accent-primary, 0.1);
     }
   }
 }

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import userService from '../services/user.service';
+import useAuthStore from './useAuthStore';
 
 const useUserStore = create((set) => ({
   profile: null,
@@ -49,6 +50,7 @@ const useUserStore = create((set) => ({
       set({ isLoading: true, error: null });
       const data = await userService.updateProfile(userData);
       set({ profile: data.data });
+      useAuthStore.getState().setUser(data.data);
       return data;
     } catch (err) {
       set({ error: err.message || 'Failed to update profile' });
@@ -63,6 +65,7 @@ const useUserStore = create((set) => ({
       set({ isLoading: true, error: null });
       const data = await userService.uploadProfilePic(formData);
       set({ profile: data.data });
+      useAuthStore.getState().setUser(data.data);
       return data;
     } catch (err) {
       set({ error: err.message || 'Failed to upload avatar' });
