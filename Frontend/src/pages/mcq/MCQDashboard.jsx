@@ -369,8 +369,6 @@ const MCQDashboard = () => {
       </header>
 
       <div className="dashboard-sections">
-        {user.role === 'STUDENT' && <StudentAnalytics tests={tests} />}
-        
         {user.role === 'TEACHER' && viewMode === 'STUDENT_WISE' && (
           <StudentWiseView data={overviewData} />
         )}
@@ -400,6 +398,8 @@ const MCQDashboard = () => {
                 </div>
               )}
             </section>
+
+            {user.role === 'STUDENT' && <StudentAnalytics tests={tests} />}
 
             {completedTests.length > 0 && (
               <section className="dashboard-section">

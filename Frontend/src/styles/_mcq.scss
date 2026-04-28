@@ -317,28 +317,51 @@
       }
     }
   }
+}
 
-  .btn-sec {
-    @include flex-center;
-    padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    color: white;
-    font-family: $font-family-display;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: $transition-smooth;
-    text-decoration: none;
+.btn-sec {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-family: $font-family-display;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: $transition-smooth;
+  text-decoration: none;
+  appearance: none;
+  outline: none;
 
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    transform: translateY(-2px);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  &.full-width { width: 100%; }
+  &.dashed { border-style: dashed; }
+  &.icon-only { padding: 8px; }
+
+  &.danger {
+    color: #ff4d4d !important;
+    border-color: rgba(255, 77, 77, 0.2) !important;
     &:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 77, 77, 0.1) !important;
+      border-color: rgba(255, 77, 77, 0.4) !important;
+      color: #ff4d4d !important;
     }
-    
-    &.full-width { width: 100%; }
-    &.dashed { border-style: dashed; }
-    &.icon-only { padding: 4px; }
   }
 }
 
@@ -1356,8 +1379,17 @@
 // TEST PAGE (MCQTest.jsx)
 .mcq-page {
   padding: 2rem;
-  max-width: 900px;
+  max-width: 1600px;
   margin: 0 auto;
+  user-select: none; 
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+
+  &::selection { background: transparent; }
+  *::selection { background: transparent; }
+  &::-moz-selection { background: transparent; }
+  *::-moz-selection { background: transparent; }
   @media (max-width: 640px) { padding: 1rem; }
 
   header {
@@ -1431,6 +1463,11 @@
         gap: 1rem;
         margin-bottom: 2.5rem;
 
+        @media (max-width: 400px) {
+          grid-template-columns: 1fr;
+          gap: 0.75rem;
+        }
+
         .lobby-stat {
           @include flex-column;
           gap: 0.5rem;
@@ -1453,25 +1490,30 @@
         margin-bottom: 2.5rem;
         border: 1px solid rgba(255, 255, 255, 0.03);
 
+        @media (max-width: 480px) { padding: 1.25rem 1rem; }
+
         h3 { font-size: 0.9rem; margin-bottom: 1rem; color: $accent-secondary; }
         ul {
           list-style: none;
           li {
             font-size: 0.85rem;
             color: $text-secondary;
-            margin-bottom: 0.75rem;
-            display: flex;
-            gap: 0.75rem;
-            line-height: 1.4;
+            margin-bottom: 0.85rem;
+            position: relative;
+            padding-left: 1.5rem;
+            line-height: 1.5;
+            display: block; // Changed from flex to block for better text wrap
 
             &::before {
               content: '▶';
+              position: absolute;
+              left: 0;
+              top: 0.25rem;
               color: $accent-secondary;
               font-size: 0.6rem;
-              margin-top: 0.2rem;
             }
             
-            strong { color: white; }
+            strong { color: white; font-weight: 700; }
           }
         }
       }
@@ -1644,6 +1686,8 @@
       padding: 1.25rem;
       border-radius: 12px;
       margin-bottom: 2.5rem;
+      user-select: text !important;
+      -webkit-user-select: text !important;
       h4 { @include flex-center; justify-content: flex-start; gap: 0.5rem; font-size: 0.9rem; margin-bottom: 0.5rem; color: $accent-secondary; }
       p { font-size: 0.9rem; opacity: 0.8; line-height: 1.5; }
     }
@@ -2494,6 +2538,210 @@
     }
   }
 }
+
+/* Security Alert Styles */
+.security-overlay {
+  z-index: 20000 !important;
+  background: rgba(15, 5, 5, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+.security-card {
+  border-color: rgba(#ff4d4d, 0.3) !important;
+  box-shadow: 0 0 50px rgba(#ff4d4d, 0.2) !important;
+  
+  .security-icon-wrapper {
+    background: rgba(#ff4d4d, 0.1) !important;
+    border-color: rgba(#ff4d4d, 0.3) !important;
+    
+    svg {
+      color: #ff4d4d;
+      filter: drop-shadow(0 0 10px rgba(#ff4d4d, 0.5));
+    }
+  }
+
+  h2.danger {
+    color: #ff4d4d !important;
+    filter: drop-shadow(0 0 10px rgba(#ff4d4d, 0.5));
+  }
+
+  .security-msg {
+    color: white !important;
+    opacity: 0.9 !important;
+    font-size: 1rem !important;
+    margin-top: 1rem;
+    line-height: 1.6;
+  }
+
+  .violation-count {
+    margin-top: 2rem;
+    font-size: 0.8rem;
+    color: #ff4d4d;
+    opacity: 0.6;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+}
+
+/* Tactical Monitor Sidebar */
+.test-operation-layout {
+  display: flex;
+  gap: 3rem;
+  max-width: 100%;
+  margin: 0 auto;
+  align-items: flex-start;
+  padding: 2rem;
+
+  .main-tactical-area {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .tactical-monitor-sidebar {
+    width: 280px;
+    position: sticky;
+    top: 2rem;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    
+    .monitor-header {
+      margin-bottom: 1.5rem;
+      h3 { font-size: 1.1rem; margin-bottom: 0.25rem; color: #38bdf8; text-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
+      .status-label { font-size: 0.7rem; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; }
+    }
+
+    .question-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+
+      .grid-item {
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.5);
+        transition: all 0.2s;
+        cursor: pointer;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.1);
+          transform: translateY(-2px);
+        }
+
+        &.active {
+          border-color: #38bdf8;
+          color: #38bdf8;
+          box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+          background: rgba(56, 189, 248, 0.1);
+        }
+
+        &.answered {
+          background: rgba(16, 185, 129, 0.2);
+          border-color: rgba(16, 185, 129, 0.4);
+          color: #10b981;
+        }
+
+        &.skipped {
+          background: rgba(239, 68, 68, 0.2);
+          border-color: rgba(239, 68, 68, 0.4);
+          color: #ef4444;
+        }
+      }
+    }
+
+    .grid-legend {
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.8rem;
+        opacity: 0.8;
+
+        .dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          &.answered { background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.5); }
+          &.skipped { background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.5); }
+          &.normal { background: rgba(255, 255, 255, 0.2); }
+        }
+      }
+    }
+  }
+
+  @media (max-width: 1024px) {
+    flex-direction: column;
+    padding: 1.5rem;
+    gap: 2rem;
+    
+    .tactical-monitor-sidebar {
+      width: 100%;
+      position: static;
+      margin-top: 1rem;
+    }
+  }
+
+  @media (max-width: 640px) {
+    padding: 1rem;
+    gap: 1.5rem;
+
+    .tactical-monitor-sidebar {
+      padding: 1rem;
+      border-radius: 12px;
+
+      .monitor-header {
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        h3 { margin-bottom: 0; font-size: 1rem; }
+      }
+
+      .question-grid {
+        grid-template-columns: repeat(8, 1fr);
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+
+        .grid-item {
+          font-size: 0.8rem;
+          border-radius: 6px;
+        }
+      }
+
+      .grid-legend {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 1rem;
+        padding-top: 1rem;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    .tactical-monitor-sidebar .question-grid {
+      grid-template-columns: repeat(6, 1fr);
+    }
+  }
+}
+
 @keyframes iconFloat {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-5px); }

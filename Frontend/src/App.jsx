@@ -59,17 +59,22 @@ function AppContent({ isAuthenticated }) {
   }, [location.pathname]);
 
   const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
+  
+  // Detect if we are in a tactical MCQ operation (MCQ Test Page)
+  const isMCQTestPage = location.pathname.startsWith('/mcq/') && 
+                        !['/mcq/create', '/mcq/results'].some(p => location.pathname.includes(p)) &&
+                        location.pathname !== '/mcq';
 
   return (
-    <div className={`app-container ${isAuthenticated ? 'with-sidebar' : 'auth-mode'} ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+    <div className={`app-container ${isAuthenticated ? 'with-sidebar' : 'auth-mode'} ${isSidebarOpen ? 'sidebar-open' : ''} ${isMCQTestPage ? 'tactical-mode' : ''}`}>
       {isLoading && <LoadingOverlay message="Terminating Strategic Session..." />}
-      {isAuthenticated && (
+      {isAuthenticated && !isMCQTestPage && (
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       )}
       
       <div className="main-layout">
-        <Navbar onMenuClick={toggleSidebar} />
-        <main className="content">
+        {!isMCQTestPage && <Navbar onMenuClick={toggleSidebar} />}
+        <main className={`content ${isMCQTestPage ? 'full-width-tactical' : ''}`}>
           <Routes>
             <Route path="/login" element={<AuthRoute><LoginPage /></AuthRoute>} />
             <Route path="/register" element={<AuthRoute><RegisterPage /></AuthRoute>} />

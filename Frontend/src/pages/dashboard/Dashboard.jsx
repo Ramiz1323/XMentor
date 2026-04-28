@@ -45,7 +45,7 @@ const Dashboard = () => {
                 <div className="task-info">
                   <div className="task-type-tag">{test.subject}</div>
                   <h3>{test.title}</h3>
-                  {test.deadline && (
+                  {test.deadline && !isNaN(new Date(test.deadline).getTime()) && (
                     <div className="deadline-alert">
                       <AlertCircle size={12} />
                       <span>Ends: {new Date(test.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>

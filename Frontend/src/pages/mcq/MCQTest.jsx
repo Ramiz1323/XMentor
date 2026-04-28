@@ -9,7 +9,7 @@ const MCQTest = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { currentTest: test, fetchTestById, submitTest, isLoading, error } = useMCQStore();
-  
+
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [timeLeft, setTimeLeft] = useState(null);
@@ -18,6 +18,11 @@ const MCQTest = () => {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [showResultModal, setShowResultModal] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [violations, setViolations] = useState(0);
+  const [securityWarning, setSecurityWarning] = useState('');
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
+  const [visited, setVisited] = useState([]);
 
 
   const answersRef = useRef([]);
@@ -46,6 +51,7 @@ const MCQTest = () => {
   useEffect(() => {
     if (test) {
       setAnswers(new Array(test.questions.length).fill(-1));
+      setVisited(new Array(test.questions.length).fill(false));
       if (!test.isSubmitted) {
         setTimeLeft(test.duration * 60);
       } else {
@@ -53,6 +59,16 @@ const MCQTest = () => {
       }
     }
   }, [test]);
+
+  useEffect(() => {
+    if (isReady && !result && visited.length > 0) {
+      const newVisited = [...visited];
+      if (!newVisited[currentIdx]) {
+        newVisited[currentIdx] = true;
+        setVisited(newVisited);
+      }
+    }
+  }, [currentIdx, isReady, result]);
 
   const triggerConfetti = () => {
     const duration = 3 * 1000;
@@ -76,23 +92,18 @@ const MCQTest = () => {
 
   const handleSubmit = useCallback(async (autoSubmit = false) => {
     if (submitting || result || !testRef.current) return;
-    
+
     // Check for unanswered questions
     const currentAnswers = autoSubmit ? answersRef.current : answers;
-    const unansweredCount = currentAnswers.filter(a => a === -1).length;
-
-    if (!autoSubmit && unansweredCount > 0) {
-      const confirmSubmit = window.confirm(`Tactical Alert: You have ${unansweredCount} unanswered questions. These will be logged as INCORRECT. Proceed with submission?`);
-      if (!confirmSubmit) return;
-    }
 
     try {
       setSubmitting(true);
-      
-      const timeTaken = testRef.current.hasTimer 
+      setShowSubmitConfirm(false);
+
+      const timeTaken = testRef.current.hasTimer
         ? (testRef.current.duration * 60 - (timeLeftRef.current || 0))
         : elapsedTime;
-      
+
       const res = await submitTest(id, {
         answers: currentAnswers,
         timeTaken: Math.max(1, timeTaken)
@@ -100,17 +111,28 @@ const MCQTest = () => {
       setResult(res.data);
       setShowResultModal(true);
       triggerConfetti();
-      await fetchTestById(id); 
+      await fetchTestById(id);
     } catch (err) {
-      if (!autoSubmit) alert(err.message || 'Submission failed');
+      if (!autoSubmit) {
+        setSecurityWarning(`Uplink Error: ${err.message || 'Submission failed. Please try again.'}`);
+      }
     } finally {
       setSubmitting(false);
     }
   }, [id, submitting, result, answers, elapsedTime, submitTest, fetchTestById]);
 
+  const preSubmitCheck = () => {
+    const unansweredCount = answers.filter(a => a === -1).length;
+    if (unansweredCount > 0) {
+      setShowSubmitConfirm(true);
+    } else {
+      handleSubmit(false);
+    }
+  };
+
   useEffect(() => {
     if (!timeLeft || timeLeft <= 0 || result || test?.isSubmitted || !test?.hasTimer || !isReady) return;
-    
+
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
@@ -121,15 +143,15 @@ const MCQTest = () => {
         return prev - 1;
       });
     }, 1000);
-    
+
     return () => clearInterval(timer);
-  }, [timeLeft, result, test?.isSubmitted, test?.hasTimer, handleSubmit]);
+  }, [timeLeft, result, test?.isSubmitted, test?.hasTimer, handleSubmit, isReady]);
 
   useEffect(() => {
     if (showResultModal && result) {
       const accuracy = (result.score / result.total) * 100;
       let soundPath = '';
-      
+
       if (accuracy > 65) {
         // Randomize between faah and Congo
         soundPath = Math.random() > 0.5 ? '/faahhhhhhhh.mp3' : '/Congo.mp3';
@@ -147,12 +169,111 @@ const MCQTest = () => {
 
   useEffect(() => {
     if (test?.hasTimer || result || test?.isSubmitted || isLoading || !test || !isReady) return;
-    
+
     const ticker = setInterval(() => {
       setElapsedTime(prev => prev + 1);
     }, 1000);
     return () => clearInterval(ticker);
-  }, [test?.hasTimer, result, test?.isSubmitted, isLoading, test]);
+  }, [test?.hasTimer, result, test?.isSubmitted, isLoading, test, isReady]);
+
+  // FULL SECURITY MODE EFFECTS
+  useEffect(() => {
+    if (!isReady || result || test?.isSubmitted) return;
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setViolations(v => v + 1);
+        setSecurityWarning('Strategic Breach: Unauthorized tab switch detected. Focus on the mission node.');
+      }
+    };
+
+    const handleBlur = () => {
+      setViolations(v => v + 1);
+      setSecurityWarning('Strategic Breach: Focus lost. Maintain tactical awareness on the operation.');
+    };
+
+    const handleContextMenu = (e) => {
+      e.preventDefault();
+      setSecurityWarning('Security Protocol: Unauthorized menu access blocked.');
+    };
+
+    const handleCopy = (e) => {
+      e.preventDefault();
+      setSecurityWarning('Security Protocol: Strategic data extraction blocked.');
+    };
+
+    const handleDoubleClick = (e) => {
+      e.preventDefault();
+    };
+
+    const handleKeyDown = (e) => {
+      // Block F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, Ctrl+U, Ctrl+C, Ctrl+V, Ctrl+S, Ctrl+P, Alt+Tab
+      const blockedKeys = ['F12', 'PrintScreen'];
+      const ctrlKeys = ['i', 'j', 'c', 'u', 'v', 's', 'p'];
+
+      if (
+        blockedKeys.includes(e.key) ||
+        (e.ctrlKey && ctrlKeys.includes(e.key.toLowerCase())) ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+        (e.altKey && e.key === 'Tab')
+      ) {
+        e.preventDefault();
+        setSecurityWarning('Security Protocol: Tactical shortcut blocked. Operation security maintained.');
+      }
+    };
+
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && !result && !test?.isSubmitted) {
+        setIsFullScreen(false);
+        setViolations(v => v + 1);
+        setSecurityWarning('Strategic Breach: Tactical full-screen mode compromised. Re-establish uplink.');
+      } else {
+        setIsFullScreen(true);
+      }
+    };
+
+    const handleBeforeUnload = (e) => {
+      if (!result && !test?.isSubmitted) {
+        e.preventDefault();
+        e.returnValue = 'Mission in progress. Unauthorized exit will compromise data.';
+        return e.returnValue;
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleBlur);
+    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('copy', handleCopy);
+    document.addEventListener('dblclick', handleDoubleClick);
+    document.addEventListener('keydown', handleKeyDown, true);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleBlur);
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('copy', handleCopy);
+      document.removeEventListener('dblclick', handleDoubleClick);
+      document.removeEventListener('keydown', handleKeyDown, true);
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isReady, result, test?.isSubmitted]);
+
+  const enterFullScreen = () => {
+    const element = document.documentElement;
+    if (element.requestFullscreen) {
+      element.requestFullscreen().catch(() => {
+        setSecurityWarning('Hardware Failure: Could not engage full-screen mode. Please try again or use a supported browser.');
+      });
+    }
+  };
+
+  const startTest = () => {
+    enterFullScreen();
+    setIsReady(true);
+  };
 
   const handleOptionSelect = (optionIdx) => {
     if (test?.isSubmitted || result) return;
@@ -182,24 +303,36 @@ const MCQTest = () => {
     </div>
   );
 
-  if (isLoading && !test) return <TestSkeleton />;
+  if (isLoading || !test) return <TestSkeleton />;
 
-  if (error || !test) {
+  if (error) {
     return (
-      <div className="mcq-page">
-        <div className="error-container">
-          <AlertCircle size={48} className="error-icon" />
-          <h2 className="glow-text">Strategic Link Failure</h2>
-          <p>{error || 'Task node not found'}</p>
-          <button onClick={() => fetchTestById(id)} className="btn-primary">
-            <RefreshCw size={18} /> Re-establish Uplink
-          </button>
+      <div className="mcq-page tactical-mode">
+        <div className="result-modal-overlay security-overlay">
+          <div className="result-modal-card glass-card security-card">
+            <div className="modal-header">
+              <div className="trophy-wrapper security-icon-wrapper">
+                <AlertCircle size={48} className="error-icon" />
+              </div>
+              <h2 className="glow-text danger">Strategic Link Failure</h2>
+              <p className="security-msg">{error}</p>
+            </div>
+            <div className="modal-footer">
+              <button
+                onClick={() => window.location.reload()}
+                className="btn-primary full-width"
+              >
+                <RefreshCw size={18} style={{ marginRight: '8px' }} />
+                Re-establish Uplink
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
-  const currentQuestion = test.questions[currentIdx];
+  const currentQuestion = test?.questions?.[currentIdx];
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -221,23 +354,6 @@ const MCQTest = () => {
               <p>Deployment authorized for: <strong>{test.title}</strong></p>
             </div>
 
-            <div className="lobby-stats">
-              <div className="lobby-stat">
-                <Target size={20} />
-                <div className="val">{test.totalQuestions}</div>
-                <div className="lab">Targets</div>
-              </div>
-              <div className="lobby-stat">
-                <Clock size={20} />
-                <div className="val">{test.duration}m</div>
-                <div className="lab">Window</div>
-              </div>
-              <div className="lobby-stat">
-                <HelpCircle size={20} />
-                <div className="val">{test.subject}</div>
-                <div className="lab">Sector</div>
-              </div>
-            </div>
 
             <div className="lobby-rules">
               <h3>Rules of Engagement</h3>
@@ -250,10 +366,10 @@ const MCQTest = () => {
             </div>
 
             <div className="lobby-footer">
-              <button onClick={() => navigate('/mcq')} className="btn-sec">
+              <button onClick={() => navigate('/mcq')} className="btn-sec danger">
                 Abort Mission
               </button>
-              <button onClick={() => setIsReady(true)} className="btn-primary">
+              <button onClick={startTest} className="btn-primary">
                 Initialize Uplink <ArrowRight size={18} />
               </button>
             </div>
@@ -265,6 +381,71 @@ const MCQTest = () => {
 
   return (
     <div className="mcq-page">
+      {/* SECURITY WARNING MODAL */}
+      {/* SECURITY WARNING MODAL */}
+      {securityWarning && (
+        <div className="result-modal-overlay security-overlay">
+          <div className="result-modal-card glass-card security-card">
+            <div className="modal-header">
+              <div className="trophy-wrapper security-icon-wrapper">
+                <AlertCircle size={48} className="error-icon" />
+              </div>
+              <h2 className="glow-text danger">Security Protocol Alert</h2>
+              <p className="security-msg">{securityWarning}</p>
+            </div>
+            <div className="modal-footer">
+              <button
+                onClick={() => {
+                  setSecurityWarning('');
+                  if (!document.fullscreenElement) enterFullScreen();
+                }}
+                className="btn-primary full-width"
+              >
+                Re-engage Tactical Link
+              </button>
+            </div>
+            {violations > 0 && (
+              <p className="violation-count">Breach Count: {violations}</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* SUBMISSION CONFIRMATION MODAL */}
+      {showSubmitConfirm && (
+        <div className="result-modal-overlay security-overlay">
+          <div className="result-modal-card glass-card">
+            <div className="modal-header">
+              <div className="trophy-wrapper security-icon-wrapper" style={{ background: 'rgba(251, 191, 36, 0.1)', borderColor: 'rgba(251, 191, 36, 0.3)' }}>
+                <HelpCircle size={48} style={{ color: '#fbbf24' }} />
+              </div>
+              <h2 className="glow-text">Submission Warning</h2>
+              <p className="security-msg">
+                Tactical Alert: You have <strong>{answers.filter(a => a === -1).length}</strong> unanswered questions.
+                These will be logged as <span style={{ color: '#ff4d4d' }}>FAILED NODES</span>.
+                Proceed with final submission?
+              </p>
+            </div>
+            <div className="modal-footer" style={{ display: 'flex', gap: '1rem' }}>
+              <button
+                onClick={() => setShowSubmitConfirm(false)}
+                className="btn-sec full-width"
+              >
+                Continue Mission
+              </button>
+              <button
+                onClick={() => handleSubmit(false)}
+                className="btn-primary full-width"
+                style={{ background: 'linear-gradient(135deg, #ff4d4d, #ff8c42)' }}
+              >
+                Confirm Submission
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       {/* CONGRATULATIONS MODAL */}
       {showResultModal && result && (
         <div className="result-modal-overlay">
@@ -309,129 +490,175 @@ const MCQTest = () => {
         </div>
       )}
 
-      <header>
-        <div className="test-info">
-          <h1 className="glow-text">{test.title}</h1>
-          <p>{test.subject} • {test.totalQuestions} Questions</p>
-        </div>
-        {!result && (
-          test.hasTimer && timeLeft !== null ? (
-            <div className={`timer-box ${isCritical ? 'critical' : ''}`}>
-              <Timer size={18} />
-              <span>{formatTime(timeLeft)}</span>
+      <div className="test-operation-layout">
+        <div className="main-tactical-area">
+          <header>
+            <div className="test-info">
+              <h1 className="glow-text">{test.title}</h1>
+              <p>{test.subject} • {test.totalQuestions} Questions</p>
             </div>
-          ) : (
-            <div className="timer-box fluid">
-              <Timer size={18} />
-              <span>{formatTime(elapsedTime)}</span>
-            </div>
-          )
-        )}
-      </header>
+            {!result && (
+              test.hasTimer && timeLeft !== null ? (
+                <div className={`timer-box ${isCritical ? 'critical' : ''}`}>
+                  <Timer size={18} />
+                  <span>{formatTime(timeLeft)}</span>
+                </div>
+              ) : (
+                <div className="timer-box fluid">
+                  <Timer size={18} />
+                  <span>{formatTime(elapsedTime)}</span>
+                </div>
+              )
+            )}
+          </header>
 
-      {result && !showResultModal && (
-        <div className="result-banner">
-          <div className="banner-content">
-            <div className="result-status">
-              <CheckCircle size={32} className="complete-icon" />
-              <div>
-                <h2>Test Completed</h2>
-                <p>Review your performance below</p>
+          {result && !showResultModal && (
+            <div className="result-banner">
+              <div className="banner-content">
+                <div className="result-status">
+                  <CheckCircle size={32} className="complete-icon" />
+                  <div>
+                    <h2>Test Completed</h2>
+                    <p>Review your performance below</p>
+                  </div>
+                </div>
+                <div className="score-display">
+                  <div className="score">{result.score}/{result.total}</div>
+                  <div className="label">Correct Answers</div>
+                </div>
               </div>
             </div>
-            <div className="score-display">
-              <div className="score">{result.score}/{result.total}</div>
-              <div className="label">Correct Answers</div>
+          )}
+
+          <div className="question-container">
+            <div className="progress-bar">
+              {test.questions.map((_, i) => (
+                <div key={i} className={`segment ${i === currentIdx ? 'active' : (answers[i] !== -1 || result ? 'completed' : '')}`} />
+              ))}
+            </div>
+
+            <h3 className="question-base">
+              <span className="q-num">{currentIdx + 1}.</span>
+              {currentQuestion?.q}
+            </h3>
+
+            {result && result.answers[currentIdx] === -1 && (
+              <div className="skipped-badge">
+                <AlertCircle size={14} />
+                <span>Skipped - Counted as Incorrect</span>
+              </div>
+            )}
+
+            <div className="options-list">
+              {currentQuestion?.options.map((option, idx) => {
+                const isSelected = result ? result.answers[currentIdx] === idx : answers[currentIdx] === idx;
+                const isCorrect = result && currentQuestion.correct === idx;
+                const isWrong = result && isSelected && !isCorrect;
+
+                let statusClass = '';
+                if (isSelected) statusClass = 'selected';
+                if (isCorrect) statusClass = 'correct';
+                if (isWrong) statusClass = 'wrong';
+
+                return (
+                  <button
+                    key={idx}
+                    disabled={!!result}
+                    onClick={() => handleOptionSelect(idx)}
+                    className={`option-btn ${statusClass}`}
+                  >
+                    <div className="option-main">
+                      <span className="option-badge">{String.fromCharCode(65 + idx)}</span>
+                      <span className="option-text">{option}</span>
+                    </div>
+                    {isCorrect && <CheckCircle size={20} className="success-icon" />}
+                    {isWrong && <XCircle size={20} className="error-icon" />}
+                  </button>
+                );
+              })}
+            </div>
+
+            {result && currentQuestion?.explanation && (
+              <div className="explanation-box">
+                <h4><HelpCircle size={14} /> Explanation</h4>
+                <p>{currentQuestion.explanation}</p>
+              </div>
+            )}
+
+            <div className="navigation-footer">
+              <button
+                disabled={currentIdx === 0}
+                onClick={() => setCurrentIdx(prev => prev - 1)}
+                className="nav-btn"
+              >
+                <ArrowLeft size={18} /> Previous
+              </button>
+
+              {currentIdx === test.questions.length - 1 ? (
+                !result && (
+                  <button onClick={preSubmitCheck} disabled={submitting} className="btn-primary">
+                    {submitting ? 'Submitting...' : 'Finish Test'}
+                  </button>
+                )
+              ) : (
+                <button
+                  onClick={() => setCurrentIdx(prev => prev + 1)}
+                  className="nav-btn"
+                >
+                  Next <ArrowRight size={18} />
+                </button>
+              )}
+
+              {result && currentIdx === test.questions.length - 1 && (
+                <button onClick={() => navigate('/mcq')} className="btn-primary">
+                  Done
+                </button>
+              )}
             </div>
           </div>
         </div>
-      )}
 
-      <div className="question-container">
-        <div className="progress-bar">
-          {test.questions.map((_, i) => (
-            <div key={i} className={`segment ${i === currentIdx ? 'active' : (answers[i] !== -1 || result ? 'completed' : '')}`} />
-          ))}
-        </div>
-
-        <h3 className="question-base">
-          <span className="q-num">{currentIdx + 1}.</span>
-          {currentQuestion?.q}
-        </h3>
-
-        {result && result.answers[currentIdx] === -1 && (
-          <div className="skipped-badge">
-             <AlertCircle size={14} /> 
-             <span>Skipped - Counted as Incorrect</span>
+        <aside className="tactical-monitor-sidebar">
+          <div className="monitor-header">
+            <h3>Tactical Grid</h3>
+            <span className="status-label">Operation Sync</span>
           </div>
-        )}
 
-        <div className="options-list">
-          {currentQuestion?.options.map((option, idx) => {
-            const isSelected = result ? result.answers[currentIdx] === idx : answers[currentIdx] === idx;
-            const isCorrect = result && currentQuestion.correct === idx;
-            const isWrong = result && isSelected && !isCorrect;
+          <div className="question-grid">
+            {test.questions.map((_, i) => {
+              let status = 'normal';
+              if (answers[i] !== -1) status = 'answered';
+              else if (visited[i] && i !== currentIdx) status = 'skipped';
+              if (i === currentIdx) status += ' active';
 
-            let statusClass = '';
-            if (isSelected) statusClass = 'selected';
-            if (isCorrect) statusClass = 'correct';
-            if (isWrong) statusClass = 'wrong';
-
-            return (
-              <button
-                key={idx}
-                disabled={!!result}
-                onClick={() => handleOptionSelect(idx)}
-                className={`option-btn ${statusClass}`}
-              >
-                <div className="option-main">
-                  <span className="option-badge">{String.fromCharCode(65 + idx)}</span>
-                  <span className="option-text">{option}</span>
-                </div>
-                {isCorrect && <CheckCircle size={20} className="success-icon" />}
-                {isWrong && <XCircle size={20} className="error-icon" />}
-              </button>
-            );
-          })}
-        </div>
-
-        {result && currentQuestion?.explanation && (
-          <div className="explanation-box">
-            <h4><HelpCircle size={14} /> Explanation</h4>
-            <p>{currentQuestion.explanation}</p>
+              return (
+                <button
+                  key={i}
+                  className={`grid-item ${status}`}
+                  onClick={() => setCurrentIdx(i)}
+                  title={`Question ${i + 1}`}
+                >
+                  {i + 1}
+                </button>
+              );
+            })}
           </div>
-        )}
 
-        <div className="navigation-footer">
-          <button 
-            disabled={currentIdx === 0}
-            onClick={() => setCurrentIdx(prev => prev - 1)}
-            className="nav-btn"
-          >
-            <ArrowLeft size={18} /> Previous
-          </button>
-
-          {currentIdx === test.questions.length - 1 ? (
-            !result && (
-              <button onClick={() => handleSubmit(false)} disabled={submitting} className="btn-primary">
-                {submitting ? 'Submitting...' : 'Finish Test'}
-              </button>
-            )
-          ) : (
-            <button 
-              onClick={() => setCurrentIdx(prev => prev + 1)}
-              className="nav-btn"
-            >
-              Next <ArrowRight size={18} />
-            </button>
-          )}
-
-          {result && currentIdx === test.questions.length - 1 && (
-            <button onClick={() => navigate('/mcq')} className="btn-primary">
-                Done
-            </button>
-          )}
-        </div>
+          <div className="grid-legend">
+            <div className="legend-item">
+              <span className="dot answered"></span>
+              <span>Answered</span>
+            </div>
+            <div className="legend-item">
+              <span className="dot skipped"></span>
+              <span>Skipped</span>
+            </div>
+            <div className="legend-item">
+              <span className="dot normal"></span>
+              <span>Pending</span>
+            </div>
+          </div>
+        </aside>
       </div>
     </div>
   );
