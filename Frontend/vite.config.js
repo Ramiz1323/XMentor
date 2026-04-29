@@ -57,12 +57,19 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-utils': ['axios', 'zustand', 'framer-motion', 'lucide-react', 'react-hot-toast'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-router-dom')) {
+              return 'vendor-react';
+            }
+            if (id.includes('lucide-react') || id.includes('framer-motion') || id.includes('axios')) {
+              return 'vendor-utils';
+            }
+            return 'vendor-libs';
+          }
         },
       },
     },
-    chunkSizeWarningLimit: 600, // Slightly increase limit since we've optimized chunks
+    chunkSizeWarningLimit: 600,
   },
 })

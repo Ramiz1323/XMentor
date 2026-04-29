@@ -7,7 +7,6 @@ import useHUDNotifications from './hooks/useHUDNotifications';
 import { Toaster } from 'react-hot-toast';
 import LoadingOverlay from './components/ui/LoadingOverlay';
 
-// 🚀 Dynamic Tactical Imports (Code Splitting)
 const LoginPage = lazy(() => import('./pages/login/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/register/RegisterPage'));
 const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
