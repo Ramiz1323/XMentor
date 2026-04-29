@@ -11,6 +11,12 @@ export default defineConfig({
       srcDir: 'src',
       filename: 'sw.js',
       registerType: 'autoUpdate',
+      injectRegister: 'auto',
+      integration: {
+        configureRolldown(options) {
+          options.codeSplitting = false;
+        },
+      },
       includeAssets: ['favicon.svg', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
         name: 'XMentor - Tactical Learning',
