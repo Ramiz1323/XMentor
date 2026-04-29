@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import useAuthStore from './store/useAuthStore';
 import Navbar from './components/layout/Navbar';
@@ -7,24 +7,25 @@ import useHUDNotifications from './hooks/useHUDNotifications';
 import { Toaster } from 'react-hot-toast';
 import LoadingOverlay from './components/ui/LoadingOverlay';
 
-import LoginPage from './pages/login/LoginPage';
-import RegisterPage from './pages/register/RegisterPage';
-import Dashboard from './pages/dashboard/Dashboard';
-import CommunityList from './pages/community/CommunityList';
-import ChatRoom from './pages/community/ChatRoom';
-import MCQTest from './pages/mcq/MCQTest';
-import MCQDashboard from './pages/mcq/MCQDashboard';
-import MCQCreator from './pages/mcq/MCQCreator';
-import TaskResults from './pages/mcq/TaskResults';
-import ProfilePage from './pages/profile/ProfilePage';
-import DoubtDashboard from './pages/doubt/DoubtDashboard';
-import Leaderboard from './pages/leaderboard/Leaderboard';
-import SubjectiveCreator from './pages/subjective/SubjectiveCreator';
-import SubjectiveView from './pages/subjective/SubjectiveView';
-import SubjectiveHub from './pages/subjective/SubjectiveHub';
-import ReviewCenter from './pages/subjective/ReviewCenter';
-import NotFoundPage from './pages/error/NotFoundPage';
-import MaintenancePage from './pages/error/MaintenancePage';
+// 🚀 Dynamic Tactical Imports (Code Splitting)
+const LoginPage = lazy(() => import('./pages/login/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/register/RegisterPage'));
+const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
+const CommunityList = lazy(() => import('./pages/community/CommunityList'));
+const ChatRoom = lazy(() => import('./pages/community/ChatRoom'));
+const MCQTest = lazy(() => import('./pages/mcq/MCQTest'));
+const MCQDashboard = lazy(() => import('./pages/mcq/MCQDashboard'));
+const MCQCreator = lazy(() => import('./pages/mcq/MCQCreator'));
+const TaskResults = lazy(() => import('./pages/mcq/TaskResults'));
+const ProfilePage = lazy(() => import('./pages/profile/ProfilePage'));
+const DoubtDashboard = lazy(() => import('./pages/doubt/DoubtDashboard'));
+const Leaderboard = lazy(() => import('./pages/leaderboard/Leaderboard'));
+const SubjectiveCreator = lazy(() => import('./pages/subjective/SubjectiveCreator'));
+const SubjectiveView = lazy(() => import('./pages/subjective/SubjectiveView'));
+const SubjectiveHub = lazy(() => import('./pages/subjective/SubjectiveHub'));
+const ReviewCenter = lazy(() => import('./pages/subjective/ReviewCenter'));
+const NotFoundPage = lazy(() => import('./pages/error/NotFoundPage'));
+const MaintenancePage = lazy(() => import('./pages/error/MaintenancePage'));
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, authChecked } = useAuthStore();
@@ -79,28 +80,30 @@ function AppContent({ isAuthenticated }) {
       <div className="main-layout">
         {!isMCQTestPage && <Navbar onMenuClick={toggleSidebar} />}
         <main className={`content ${isMCQTestPage ? 'full-width-tactical' : ''}`}>
-          <Routes>
-            <Route path="/login" element={<AuthRoute><LoginPage /></AuthRoute>} />
-            <Route path="/register" element={<AuthRoute><RegisterPage /></AuthRoute>} />
+          <Suspense fallback={<LoadingOverlay message="Establishing Data Link..." />}>
+            <Routes>
+              <Route path="/login" element={<AuthRoute><LoginPage /></AuthRoute>} />
+              <Route path="/register" element={<AuthRoute><RegisterPage /></AuthRoute>} />
 
-            <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/communities" element={<ProtectedRoute><CommunityList /></ProtectedRoute>} />
-            <Route path="/communities/:id/chat" element={<ProtectedRoute><ChatRoom /></ProtectedRoute>} />
-            <Route path="/mcq" element={<ProtectedRoute><MCQDashboard /></ProtectedRoute>} />
-            <Route path="/mcq/create" element={<ProtectedRoute><MCQCreator /></ProtectedRoute>} />
-            <Route path="/mcq/:id" element={<ProtectedRoute><MCQTest /></ProtectedRoute>} />
-            <Route path="/mcq/:id/results" element={<ProtectedRoute><TaskResults /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-            <Route path="/doubts" element={<ProtectedRoute><DoubtDashboard /></ProtectedRoute>} />
-            <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+              <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/communities" element={<ProtectedRoute><CommunityList /></ProtectedRoute>} />
+              <Route path="/communities/:id/chat" element={<ProtectedRoute><ChatRoom /></ProtectedRoute>} />
+              <Route path="/mcq" element={<ProtectedRoute><MCQDashboard /></ProtectedRoute>} />
+              <Route path="/mcq/create" element={<ProtectedRoute><MCQCreator /></ProtectedRoute>} />
+              <Route path="/mcq/:id" element={<ProtectedRoute><MCQTest /></ProtectedRoute>} />
+              <Route path="/mcq/:id/results" element={<ProtectedRoute><TaskResults /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+              <Route path="/doubts" element={<ProtectedRoute><DoubtDashboard /></ProtectedRoute>} />
+              <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
 
-            <Route path="/subjective" element={<ProtectedRoute><SubjectiveHub /></ProtectedRoute>} />
-            <Route path="/subjective/create" element={<ProtectedRoute><SubjectiveCreator /></ProtectedRoute>} />
-            <Route path="/subjective/:id" element={<ProtectedRoute><SubjectiveView /></ProtectedRoute>} />
-            <Route path="/subjective/review" element={<ProtectedRoute><ReviewCenter /></ProtectedRoute>} />
-            {/* Catch-all route for 404 */}
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
+              <Route path="/subjective" element={<ProtectedRoute><SubjectiveHub /></ProtectedRoute>} />
+              <Route path="/subjective/create" element={<ProtectedRoute><SubjectiveCreator /></ProtectedRoute>} />
+              <Route path="/subjective/:id" element={<ProtectedRoute><SubjectiveView /></ProtectedRoute>} />
+              <Route path="/subjective/review" element={<ProtectedRoute><ReviewCenter /></ProtectedRoute>} />
+              {/* Catch-all route for 404 */}
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </Suspense>
         </main>
       </div>
     </div>

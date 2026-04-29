@@ -54,4 +54,15 @@ export default defineConfig({
       }
     })
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-utils': ['axios', 'zustand', 'framer-motion', 'lucide-react', 'react-hot-toast'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 600, // Slightly increase limit since we've optimized chunks
+  },
 })
