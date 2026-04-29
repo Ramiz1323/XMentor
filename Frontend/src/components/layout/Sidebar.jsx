@@ -145,14 +145,18 @@ const Sidebar = ({ isOpen, onClose }) => {
           </NavLink>
         </nav>
 
-        {deferredPrompt && (
-          <div className="sidebar-footer">
+        <div className="sidebar-footer">
+          {deferredPrompt && (
             <button className="install-button glass-card" onClick={handleInstall}>
               <Download size={18} />
               <span>Install XMentor</span>
             </button>
+          )}
+          <div className="watermark">
+            <span>© {new Date().getFullYear()} Ramiz.</span>
+            <span>All Rights Reserved.</span>
           </div>
-        )}
+        </div>
       </aside>
     </>
   );

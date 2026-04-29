@@ -198,5 +198,21 @@
 
       svg { flex-shrink: 0; }
     }
+
+    .watermark {
+      margin-top: 1.5rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      
+      span {
+        font-size: 0.65rem;
+        color: rgba(255, 255, 255, 0.4);
+        font-family: $font-family-display;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+    }
   }
 }

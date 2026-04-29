@@ -6,33 +6,42 @@
 
 ---
 
-## 🗺️ Roadmap & Future Goals
+## ✨ Features
 
-### Phase 1: Authentication & Community
-- [ ] **Polymorphic User Roles**: Separate profiles for School students and Dev students.
-- [ ] **Community Hub**: A dedicated space for anonymous concept sharing and "Byte Knight" alias chatting.
+### 🔐 Authentication & User Management
+- **Polymorphic User Roles**: Separate profiles and experiences for School students and Dev students.
+- **Secure Authentication**: JWT-based secure login and registration.
+- **Profile Management**: Personalized user dashboard with production-ready ImageKit integration for optimized profile avatars.
 
-### Phase 2: The Assignment Engine
-- [ ] **Targeted Tasks**: Assign specific tasks to individual students with custom deadlines.
-- [ ] **Dual Submission**: Support for image uploads (manual Math/Science work) and project links (Web Dev).
-- [ ] **ImageKit Integration**: Production-ready image management and profile optimization.
+### 📝 Assessment & Assignment Engines
+- **Global MCQ Engine**: Automated multiple-choice test creation across boards with instant grading and result tracking.
+- **Subjective Examination HUD**: Advanced manual grading system for subjective assignments, featuring a responsive, edge-to-edge tactical layout for efficient scanning and mentoring.
+- **Dual Submission System**: Support for image uploads (manual Math/Science work) and project links (Web Dev assignments).
+- **Targeted Tasks**: Assign specific tasks and milestones to individual students with custom deadlines.
 
-### Phase 3: Assessment & Analytics
-- [ ] **Global MCQ Engine**: Automated test creation for boards with instant grading and result tracking.
-- [ ] **Performance Heatmaps**: Visualizing student progress and subject-wise mastery.
+### 💬 Community & Doubt Resolution
+- **Community Hub**: A dedicated real-time space (powered by Socket.io) for anonymous concept sharing and "Byte Knight" alias chatting.
+- **Dedicated Doubt Resolution**: A structured module for students to raise specific academic doubts and receive targeted assistance.
 
-### Phase 4: Production Deployment
-- [ ] **SEO Optimization**: High indexability for public-facing assets.
-- [ ] **Vercel/DigitalOcean Deployment**: Scaling the platform for production use.
+### 🏆 Analytics & Progress Tracking
+- **Leaderboard**: Global and subject-wise ranking system to track performance and foster healthy competition.
+- **Performance Tracking**: Visualizing student progress and subject-wise mastery over time.
 
 ---
 
 ## 🛠️ Tech Stack
--   **Frontend**: React / Next.js (Planned)
--   **Backend**: Node.js, Express
--   **Database**: MongoDB
--   **Cloud**: ImageKit.io
--   **Utilities**: Zod, Helmet, Compression, JWT
+-   **Frontend**: React, Vite, SCSS, Zustand (State Management), React Router, React Hook Form
+-   **Backend**: Node.js, Express.js
+-   **Database**: MongoDB, Mongoose
+-   **Cloud / Storage**: ImageKit.io
+-   **Real-time & WebSockets**: Socket.io
+-   **Security & Validation**: Zod, Helmet, Compression, JWT, bcryptjs
+
+---
+
+## 📄 License & Copyright
+This project is open-source under the **MIT License**.
+Copyright © 2026 Ramiz. All Rights Reserved.
 
 ---
 
