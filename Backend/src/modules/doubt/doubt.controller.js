@@ -37,6 +37,18 @@ export const resolve = asyncHandler(async (req, res) => {
   if (!content) return res.status(400).json({ success: false, message: 'Answer content is required' });
 
   const result = await doubtService.resolveDoubt(req.params.id, req.user._id, content);
+
+  // 📡 NOTIFICATION SYSTEM
+  const io = req.app.get('socketio');
+  if (io) {
+    io.to(result.student._id.toString()).emit('doubt_resolved', {
+      id: result._id,
+      title: result.title,
+      subject: result.subject,
+      teacherName: req.user.name
+    });
+  }
+
   res.status(200).json({ success: true, message: 'Doubt resolved', data: result });
 });
 

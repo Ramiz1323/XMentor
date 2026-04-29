@@ -5,6 +5,28 @@ export const createSubjectiveTest = async (req, res, next) => {
   try {
     req.body.createdBy = req.user.id;
     const test = await SubjectiveTest.create(req.body);
+
+    // 📡 NOTIFICATION SYSTEM
+    const io = req.app.get('socketio');
+    if (io) {
+      const payload = {
+        id: test._id,
+        title: test.title,
+        subject: test.subject,
+        mentorName: req.user.name,
+        type: 'TASK_ALERT',
+        taskType: 'SUBJECTIVE'
+      };
+
+      if (test.communityId) {
+        io.to(test.communityId.toString()).emit('new_task', payload);
+      } else if (test.assignedStudents && test.assignedStudents.length > 0) {
+        test.assignedStudents.forEach(studentId => {
+          io.to(studentId.toString()).emit('new_task', payload);
+        });
+      }
+    }
+
     res.status(201).json({ success: true, data: test });
   } catch (err) {
     next(err);
@@ -105,6 +127,18 @@ export const gradeSubmission = async (req, res, next) => {
     submission.status = 'GRADED';
     submission.gradedAt = Date.now();
     await submission.save();
+
+    // 📡 NOTIFICATION SYSTEM
+    const io = req.app.get('socketio');
+    if (io) {
+      io.to(submission.studentId.toString()).emit('task_graded', {
+        testId: submission.testId._id,
+        title: submission.testId.title,
+        marksObtained,
+        maxMarks: submission.maxMarks,
+        taskType: 'SUBJECTIVE'
+      });
+    }
 
     res.status(200).json({ success: true, data: submission });
   } catch (err) {

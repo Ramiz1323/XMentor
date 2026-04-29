@@ -13,7 +13,8 @@ export const create = asyncHandler(async (req, res) => {
     title: test.title,
     subject: test.subject,
     mentorName: req.user.name,
-    type: 'TASK_ALERT'
+    type: 'TASK_ALERT',
+    taskType: 'MCQ'
   };
 
   // 1. Socket.io (Active users)

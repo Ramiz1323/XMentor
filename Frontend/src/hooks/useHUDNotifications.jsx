@@ -1,15 +1,21 @@
 import { useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import useAuthStore from '../store/useAuthStore';
+import useMCQStore from '../store/useMCQStore';
+import useSubjectiveStore from '../store/useSubjectiveStore';
+import useDoubtStore from '../store/useDoubtStore';
+import useUserStore from '../store/useUserStore';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
+import { Zap, Trophy, MessageSquare, ArrowRight } from 'lucide-react';
 import axios from 'axios';
 
 const SOCKET_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
-const VAPID_PUBLIC_KEY = 'BFwaQpPXgchhlTC7aaZuFyWAcb51cfFWSAStFJAwegcF892Jlbghlp6aZMc2pKesRJgfc_3cX-sTQvQkhLZYWEc';
-
+const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 const useHUDNotifications = () => {
   const { user, isAuthenticated } = useAuthStore();
   const socketRef = useRef(null);
+  const navigate = useNavigate();
 
   // Helper to convert base64 to Uint8Array for VAPID
   const urlBase64ToUint8Array = (base64String) => {
@@ -55,7 +61,16 @@ const useHUDNotifications = () => {
     });
 
     socketRef.current.on('new_task', (data) => {
-      // ... (existing toast logic)
+      // Refresh relevant store
+      if (data.taskType === 'MCQ') {
+        useMCQStore.getState().fetchMyTests();
+      } else if (data.taskType === 'SUBJECTIVE') {
+        useSubjectiveStore.getState().fetchTests();
+      }
+      
+      // Update stats
+      useUserStore.getState().fetchStats();
+
       const alertSound = new Audio('/Congo.mp3');
       alertSound.volume = 0.4;
       alertSound.play().catch(e => console.log('Audio auto-play blocked'));
@@ -64,6 +79,7 @@ const useHUDNotifications = () => {
         <div className="hud-notification-toast">
           <div className="hud-header">
             <span className="pulse-dot"></span>
+            <Zap size={12} className="type-icon" />
             <span className="type">INCOMING TRANSMISSION</span>
             <span className="source">FROM: MENTOR {data.mentorName.toUpperCase()}</span>
           </div>
@@ -73,9 +89,66 @@ const useHUDNotifications = () => {
           </div>
           <button onClick={() => {
              toast.dismiss(t.id);
-             window.location.href = `/mcq/test/${data.id}`;
+             const targetUrl = data.taskType === 'SUBJECTIVE' 
+               ? `/subjective/${data.id}` 
+               : `/mcq/${data.id}`;
+             navigate(targetUrl);
           }} className="hud-action">
-            ESTABLISH LINK
+            ESTABLISH LINK <ArrowRight size={14} style={{ marginLeft: '8px' }} />
+          </button>
+        </div>
+      ), { duration: 8000, position: 'top-right', style: { background: 'transparent', padding: 0, boxShadow: 'none' } });
+    });
+
+    socketRef.current.on('task_graded', (data) => {
+      // Refresh subjective store and stats
+      useSubjectiveStore.getState().fetchTests();
+      useUserStore.getState().fetchStats();
+
+      toast((t) => (
+        <div className="hud-notification-toast success">
+          <div className="hud-header">
+            <span className="pulse-dot success"></span>
+            <Trophy size={12} className="type-icon" />
+            <span className="type">EVALUATION COMPLETE</span>
+            <span className="source">SECTOR: {data.taskType}</span>
+          </div>
+          <div className="hud-body">
+             <p className="task">{data.title}</p>
+             <p className="result">SCORE: {data.marksObtained} / {data.maxMarks}</p>
+          </div>
+          <button onClick={() => {
+             toast.dismiss(t.id);
+             navigate(`/subjective/${data.testId}`);
+          }} className="hud-action">
+            VIEW EVALUATION <ArrowRight size={14} style={{ marginLeft: '8px' }} />
+          </button>
+        </div>
+      ), { duration: 8000, position: 'top-right', style: { background: 'transparent', padding: 0, boxShadow: 'none' } });
+    });
+
+    socketRef.current.on('doubt_resolved', (data) => {
+      // Refresh doubt store and stats
+      useDoubtStore.getState().fetchDoubts();
+      useUserStore.getState().fetchStats();
+
+      toast((t) => (
+        <div className="hud-notification-toast purple">
+          <div className="hud-header">
+            <span className="pulse-dot purple"></span>
+            <MessageSquare size={12} className="type-icon" />
+            <span className="type">INQUIRY RESOLVED</span>
+            <span className="source">MENTOR: {data.teacherName.toUpperCase()}</span>
+          </div>
+          <div className="hud-body">
+             <p className="sector">SECTOR: {data.subject.toUpperCase()}</p>
+             <p className="task">{data.title}</p>
+          </div>
+          <button onClick={() => {
+             toast.dismiss(t.id);
+             navigate('/doubts');
+          }} className="hud-action">
+            ACCESS RESOLUTION <ArrowRight size={14} style={{ marginLeft: '8px' }} />
           </button>
         </div>
       ), { duration: 8000, position: 'top-right', style: { background: 'transparent', padding: 0, boxShadow: 'none' } });
