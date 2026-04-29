@@ -1,6 +1,7 @@
 import asyncHandler from '../../utils/asyncHandler.js';
 import * as userService from './user.service.js';
 import ErrorResponse from '../../utils/errorResponse.js';
+import cache from '../../utils/cache.js';
 
 export const getMyProfile = asyncHandler(async (req, res) => {
   const profile = await userService.getProfile(req.user._id);
@@ -61,7 +62,22 @@ export const getStats = asyncHandler(async (req, res) => {
 });
 
 export const getLeaderboard = asyncHandler(async (req, res) => {
+  const cacheKey = 'global_leaderboard';
+  const cachedData = cache.get(cacheKey);
+
+  if (cachedData) {
+    return res.status(200).json({
+      success: true,
+      message: 'Leaderboard retrieved (cached)',
+      data: cachedData,
+    });
+  }
+
   const leaderboard = await userService.getGlobalLeaderboard();
+  
+  // Cache for 5 minutes
+  cache.set(cacheKey, leaderboard, 300);
+
   res.status(200).json({
     success: true,
     message: 'Leaderboard retrieved',

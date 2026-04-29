@@ -85,6 +85,15 @@ const useAuthStore = create(
         try {
           set({ isLoading: true });
           await authService.logout();
+          
+          // Clear caches and storage
+          if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_TACTICAL_CACHE' });
+          }
+
+          const keys = ['xmentor-subjective', 'xmentor-mcq', 'xmentor-user'];
+          keys.forEach(key => localStorage.removeItem(key));
+          
         } catch (err) {
           console.error('Logout failed on server', err);
         } finally {
@@ -107,7 +116,7 @@ const useAuthStore = create(
       },
       partialize: (state) => ({ 
         user: state.user 
-      }), // only persist user, isAuthenticated will be derived/re-checked
+      }),
     }
   )
 );
