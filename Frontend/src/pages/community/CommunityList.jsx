@@ -27,14 +27,6 @@ const CommunityList = () => {
 
   useEffect(() => {
     fetchAllCommunities();
-
-    const intervalId = setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        fetchAllCommunities();
-      }
-    }, 15000);
-
-    return () => clearInterval(intervalId);
   }, [fetchAllCommunities]);
 
   const handleCreate = async (e) => {

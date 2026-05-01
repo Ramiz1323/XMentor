@@ -23,19 +23,6 @@ const MCQDashboard = () => {
           setOverviewData(null);
         });
     }
-
-    const intervalId = setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        fetchMyTests();
-        if (user.role === 'TEACHER') {
-          fetchTeacherOverview()
-            .then(data => setOverviewData(data))
-            .catch(err => setOverviewData(null));
-        }
-      }
-    }, 15000);
-
-    return () => clearInterval(intervalId);
   }, [fetchMyTests, fetchTeacherOverview, user.role]);
 
   const handleDelete = async (id) => {

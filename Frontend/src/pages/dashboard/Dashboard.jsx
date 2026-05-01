@@ -17,17 +17,6 @@ const Dashboard = () => {
     if (user?.role === 'STUDENT') {
       fetchMyTests();
     }
-
-    const intervalId = setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        fetchStats();
-        if (user?.role === 'STUDENT') {
-          fetchMyTests();
-        }
-      }
-    }, 15000);
-
-    return () => clearInterval(intervalId);
   }, [fetchStats, fetchMyTests, user?.role]);
 
   const pendingTests = (tests || []).filter(t => !t.isSubmitted).slice(0, 3);

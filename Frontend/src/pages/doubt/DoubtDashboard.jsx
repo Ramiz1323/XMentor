@@ -45,14 +45,6 @@ const DoubtDashboard = () => {
 
   useEffect(() => {
     fetchDoubts(filter);
-
-    const intervalId = setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        fetchDoubts(filter);
-      }
-    }, 15000);
-
-    return () => clearInterval(intervalId);
   }, [fetchDoubts, filter]);
 
   const handleAskSubmit = async (e) => {

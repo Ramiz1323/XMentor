@@ -13,14 +13,6 @@ const SubjectiveHub = () => {
 
   useEffect(() => {
     fetchTests();
-
-    const intervalId = setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        fetchTests();
-      }
-    }, 15000);
-
-    return () => clearInterval(intervalId);
   }, [fetchTests]);
 
   const handleDelete = async (e, id) => {

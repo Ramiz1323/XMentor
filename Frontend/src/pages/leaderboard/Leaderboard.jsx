@@ -9,14 +9,6 @@ const Leaderboard = () => {
 
   useEffect(() => {
     fetchLeaderboard();
-
-    const intervalId = setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        fetchLeaderboard();
-      }
-    }, 15000);
-
-    return () => clearInterval(intervalId);
   }, [fetchLeaderboard]);
 
   const getRankBadge = (rank) => {
