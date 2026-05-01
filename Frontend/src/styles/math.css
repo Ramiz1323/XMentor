@@ -1,0 +1,44 @@
+/* Professional Math Rendering Styles */
+
+.math-rendered-content {
+  line-height: 1.6;
+  font-size: 1.05rem;
+}
+
+.math-inline {
+  padding: 0 2px;
+}
+
+.math-block {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  overflow-x: auto;
+  text-align: center;
+}
+
+/* Ensure KaTeX matches the platform's tactical theme */
+.katex {
+  font-size: 1.1em !important;
+  color: inherit;
+}
+
+.katex-display {
+  margin: 1em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* Specific overrides for mobile readability */
+@media (max-width: 768px) {
+  .katex {
+    font-size: 1em !important;
+  }
+}
+
+/* Highlighting math nodes on hover for interactivity */
+.math-rendered-content:hover .katex {
+  text-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+  transition: text-shadow 0.3s ease;
+}

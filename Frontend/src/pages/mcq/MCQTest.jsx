@@ -3,7 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import useMCQStore from '../../store/useMCQStore';
 import { Timer, ArrowRight, ArrowLeft, CheckCircle, XCircle, HelpCircle, AlertCircle, RefreshCw, Trophy, Target, Clock, Star } from 'lucide-react';
 import Skeleton from '../../components/ui/Skeleton';
+import MathRenderer from '../../components/ui/MathRenderer';
 import confetti from 'canvas-confetti';
+
 
 const MCQTest = () => {
   const { id } = useParams();
@@ -541,10 +543,10 @@ const MCQTest = () => {
               ))}
             </div>
 
-            <h3 className="question-base">
+            <div className="question-base">
               <span className="q-num">{currentIdx + 1}.</span>
-              {currentQuestion?.q}
-            </h3>
+              <MathRenderer text={currentQuestion?.q} />
+            </div>
 
             {result && result.answers[currentIdx] === -1 && (
               <div className="skipped-badge">
@@ -573,7 +575,7 @@ const MCQTest = () => {
                   >
                     <div className="option-main">
                       <span className="option-badge">{String.fromCharCode(65 + idx)}</span>
-                      <span className="option-text">{option}</span>
+                      <MathRenderer className="option-text" text={option} />
                     </div>
                     {isCorrect && <CheckCircle size={20} className="success-icon" />}
                     {isWrong && <XCircle size={20} className="error-icon" />}
@@ -585,7 +587,7 @@ const MCQTest = () => {
             {result && currentQuestion?.explanation && (
               <div className="explanation-box">
                 <h4><HelpCircle size={14} /> Explanation</h4>
-                <p>{currentQuestion.explanation}</p>
+                <MathRenderer text={currentQuestion.explanation} />
               </div>
             )}
 

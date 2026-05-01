@@ -5,6 +5,8 @@ import useUserStore from '../../store/useUserStore';
 import { Plus, Trash2, X, ChevronRight, GraduationCap, BookOpen, Users, Target, AlertCircle, RefreshCw } from 'lucide-react';
 import GlassDropdown from '../../components/ui/GlassDropdown';
 import Skeleton from '../../components/ui/Skeleton';
+import MathRenderer from '../../components/ui/MathRenderer';
+
 
 const MCQCreator = () => {
   const navigate = useNavigate();
@@ -80,8 +82,21 @@ const MCQCreator = () => {
     if (!importData.topic) return alert('Enter a Topic Name for the mission.');
     if (!importData.jsonText) return alert('JSON Data field empty. Systems unresponsive.');
 
+    let parsed = null;
     try {
-      const parsed = JSON.parse(importData.jsonText);
+      parsed = JSON.parse(importData.jsonText);
+    } catch (e) {
+      // Self-healing: if parse fails, try to fix common LaTeX escaping issues
+      try {
+        const healed = importData.jsonText
+          .replace(/\\([a-zA-Z])/g, '\\\\$1') // Double the backslashes
+          .replace(/\\(?!"|\\|\/|b|f|n|r|t|u)/g, '\\\\'); // Escape other unescaped backslashes
+        parsed = JSON.parse(healed);
+      } catch (err) {
+        return alert('Strategic Analysis Failed: ' + e.message);
+      }
+    }
+
       if (!Array.isArray(parsed)) throw new Error('Data must be a JSON array of question objects.');
 
       const formattedQs = parsed.map((q, index) => {
@@ -151,13 +166,20 @@ Difficulty: ${importData.difficulty}
 Weightage: ${importData.marksPerQ} Marks per question
 Instruction: ${complexityTxt}
 
+CRITICAL: ALL mathematical expressions, formulas, and scientific symbols MUST be wrapped in LaTeX delimiters ($...$ for inline, $$...$$ for block). 
+Always use professional LaTeX notation (e.g., \\frac{a}{b}, \\sin, \\theta, \\sqrt{x}).
+
+IMPORTANT FOR JSON INTEGRITY: 
+- Use SINGLE escaping for backslashes in your JSON response (e.g., "\\frac" in the JSON string becomes "\frac" when parsed).
+- DO NOT use double-escaped backslashes like "\\\\frac" unless strictly necessary for the environment.
+
 Format strictly as a JSON array: [{"question": "...", "options": ["A", "B", "C", "D"], "answer": 0, "explanation": "..."}]
-Note: 'answer' must be the index (0-3) of the correct option. Return ONLY the JSON array packet. 
-Keep double check that the questions should be easy to understand and in simple language and also double check for correct answers should not be wrong.`;
+Return ONLY the raw JSON array. No conversational text.`;
     
     navigator.clipboard.writeText(prompt);
     alert('Strategic Intelligence Prompt Copied!');
   };
+
 
   const handleCreate = async () => {
     if (!testData.title) return alert('Task title is required');
@@ -548,6 +570,13 @@ Keep double check that the questions should be easy to understand and in simple 
                   onChange={(e) => updateQuestion(idx, 'q', e.target.value)}
                 />
 
+                {q.q && (
+                  <div className="math-preview-box">
+                    <span className="preview-label">Live Preview:</span>
+                    <MathRenderer text={q.q} />
+                  </div>
+                )}
+
                 <div className="option-grid">
                   {q.options.map((opt, oIdx) => (
                     <div key={oIdx} className="option-item">
@@ -580,6 +609,12 @@ Keep double check that the questions should be easy to understand and in simple 
                   value={q.explanation}
                   onChange={(e) => updateQuestion(idx, 'explanation', e.target.value)}
                 />
+                
+                {q.explanation && (
+                  <div className="math-preview-box explanation">
+                    <MathRenderer text={q.explanation} />
+                  </div>
+                )}
               </div>
             ))}
 

@@ -19,6 +19,8 @@ import {
 import useAuthStore from '../../store/useAuthStore';
 import useDoubtStore from '../../store/useDoubtStore';
 import LoadingOverlay from '../../components/ui/LoadingOverlay';
+import MathRenderer from '../../components/ui/MathRenderer';
+
 
 const DoubtDashboard = () => {
   const { user } = useAuthStore();
@@ -151,14 +153,14 @@ const DoubtDashboard = () => {
                 </span>
               </div>
               <h3 className="doubt-title">{doubt.title}</h3>
-              <p className="doubt-preview">{doubt.description}</p>
+              <MathRenderer className="doubt-preview" text={doubt.description} />
               
               {doubt.status === 'RESOLVED' && (
                 <div className="resolution-section">
                   <div className="res-header">
                     <MessageSquare size={14} /> <span>Mentor Answer</span>
                   </div>
-                  <p className="res-content">{doubt.answer?.content}</p>
+                  <MathRenderer className="res-content" text={doubt.answer?.content} />
                 </div>
               )}
 
@@ -303,7 +305,7 @@ const DoubtDashboard = () => {
                   <span className="student">By {selectedDoubt.student?.name}</span>
                 </div>
                 <div className="ticket-body">
-                  <p>{selectedDoubt.description}</p>
+                  <MathRenderer text={selectedDoubt.description} />
                   {selectedDoubt.attachments?.length > 0 && (
                     <div className="modal-attachment">
                       <a href={selectedDoubt.attachments[0]} target="_blank" rel="noreferrer">
@@ -322,7 +324,7 @@ const DoubtDashboard = () => {
                     <h4>Official Resolution</h4>
                   </div>
                   <div className="resolution-bubble">
-                    <p>{selectedDoubt.answer?.content}</p>
+                    <MathRenderer text={selectedDoubt.answer?.content} />
                     <div className="bubble-footer">
                       <UserIcon size={12} /> Resolved by {selectedDoubt.teacher?.name}
                       <span className="spacer">|</span>
