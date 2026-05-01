@@ -4,6 +4,7 @@ import useAuthStore from '../../store/useAuthStore';
 import useCommunityStore from '../../store/useCommunityStore';
 import { Users, LogIn, LogOut, RefreshCw, AlertCircle, MessageSquare, X, Plus, Trash2 } from 'lucide-react';
 import CommunitySkeleton from '../../components/skeletons/CommunitySkeleton';
+import LoadingOverlay from '../../components/ui/LoadingOverlay';
 
 const CommunityList = () => {
   const { 
@@ -26,6 +27,14 @@ const CommunityList = () => {
 
   useEffect(() => {
     fetchAllCommunities();
+
+    const intervalId = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchAllCommunities();
+      }
+    }, 15000);
+
+    return () => clearInterval(intervalId);
   }, [fetchAllCommunities]);
 
   const handleCreate = async (e) => {
@@ -98,6 +107,8 @@ const CommunityList = () => {
       </div>
     );
   }
+
+  if (isLoading && (!communities || communities.length === 0)) return <LoadingOverlay />;
 
   return (
     <div className="community-page">

@@ -4,6 +4,7 @@ import useAuthStore from '../../store/useAuthStore';
 import useMCQStore from '../../store/useMCQStore';
 import { Plus, BookOpen, Clock, Target, Users, TrendingUp, Star, CheckCircle, Trash2 } from 'lucide-react';
 import TaskSkeleton from '../../components/skeletons/TaskSkeleton';
+import LoadingOverlay from '../../components/ui/LoadingOverlay';
 
 const MCQDashboard = () => {
   const { user } = useAuthStore();
@@ -22,6 +23,19 @@ const MCQDashboard = () => {
           setOverviewData(null);
         });
     }
+
+    const intervalId = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchMyTests();
+        if (user.role === 'TEACHER') {
+          fetchTeacherOverview()
+            .then(data => setOverviewData(data))
+            .catch(err => setOverviewData(null));
+        }
+      }
+    }, 15000);
+
+    return () => clearInterval(intervalId);
   }, [fetchMyTests, fetchTeacherOverview, user.role]);
 
   const handleDelete = async (id) => {
@@ -141,6 +155,8 @@ const MCQDashboard = () => {
 
   const pendingTests = tests.filter(t => !t.isSubmitted);
   const completedTests = tests.filter(t => t.isSubmitted);
+
+  if (isLoading && tests.length === 0) return <LoadingOverlay />;
 
   const StudentWiseView = ({ data }) => {
     if (!data || !data.studentStats) return <div className="loading-msg">Loading strategic cohort intelligence...</div>;

@@ -2,12 +2,21 @@ import { useEffect } from 'react';
 import useUserStore from '../../store/useUserStore';
 import { Trophy, Medal, Target, BookOpen, Crown } from 'lucide-react';
 import Skeleton from '../../components/ui/Skeleton';
+import LoadingOverlay from '../../components/ui/LoadingOverlay';
 
 const Leaderboard = () => {
   const { leaderboard, fetchLeaderboard, isLoading } = useUserStore();
 
   useEffect(() => {
     fetchLeaderboard();
+
+    const intervalId = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchLeaderboard();
+      }
+    }, 15000);
+
+    return () => clearInterval(intervalId);
   }, [fetchLeaderboard]);
 
   const getRankBadge = (rank) => {
@@ -18,6 +27,8 @@ const Leaderboard = () => {
       default: return <span className="rank-number">{rank}</span>;
     }
   };
+
+  if (isLoading && (!leaderboard || leaderboard.length === 0)) return <LoadingOverlay />;
 
   return (
     <div className="leaderboard-container">

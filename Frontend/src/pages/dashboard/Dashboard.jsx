@@ -5,6 +5,7 @@ import useMCQStore from '../../store/useMCQStore';
 import { BookOpen, Users, Trophy, MessageSquare, Target, CheckCircle, Clock, ArrowRight, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Skeleton from '../../components/ui/Skeleton';
+import LoadingOverlay from '../../components/ui/LoadingOverlay';
 
 const Dashboard = () => {
   const { user } = useAuthStore();
@@ -16,9 +17,22 @@ const Dashboard = () => {
     if (user?.role === 'STUDENT') {
       fetchMyTests();
     }
+
+    const intervalId = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchStats();
+        if (user?.role === 'STUDENT') {
+          fetchMyTests();
+        }
+      }
+    }, 15000);
+
+    return () => clearInterval(intervalId);
   }, [fetchStats, fetchMyTests, user?.role]);
 
   const pendingTests = (tests || []).filter(t => !t.isSubmitted).slice(0, 3);
+
+  if (isLoading && !stats?.mcq) return <LoadingOverlay />;
 
   return (
     <div className="dashboard-container">

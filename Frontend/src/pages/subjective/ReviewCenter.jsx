@@ -12,6 +12,14 @@ const ReviewCenter = () => {
 
   useEffect(() => {
     fetchPendingSubmissions();
+
+    const intervalId = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchPendingSubmissions();
+      }
+    }, 15000);
+
+    return () => clearInterval(intervalId);
   }, [fetchPendingSubmissions]);
 
   const handleGrade = async (id) => {

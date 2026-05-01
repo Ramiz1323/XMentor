@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
 import useDoubtStore from '../../store/useDoubtStore';
+import LoadingOverlay from '../../components/ui/LoadingOverlay';
 
 const DoubtDashboard = () => {
   const { user } = useAuthStore();
@@ -42,6 +43,14 @@ const DoubtDashboard = () => {
 
   useEffect(() => {
     fetchDoubts(filter);
+
+    const intervalId = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchDoubts(filter);
+      }
+    }, 15000);
+
+    return () => clearInterval(intervalId);
   }, [fetchDoubts, filter]);
 
   const handleAskSubmit = async (e) => {
@@ -82,6 +91,8 @@ const DoubtDashboard = () => {
   };
 
   const isTeacher = user?.role === 'TEACHER';
+
+  if (isLoading && doubts.length === 0) return <LoadingOverlay />;
 
   return (
     <div className="doubt-page">
