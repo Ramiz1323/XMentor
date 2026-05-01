@@ -41,12 +41,16 @@ export const resolve = asyncHandler(async (req, res) => {
   // 📡 NOTIFICATION SYSTEM
   const io = req.app.get('socketio');
   if (io) {
-    io.to(result.student._id.toString()).emit('doubt_resolved', {
-      id: result._id,
-      title: result.title,
-      subject: result.subject,
-      teacherName: req.user.name
-    });
+    if (result.student && result.student._id) {
+      io.to(result.student._id.toString()).emit('doubt_resolved', {
+        id: result._id,
+        title: result.title,
+        subject: result.subject,
+        teacherName: req.user.name
+      });
+    } else {
+      console.warn('[Doubt] Socket emission aborted: result.student or ID missing', result._id);
+    }
   }
 
   res.status(200).json({ success: true, message: 'Doubt resolved', data: result });

@@ -30,6 +30,10 @@ const useHUDNotifications = () => {
   };
 
   const subscribeToPush = async (registration) => {
+    if (!VAPID_PUBLIC_KEY) {
+      console.error('[Push] Deployment aborted: VITE_VAPID_PUBLIC_KEY is missing in environment.');
+      return;
+    }
     try {
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
@@ -81,10 +85,10 @@ const useHUDNotifications = () => {
             <span className="pulse-dot"></span>
             <Zap size={12} className="type-icon" />
             <span className="type">INCOMING TRANSMISSION</span>
-            <span className="source">FROM: MENTOR {data.mentorName.toUpperCase()}</span>
+            <span className="source">FROM: MENTOR {(data?.mentorName || '').toUpperCase()}</span>
           </div>
           <div className="hud-body">
-             <p className="sector">SECTOR: {data.subject.toUpperCase()}</p>
+             <p className="sector">SECTOR: {(data?.subject || '').toUpperCase()}</p>
              <p className="task">{data.title}</p>
           </div>
           <button onClick={() => {
@@ -138,10 +142,10 @@ const useHUDNotifications = () => {
             <span className="pulse-dot purple"></span>
             <MessageSquare size={12} className="type-icon" />
             <span className="type">INQUIRY RESOLVED</span>
-            <span className="source">MENTOR: {data.teacherName.toUpperCase()}</span>
+            <span className="source">MENTOR: {(data?.teacherName || '').toUpperCase()}</span>
           </div>
           <div className="hud-body">
-             <p className="sector">SECTOR: {data.subject.toUpperCase()}</p>
+             <p className="sector">SECTOR: {(data?.subject || '').toUpperCase()}</p>
              <p className="task">{data.title}</p>
           </div>
           <button onClick={() => {

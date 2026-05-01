@@ -145,3 +145,13 @@
   70% { transform: scale(1.2); opacity: 0.8; box-shadow: 0 0 0 10px rgba($accent-primary, 0); }
   100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba($accent-primary, 0); }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-notification-toast {
+    animation: none !important;
+  }
+  .hud-notification-toast .pulse-dot {
+    animation: none !important;
+  }
+}
+
