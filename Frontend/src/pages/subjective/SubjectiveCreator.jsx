@@ -96,20 +96,21 @@ const SubjectiveCreator = () => {
     if (!importData.topic) return alert('Enter a Topic Name for the task.');
     if (!importData.jsonText) return alert('JSON Data field empty. Systems unresponsive.');
 
-    let parsed = null;
     try {
-      parsed = JSON.parse(importData.jsonText);
-    } catch (e) {
-      // Self-healing logic
+      let parsed = null;
       try {
-        const healed = importData.jsonText
-          .replace(/\\([a-zA-Z])/g, '\\\\$1')
-          .replace(/\\(?!"|\\|\/|b|f|n|r|t|u)/g, '\\\\');
-        parsed = JSON.parse(healed);
-      } catch (err) {
-        return alert('Strategic Analysis Failed: ' + e.message);
+        parsed = JSON.parse(importData.jsonText);
+      } catch (e) {
+        // Self-healing logic
+        try {
+          const healed = importData.jsonText
+            .replace(/\\([a-zA-Z])/g, '\\\\$1')
+            .replace(/\\(?!"|\\|\/|b|f|n|r|t|u)/g, '\\\\');
+          parsed = JSON.parse(healed);
+        } catch (err) {
+          throw new Error(e.message);
+        }
       }
-    }
 
       if (!Array.isArray(parsed)) throw new Error('Data must be a JSON array.');
 
@@ -122,7 +123,6 @@ const SubjectiveCreator = () => {
         if (!text) throw new Error(`Entry ${index + 1} is invalid.`);
 
         // SELF-HEALING: Automatically fix over-escaped backslashes (\\\\frac -> \frac)
-        // This makes the system resilient to AI formatting errors.
         const sanitizedText = text.replace(/\\\\([a-zA-Z]+)/g, '\\$1');
 
         return { text: sanitizedText, marks: baseMarks };
@@ -150,6 +150,7 @@ const SubjectiveCreator = () => {
     } catch (err) {
       alert('Strategic Analysis Failed: ' + err.message);
     }
+
   };
 
   const copyPrompt = () => {

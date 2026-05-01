@@ -82,47 +82,38 @@ const MCQCreator = () => {
     if (!importData.topic) return alert('Enter a Topic Name for the mission.');
     if (!importData.jsonText) return alert('JSON Data field empty. Systems unresponsive.');
 
-    let parsed = null;
     try {
-      parsed = JSON.parse(importData.jsonText);
-    } catch (e) {
-      // Self-healing: if parse fails, try to fix common LaTeX escaping issues
+      let parsed = null;
       try {
-        const healed = importData.jsonText
-          .replace(/\\([a-zA-Z])/g, '\\\\$1') // Double the backslashes
-          .replace(/\\(?!"|\\|\/|b|f|n|r|t|u)/g, '\\\\'); // Escape other unescaped backslashes
-        parsed = JSON.parse(healed);
-      } catch (err) {
-        return alert('Strategic Analysis Failed: ' + e.message);
+        parsed = JSON.parse(importData.jsonText);
+      } catch (e) {
+        // Self-healing: if parse fails, try to fix common LaTeX escaping issues
+        try {
+          const healed = importData.jsonText
+            .replace(/\\([a-zA-Z])/g, '\\\\$1') // Double the backslashes
+            .replace(/\\(?!"|\\|\/|b|f|n|r|t|u)/g, '\\\\'); // Escape other unescaped backslashes
+          parsed = JSON.parse(healed);
+        } catch (err) {
+          throw new Error(e.message); // Re-throw original parse error if healing fails
+        }
       }
-    }
 
       if (!Array.isArray(parsed)) throw new Error('Data must be a JSON array of question objects.');
-
+      
+      // ... (rest of the logic)
       const formattedQs = parsed.map((q, index) => {
         const qNum = index + 1;
-        
-        // 1. Validate Question Text
         const questionText = q.question || q.q || '';
         if (!questionText) throw new Error(`Question ${qNum}: Text content missing.`);
 
-        // 2. Normalize and Validate Options (exactly 4)
         let rawOptions = q.options || [];
         if (!Array.isArray(rawOptions)) rawOptions = [];
-        
-        // Truncate or Pad to exactly 4
         const finalOptions = [...rawOptions].slice(0, 4);
-        while (finalOptions.length < 4) {
-          finalOptions.push(""); 
-        }
-        
-        // Ensure all entries are strings
+        while (finalOptions.length < 4) finalOptions.push("");
         const normalizedOptions = finalOptions.map(opt => String(opt || ''));
 
-        // 3. Validate Answer Index (0-3)
         let ansIdx = q.answer !== undefined ? q.answer : (q.correct !== undefined ? q.correct : 0);
         ansIdx = parseInt(ansIdx, 10);
-        
         if (isNaN(ansIdx) || ansIdx < 0 || ansIdx > 3) {
            throw new Error(`Question ${qNum}: Invalid answer index "${ansIdx}". Must be between 0-3.`);
         }
@@ -147,10 +138,11 @@ const MCQCreator = () => {
       });
 
       setCreationMode('MANUAL');
-      setStep(3); // Jump to targeting
+      setStep(3); 
     } catch (err) {
       alert('Strategic Analysis Failed: ' + err.message);
     }
+
   };
 
   const copyPrompt = () => {
