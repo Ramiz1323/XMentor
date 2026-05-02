@@ -158,7 +158,7 @@ export const getCommunityMembers = async (communityId, userId, userRole) => {
   });
 };
 
-export const getChatHistory = async (communityId, userId) => {
+export const getChatHistory = async (communityId, userId, limit = 30, page = 1) => {
   const community = await Community.findById(communityId).lean();
   if (!community) throw new ErrorResponse('Community not found', 404);
 
@@ -170,9 +170,11 @@ export const getChatHistory = async (communityId, userId) => {
     throw new ErrorResponse('Access denied. Join community to view chat', 403);
   }
 
+  const skip = (page - 1) * limit;
   const messages = await Message.find({ community: communityId })
     .sort({ createdAt: -1 })
-    .limit(100)
+    .skip(skip)
+    .limit(limit)
     .select('content sender senderAlias createdAt isSystem')
     .lean();
 

@@ -4,6 +4,7 @@ import { Send, ArrowLeft, Users, Clock, ShieldCheck, MessageSquare, Trash2, Aler
 import useCommunityStore from '../../store/useCommunityStore';
 import useAuthStore from '../../store/useAuthStore';
 import useSocket from '../../hooks/useSocket';
+import LoadingOverlay from '../../components/ui/LoadingOverlay';
 
 const ChatRoom = () => {
   const { id } = useParams();
@@ -18,7 +19,9 @@ const ChatRoom = () => {
     verifyPasscode,
     members,
     deleteCommunity,
-    isLoading, 
+    isLoading,
+    isFetchingMore,
+    hasMore,
     error 
   } = useCommunityStore();
 
@@ -26,6 +29,8 @@ const ChatRoom = () => {
   const [passcode, setPasscode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [verifyError, setVerifyError] = useState('');
+  const [page, setPage] = useState(1);
+  const [prevScrollHeight, setPrevScrollHeight] = useState(null);
 
   const handleTerminated = useCallback(() => {
     alert('This anonymous hub has been terminated by the administrator.');
@@ -35,11 +40,13 @@ const ChatRoom = () => {
   const { isConnected, messages: liveMessages, setMessages, sendMessage } = useSocket(id, handleTerminated);
   const [input, setInput] = useState('');
   const scrollRef = useRef(null);
+  const messagesAreaRef = useRef(null);
 
   useEffect(() => {
     fetchCommunityById(id);
     if (isPasscodeVerified) {
-      fetchHistory(id);
+      setPage(1);
+      fetchHistory(id, 1);
       if (user?.role === 'TEACHER') {
         fetchMembers(id);
       }
@@ -49,8 +56,14 @@ const ChatRoom = () => {
   useEffect(() => {
     if (history?.length > 0 && isPasscodeVerified) {
       setMessages(history);
+      
+      if (prevScrollHeight && messagesAreaRef.current) {
+        const newScrollHeight = messagesAreaRef.current.scrollHeight;
+        messagesAreaRef.current.scrollTop = newScrollHeight - prevScrollHeight;
+        setPrevScrollHeight(null);
+      }
     }
-  }, [history, setMessages, isPasscodeVerified]);
+  }, [history, setMessages, isPasscodeVerified, prevScrollHeight]);
 
   const onVerify = async (e) => {
     e.preventDefault();
@@ -68,8 +81,23 @@ const ChatRoom = () => {
   };
 
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [liveMessages]);
+    if (messagesAreaRef.current && prevScrollHeight === null) {
+      const { scrollTop, scrollHeight, clientHeight } = messagesAreaRef.current;
+      const isAtBottom = scrollHeight - scrollTop - clientHeight < 100;
+      if (isAtBottom || page === 1) {
+        scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }, [liveMessages, page, prevScrollHeight]);
+
+  const handleScroll = (e) => {
+    if (e.target.scrollTop === 0 && hasMore && !isFetchingMore) {
+      setPrevScrollHeight(e.target.scrollHeight);
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchHistory(id, nextPage);
+    }
+  };
 
   const handleSend = (e) => {
     e.preventDefault();
@@ -90,7 +118,7 @@ const ChatRoom = () => {
     }
   };
 
-  if (isLoading && !currentCommunity) return <div className="chat-loader">Establishing secure uplink...</div>;
+  if (isLoading && !currentCommunity) return <LoadingOverlay message="Establishing secure uplink..." />;
   if (error) return <div className="chat-error">{error}</div>;
   
   if (!currentCommunity && !isLoading) {
@@ -174,7 +202,12 @@ const ChatRoom = () => {
         </div>
       </header>
 
-      <div className="messages-area">
+      <div className="messages-area" ref={messagesAreaRef} onScroll={handleScroll}>
+        {isFetchingMore && (
+          <div className="loading-more">
+            <span>Decrypting older transmissions...</span>
+          </div>
+        )}
         {Array.isArray(liveMessages) && liveMessages.map((msg, idx) => {
           const isMe = msg?.senderAlias === currentCommunity?.myAlias;
           const messageDate = msg?.createdAt ? new Date(msg.createdAt) : new Date();

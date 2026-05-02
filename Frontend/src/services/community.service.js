@@ -2,12 +2,12 @@ import api from '../lib/api';
 
 const communityService = {
   getAllCommunities: async () => {
-    const { data } = await api.get('/community');
+    const { data } = await api.get(`/community?t=${Date.now()}`);
     return data;
   },
 
   getCommunityById: async (id) => {
-    const { data } = await api.get(`/community/${id}`);
+    const { data } = await api.get(`/community/${id}?t=${Date.now()}`);
     return data;
   },
 
@@ -21,8 +21,8 @@ const communityService = {
     return data;
   },
 
-  getHistory: async (id) => {
-    const { data } = await api.get(`/community/${id}/history`);
+  getHistory: async (id, page = 1) => {
+    const { data } = await api.get(`/community/${id}/history?page=${page}&t=${Date.now()}`);
     return data;
   },
 

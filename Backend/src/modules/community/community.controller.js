@@ -41,7 +41,9 @@ export const join = asyncHandler(async (req, res) => {
 });
 
 export const getHistory = asyncHandler(async (req, res) => {
-  const messages = await communityService.getChatHistory(req.params.id, req.user._id);
+  const limit = parseInt(req.query.limit, 10) || 30;
+  const page = parseInt(req.query.page, 10) || 1;
+  const messages = await communityService.getChatHistory(req.params.id, req.user._id, limit, page);
   res.status(200).json({ success: true, data: messages });
 });
 

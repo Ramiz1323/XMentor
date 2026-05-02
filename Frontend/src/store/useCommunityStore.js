@@ -6,7 +6,9 @@ const useCommunityStore = create((set) => ({
   currentCommunity: null,
   messages: [],
   members: [],
+  hasMore: true,
   isLoading: false,
+  isFetchingMore: false,
   error: null,
 
   fetchAllCommunities: async () => {
@@ -23,7 +25,7 @@ const useCommunityStore = create((set) => ({
 
   fetchCommunityById: async (id) => {
     try {
-      set({ isLoading: true, error: null });
+      set({ isLoading: true, error: null, currentCommunity: null });
       const data = await communityService.getCommunityById(id);
       set({ currentCommunity: data.data });
     } catch (err) {
@@ -60,15 +62,24 @@ const useCommunityStore = create((set) => ({
     }
   },
 
-  fetchHistory: async (id) => {
+  fetchHistory: async (id, page = 1) => {
     try {
-      set({ isLoading: true, error: null });
-      const data = await communityService.getHistory(id);
-      set({ messages: data.data });
+      if (page === 1) {
+        set({ isLoading: true, error: null, messages: [], hasMore: true });
+      } else {
+        set({ isFetchingMore: true, error: null });
+      }
+      const data = await communityService.getHistory(id, page);
+      const newMessages = data.data || [];
+      
+      set((state) => ({ 
+        messages: page === 1 ? newMessages : [...newMessages, ...state.messages],
+        hasMore: newMessages.length === 30
+      }));
     } catch (err) {
       set({ error: err.message || 'Failed to fetch chat history' });
     } finally {
-      set({ isLoading: false });
+      set({ isLoading: false, isFetchingMore: false });
     }
   },
 

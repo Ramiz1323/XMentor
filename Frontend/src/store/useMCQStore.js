@@ -1,10 +1,8 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+
 import mcqService from '../services/mcq.service';
 
-const useMCQStore = create(
-  persist(
-    (set) => ({
+const useMCQStore = create((set) => ({
       tests: [],
       currentTest: null,
       analytics: null,
@@ -51,7 +49,7 @@ const useMCQStore = create(
 
       fetchTestById: async (id) => {
         try {
-          set({ isLoading: true, error: null });
+          set({ isLoading: true, error: null, currentTest: null });
           const data = await mcqService.getTestById(id);
           set({ currentTest: data.data });
         } catch (err) {
@@ -113,13 +111,6 @@ const useMCQStore = create(
           set({ isLoading: false });
         }
       }
-    }),
-    {
-      name: 'xmentor-mcq',
-      storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ tests: state.tests }), 
-    }
-  )
-);
+}));
 
 export default useMCQStore;

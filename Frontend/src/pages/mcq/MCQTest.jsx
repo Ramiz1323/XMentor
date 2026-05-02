@@ -45,6 +45,18 @@ const MCQTest = () => {
 
   useEffect(() => {
     const initTest = async () => {
+      setCurrentIdx(0);
+      setAnswers([]);
+      setTimeLeft(null);
+      setResult(null);
+      setElapsedTime(0);
+      setShowResultModal(false);
+      setIsReady(false);
+      setViolations(0);
+      setSecurityWarning('');
+      setShowSubmitConfirm(false);
+      setVisited([]);
+
       await fetchTestById(id);
     };
     initTest();
@@ -485,9 +497,9 @@ const MCQTest = () => {
             </div>
 
             <div className="modal-footer">
-              <button onClick={() => setShowResultModal(false)} className="btn-sec full-width">
+              {/* <button onClick={() => setShowResultModal(false)} className="btn-sec full-width">
                 Review Answers
-              </button>
+              </button> */}
               <button onClick={() => navigate('/mcq')} className="btn-primary full-width">
                 Back to Hub
               </button>

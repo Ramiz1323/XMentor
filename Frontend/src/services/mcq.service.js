@@ -7,7 +7,7 @@ const mcqService = {
   },
 
   getMyTests: async () => {
-    const { data } = await api.get('/mcq/my-tests');
+    const { data } = await api.get(`/mcq/my-tests?t=${Date.now()}`);
     return data;
   },
 
@@ -32,7 +32,7 @@ const mcqService = {
   },
 
   getTeacherOverview: async () => {
-    const { data } = await api.get('/mcq/teacher/overview');
+    const { data } = await api.get(`/mcq/teacher/overview?t=${Date.now()}`);
     return data;
   },
 
