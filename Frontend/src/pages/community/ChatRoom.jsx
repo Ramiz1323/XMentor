@@ -30,7 +30,7 @@ const ChatRoom = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [verifyError, setVerifyError] = useState('');
   const [page, setPage] = useState(1);
-  const [prevScrollHeight, setPrevScrollHeight] = useState(null);
+  const prevScrollHeightRef = useRef(null);
 
   const handleTerminated = useCallback(() => {
     alert('This anonymous hub has been terminated by the administrator.');
@@ -57,13 +57,13 @@ const ChatRoom = () => {
     if (history?.length > 0 && isPasscodeVerified) {
       setMessages(history);
       
-      if (prevScrollHeight && messagesAreaRef.current) {
+      if (prevScrollHeightRef.current && messagesAreaRef.current) {
         const newScrollHeight = messagesAreaRef.current.scrollHeight;
-        messagesAreaRef.current.scrollTop = newScrollHeight - prevScrollHeight;
-        setPrevScrollHeight(null);
+        messagesAreaRef.current.scrollTop = newScrollHeight - prevScrollHeightRef.current;
+        prevScrollHeightRef.current = null;
       }
     }
-  }, [history, setMessages, isPasscodeVerified, prevScrollHeight]);
+  }, [history, setMessages, isPasscodeVerified]);
 
   const onVerify = async (e) => {
     e.preventDefault();
@@ -81,18 +81,18 @@ const ChatRoom = () => {
   };
 
   useEffect(() => {
-    if (messagesAreaRef.current && prevScrollHeight === null) {
+    if (messagesAreaRef.current && prevScrollHeightRef.current === null) {
       const { scrollTop, scrollHeight, clientHeight } = messagesAreaRef.current;
       const isAtBottom = scrollHeight - scrollTop - clientHeight < 100;
       if (isAtBottom || page === 1) {
         scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
       }
     }
-  }, [liveMessages, page, prevScrollHeight]);
+  }, [liveMessages, page]);
 
   const handleScroll = (e) => {
     if (e.target.scrollTop === 0 && hasMore && !isFetchingMore) {
-      setPrevScrollHeight(e.target.scrollHeight);
+      prevScrollHeightRef.current = e.target.scrollHeight;
       const nextPage = page + 1;
       setPage(nextPage);
       fetchHistory(id, nextPage);

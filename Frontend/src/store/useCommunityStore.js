@@ -79,19 +79,32 @@ const useCommunityStore = create((set) => ({
     } catch (err) {
       set({ error: err.message || 'Failed to fetch chat history' });
     } finally {
-      set({ isLoading: false, isFetchingMore: false });
+      set((state) => {
+        const updates = { isFetchingMore: false };
+        if (page === 1) updates.isLoading = false;
+        return updates;
+      });
     }
   },
 
   fetchMembers: async (id) => {
+    let didSetLoading = false;
+    set((state) => {
+      if (!state.isLoading) {
+        didSetLoading = true;
+        return { isLoading: true, error: null };
+      }
+      return { error: null };
+    });
     try {
-      set({ isLoading: true, error: null });
       const data = await communityService.getMembers(id);
       set({ members: data.data });
     } catch (err) {
       set({ error: err.message || 'Failed to fetch members' });
     } finally {
-      set({ isLoading: false });
+      if (didSetLoading) {
+        set({ isLoading: false });
+      }
     }
   },
 

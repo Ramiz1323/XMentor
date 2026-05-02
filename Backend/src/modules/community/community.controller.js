@@ -16,7 +16,7 @@ export const getAll = asyncHandler(async (req, res) => {
 
 export const getById = asyncHandler(async (req, res) => {
   const result = await communityService.getCommunityById(req.params.id, req.user._id);
-  
+
   if (!result) {
     return res.status(404).json({
       success: false,
@@ -41,8 +41,14 @@ export const join = asyncHandler(async (req, res) => {
 });
 
 export const getHistory = asyncHandler(async (req, res) => {
-  const limit = parseInt(req.query.limit, 10) || 30;
-  const page = parseInt(req.query.page, 10) || 1;
+  const DEFAULT_LIMIT = 30;
+  const MAX_LIMIT = 100;
+  const parsedLimit = parseInt(req.query.limit, 10);
+  const parsedPage = parseInt(req.query.page, 10);
+  
+  const page = Math.max(1, parsedPage || 1);
+  const limit = Math.min(MAX_LIMIT, Math.max(1, parsedLimit || DEFAULT_LIMIT));
+
   const messages = await communityService.getChatHistory(req.params.id, req.user._id, limit, page);
   res.status(200).json({ success: true, data: messages });
 });
@@ -59,7 +65,7 @@ export const getMembers = asyncHandler(async (req, res) => {
 
 export const remove = asyncHandler(async (req, res) => {
   await communityService.deleteCommunity(req.params.id, req.user._id);
-  
+
   // Notify all socket clients in that room
   const io = req.app.get('socketio');
   if (io && typeof io.to === 'function') {
