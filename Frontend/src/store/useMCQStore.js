@@ -9,20 +9,6 @@ const useMCQStore = create((set) => ({
       isLoading: false,
       error: null,
 
-      createTest: async (testData) => {
-        try {
-          set({ isLoading: true, error: null });
-          const data = await mcqService.createTest(testData);
-          set((state) => ({ tests: [data.data, ...state.tests] }));
-          return data;
-        } catch (err) {
-          set({ error: err.message || 'Failed to create test' });
-          throw err;
-        } finally {
-          set({ isLoading: false });
-        }
-      },
-
       fetchMyTests: async () => {
         try {
           set({ isLoading: true, error: null });
@@ -97,20 +83,46 @@ const useMCQStore = create((set) => ({
         }
       },
 
-      deleteTest: async (id) => {
-        try {
-          set({ isLoading: true, error: null });
-          await mcqService.deleteTest(id);
-          set((state) => ({
-            tests: state.tests.filter(t => t._id !== id)
-          }));
-        } catch (err) {
-          set({ error: err.message || 'Failed to delete test' });
-          throw err;
-        } finally {
-          set({ isLoading: false });
-        }
-      }
+  createTest: async (testData) => {
+    const tempId = 'temp-' + Date.now();
+    const optimisticTest = {
+      _id: tempId,
+      ...testData,
+      totalQuestions: testData.questions?.length || 0,
+      isOptimistic: true,
+      createdBy: { name: 'You (Mentor)' }
+    };
+
+    set((state) => ({ tests: [optimisticTest, ...state.tests] }));
+
+    try {
+      const data = await mcqService.createTest(testData);
+      set((state) => ({
+        tests: state.communities ? state.tests.map(t => t._id === tempId ? data.data : t) : [data.data, ...state.tests]
+      }));
+      return data;
+    } catch (err) {
+      set((state) => ({
+        tests: state.tests.filter(t => t._id !== tempId),
+        error: err.message || 'Failed to create test'
+      }));
+      throw err;
+    }
+  },
+
+  deleteTest: async (id) => {
+    const previousTests = [...useMCQStore.getState().tests];
+    set((state) => ({
+      tests: state.tests.filter(t => t._id !== id)
+    }));
+
+    try {
+      await mcqService.deleteTest(id);
+    } catch (err) {
+      set({ tests: previousTests, error: err.message || 'Failed to delete test' });
+      throw err;
+    }
+  }
 }));
 
 export default useMCQStore;

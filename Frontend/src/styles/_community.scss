@@ -304,6 +304,15 @@
         }
       }
 
+      &.optimistic {
+        opacity: 0.6;
+        filter: grayscale(0.2);
+        .message-bubble {
+          border-style: dashed;
+          animation: messagePulse 1.5s infinite ease-in-out;
+        }
+      }
+
       .sender-alias {
         font-size: 0.75rem;
         color: var(--accent-secondary);
@@ -704,4 +713,14 @@
       }
     }
   }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes messagePulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(0.995); opacity: 0.5; }
 }

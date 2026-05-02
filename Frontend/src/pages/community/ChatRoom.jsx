@@ -102,7 +102,10 @@ const ChatRoom = () => {
   const handleSend = (e) => {
     e.preventDefault();
     if (!input.trim() || !isConnected || !isPasscodeVerified) return;
-    sendMessage(input);
+    sendMessage(input, { 
+      userId: user.id || user._id, 
+      userAlias: currentCommunity?.myAlias 
+    });
     setInput('');
   };
 
@@ -225,7 +228,7 @@ const ChatRoom = () => {
           }
 
           return (
-            <div key={msg?._id || idx} className={`message-wrapper ${isMe ? 'own' : ''}`}>
+            <div key={msg?._id || idx} className={`message-wrapper ${isMe ? 'own' : ''} ${msg.isOptimistic ? 'optimistic' : ''}`}>
               {!isMe && <div className="sender-alias">{senderDisplay}</div>}
               <div className="message-bubble glass-card">
                 <div className="content">{msg?.content}</div>

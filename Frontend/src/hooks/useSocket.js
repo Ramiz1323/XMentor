@@ -39,7 +39,28 @@ const useSocket = (communityId, onTerminated) => {
 
     socketRef.current.on('new_message', (message) => {
       console.log('[Socket] New message received:', message);
-      setMessages((prev) => [...prev, message]);
+      setMessages((prev) => {
+        if (message.clientId) {
+          const index = prev.findIndex(m => m.clientId === message.clientId);
+          if (index !== -1) {
+            const newMessages = [...prev];
+            newMessages[index] = { ...message, isOptimistic: false };
+            return newMessages;
+          }
+        }
+        
+        // Deduplicate just in case
+        if (prev.some(m => m._id === message._id)) return prev;
+        
+        return [...prev, message];
+      });
+    });
+
+    socketRef.current.on('error', (err) => {
+      console.error('[Socket] Error:', err.message);
+      if (err.clientId) {
+        setMessages((prev) => prev.filter(m => m.clientId !== err.clientId));
+      }
     });
 
     socketRef.current.on('community_terminated', (data) => {
@@ -63,11 +84,27 @@ const useSocket = (communityId, onTerminated) => {
     };
   }, [isAuthenticated, communityId]);
 
-  const sendMessage = (content) => {
+  const sendMessage = (content, extraData = {}) => {
     if (socketRef.current && content.trim()) {
+      const clientId = Date.now().toString() + Math.random().toString(36).substring(2);
+      
+      // Optimistic Update
+      const optimisticMsg = {
+        _id: clientId,
+        clientId,
+        content: content.trim(),
+        sender: extraData.userId,
+        senderAlias: extraData.userAlias,
+        createdAt: new Date().toISOString(),
+        isOptimistic: true
+      };
+
+      setMessages((prev) => [...prev, optimisticMsg]);
+
       socketRef.current.emit('send_message', {
         communityId,
-        content
+        content: content.trim(),
+        clientId
       });
     }
   };

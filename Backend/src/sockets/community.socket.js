@@ -73,8 +73,8 @@ const setupCommunitySocket = (server) => {
     });
 
     socket.on('send_message', async (data) => {
-      const { communityId, content } = data;
-      console.log(`[Socket] Message from ${socket.user.id} to ${communityId}`);
+      const { communityId, content, clientId } = data;
+      console.log(`[Socket] Message from ${socket.user.id} to ${communityId} (clientId: ${clientId})`);
       
       if (!communityId) return socket.emit('error', { message: 'Community ID is required' });
       if (!content || content.trim().length === 0) return socket.emit('error', { message: 'Message content cannot be empty' });
@@ -93,6 +93,7 @@ const setupCommunitySocket = (server) => {
           console.log(`[Socket] Broadcasting message: ${savedMsg._id}`);
           io.to(communityId).emit('new_message', {
             _id: savedMsg._id,
+            clientId, // Echo back for optimistic UI tracking
             content: savedMsg.content,
             sender: savedMsg.sender,
             senderAlias: savedMsg.senderAlias,
@@ -102,7 +103,7 @@ const setupCommunitySocket = (server) => {
         }
       } catch (err) {
         console.error('[Socket] Message Save/Broadcast Error:', err.message);
-        socket.emit('error', { message: 'Failed to send message: ' + err.message });
+        socket.emit('error', { message: 'Failed to send message: ' + err.message, clientId });
       }
     });
 
