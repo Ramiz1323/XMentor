@@ -36,6 +36,10 @@ const mcqService = {
     return data;
   },
 
+  assignToStudents: async (id, studentIds) => {
+    const { data } = await api.post(`/mcq/${id}/assign`, { studentIds });
+    return data;
+  },
   deleteTest: async (id) => {
     const { data } = await api.delete(`/mcq/${id}`);
     return data;

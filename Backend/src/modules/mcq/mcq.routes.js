@@ -14,6 +14,7 @@ router.get('/community/:communityId', mcqController.getByCommunity);
 router.get('/teacher/overview', authorize('TEACHER'), mcqController.getOverview);
 router.get('/:id', mcqController.getById);
 router.get('/:id/analytics', authorize('TEACHER'), mcqController.getAnalytics);
+router.post('/:id/assign', authorize('TEACHER'), mcqController.assign);
 router.post('/:id/submit', validate(submitTestSchema), mcqController.submit);
 router.delete('/:id', authorize('TEACHER'), mcqController.remove);
 

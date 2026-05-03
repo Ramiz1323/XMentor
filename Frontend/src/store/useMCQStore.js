@@ -83,6 +83,18 @@ const useMCQStore = create((set) => ({
         }
       },
 
+  assignToStudents: async (id, studentIds) => {
+    try {
+      set({ isLoading: true, error: null });
+      const data = await mcqService.assignToStudents(id, studentIds);
+      return data;
+    } catch (err) {
+      set({ error: err.message || 'Failed to assign students' });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
   createTest: async (testData) => {
     const tempId = 'temp-' + Date.now();
     const optimisticTest = {

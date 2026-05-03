@@ -149,7 +149,7 @@ export const getAssignedTests = async (userId) => {
 };
 
 export const getTestAnalytics = async (testId, teacherId) => {
-  const test = await MCQTest.findById(testId);
+  const test = await MCQTest.findById(testId).populate('assignedStudents', 'name username profilePic');
   if (!test) throw new ErrorResponse('Test not found', 404);
 
   // Verification: Only the creator can see full analytics
@@ -162,16 +162,46 @@ export const getTestAnalytics = async (testId, teacherId) => {
     .sort({ score: -1, timeTaken: 1 })
     .lean();
 
+  // Find students who are assigned but haven't completed
+  const completedStudentIds = new Set(results.map(r => r.studentId._id.toString()));
+  const pendingStudents = test.assignedStudents.filter(student => 
+    !completedStudentIds.has(student._id.toString())
+  );
+
   return {
     test,
     results,
+    pendingStudents,
     stats: {
       totalAttempts: results.length,
+      totalAssigned: test.assignedStudents.length,
       avgScore: results.length > 0 
         ? parseFloat((results.reduce((acc, curr) => acc + curr.score, 0) / results.length).toFixed(1)) 
         : 0
     }
   };
+};
+
+export const assignTest = async (testId, teacherId, studentIds) => {
+  const test = await MCQTest.findById(testId);
+  if (!test) throw new ErrorResponse('Test not found', 404);
+
+  if (test.createdBy.toString() !== teacherId.toString()) {
+    throw new ErrorResponse('Unauthorized: Only creator can assign this test', 403);
+  }
+
+  // Filter out students already assigned
+  const currentAssigned = test.assignedStudents.map(id => id.toString());
+  const newAssignments = studentIds.filter(id => !currentAssigned.includes(id));
+
+  if (newAssignments.length === 0) {
+    return { test, newAssignments: [] };
+  }
+
+  test.assignedStudents.push(...newAssignments);
+  await test.save();
+
+  return { test, newAssignments };
 };
 
 export const getTeacherOverview = async (teacherId) => {

@@ -2,20 +2,25 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
 import useMCQStore from '../../store/useMCQStore';
-import { Plus, BookOpen, Clock, Target, Users, TrendingUp, Star, CheckCircle, Trash2 } from 'lucide-react';
+import useUserStore from '../../store/useUserStore';
+import { Plus, BookOpen, Clock, Target, Users, TrendingUp, Star, CheckCircle, Trash2, UserPlus, X, Eye } from 'lucide-react';
 import TaskSkeleton from '../../components/skeletons/TaskSkeleton';
 import LoadingOverlay from '../../components/ui/LoadingOverlay';
 
 const MCQDashboard = () => {
   const { user } = useAuthStore();
-  const { tests, fetchMyTests, fetchTeacherOverview, deleteTest, isLoading, error } = useMCQStore();
+  const { tests, fetchMyTests, fetchTeacherOverview, assignToStudents, deleteTest, isLoading, error } = useMCQStore();
+  const { profile, fetchProfile } = useUserStore();
+  
   const [viewMode, setViewMode] = useState('TASK_WISE');
   const [overviewData, setOverviewData] = useState(null);
   const [expandedStudentId, setExpandedStudentId] = useState(null);
+  const [assigningTask, setAssigningTask] = useState(null);
 
   useEffect(() => {
     fetchMyTests();
     if (user.role === 'TEACHER') {
+      fetchProfile();
       fetchTeacherOverview()
         .then(data => setOverviewData(data))
         .catch(err => {
@@ -23,7 +28,7 @@ const MCQDashboard = () => {
           setOverviewData(null);
         });
     }
-  }, [fetchMyTests, fetchTeacherOverview, user.role]);
+  }, [fetchMyTests, fetchTeacherOverview, fetchProfile, user.role]);
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this MCQ test? This action cannot be undone and all student results will be permanently removed.')) {
@@ -35,6 +40,81 @@ const MCQDashboard = () => {
     }
   };
 
+  const AssignStudentsModal = ({ task, onClose }) => {
+    const [selectedIds, setSelectedIds] = useState([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    // Filter out students who are already assigned
+    const assignedIds = task.assignedStudents?.map(id => id.toString()) || [];
+    const availableStudents = (profile?.students || []).filter(s => !assignedIds.includes(s._id.toString()));
+
+    const handleAssign = async () => {
+      if (selectedIds.length === 0) return;
+      setIsSubmitting(true);
+      try {
+        await assignToStudents(task._id, selectedIds);
+        alert(`Successfully deployed task to ${selectedIds.length} new recipients.`);
+        onClose();
+        fetchMyTests(); // Refresh
+      } catch (err) {
+        alert(err.message || 'Deployment failed');
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+
+    const toggleStudent = (id) => {
+      setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+    };
+
+    return (
+      <div className="tactical-modal-overlay">
+        <div className="tactical-modal">
+          <header>
+            <div className="title-row">
+              <h3>Deploy Task: {task.title}</h3>
+              <button onClick={onClose} className="close-btn"><X size={20} /></button>
+            </div>
+            <p>Select students from your cohort to assign this tactical assessment.</p>
+          </header>
+
+          <div className="modal-body">
+            {availableStudents.length === 0 ? (
+              <div className="empty-msg">No additional students available for deployment.</div>
+            ) : (
+              <div className="student-selection-grid">
+                {availableStudents.map(student => (
+                  <div 
+                    key={student._id} 
+                    className={`select-item ${selectedIds.includes(student._id) ? 'active' : ''}`}
+                    onClick={() => toggleStudent(student._id)}
+                  >
+                    <div className="avatar">{student.name[0]}</div>
+                    <div className="info">
+                      <div className="name">{student.name}</div>
+                      <div className="handle">@{student.username}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <footer>
+            <button className="btn-sec" onClick={onClose}>Abort</button>
+            <button 
+              className="btn-primary" 
+              disabled={selectedIds.length === 0 || isSubmitting}
+              onClick={handleAssign}
+            >
+              {isSubmitting ? 'Deploying...' : `Deploy to ${selectedIds.length} Students`}
+            </button>
+          </footer>
+        </div>
+      </div>
+    );
+  };
+
   const TaskCard = ({ test }) => {
     const isCompleted = test.isSubmitted;
 
@@ -42,10 +122,10 @@ const MCQDashboard = () => {
       <div className={`glass-card task-card ${test.createdBy?._id === user._id ? 'owned' : ''} ${isCompleted ? 'completed-task' : ''}`}>
         <div className="card-header">
           <div className="title-group">
-            <div className="top-row" style={{ flexWrap: 'wrap', gap: '0.5rem' }}>
+            <div className="top-row">
                <span className="subject-tag">{test.subject}</span>
                {test.language && (
-                 <span className="subject-tag" style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                 <span className="subject-tag language-tag">
                    {test.language}
                  </span>
                )}
@@ -65,17 +145,17 @@ const MCQDashboard = () => {
           )}
         </div>
 
-        <div className="card-meta" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem 1rem' }}>
+        <div className="card-meta">
           <div className="meta-item">
             <BookOpen size={14} />
-            <span style={{ whiteSpace: 'nowrap' }}>{test.totalQuestions} Questions</span>
+            <span>{test.totalQuestions} Questions</span>
           </div>
           <div className="meta-item">
             <Clock size={14} />
             <span>{test.hasTimer ? 'Timed' : 'Fluid'}</span>
           </div>
           {test.deadline && (
-            <div className="meta-item deadline-meta" style={{ color: new Date(test.deadline) < new Date() ? '#ef4444' : 'inherit', gridColumn: 'span 2' }}>
+            <div className={`meta-item deadline-meta ${new Date(test.deadline) < new Date() ? 'expired' : ''}`}>
               <Clock size={14} />
               <span>Deadline: {new Date(test.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
             </div>
@@ -94,42 +174,50 @@ const MCQDashboard = () => {
             <span className="name">Mentor: {test.createdBy?.name}</span>
           </div>
           
-          <div className="btn-row">
+          <div className="card-actions">
             {user.role === 'TEACHER' && test.createdBy?._id === user._id && (
-              <Link 
-                to={`/mcq/${test._id}/results`} 
-                className="btn-sec results-btn" 
-                title="View Results"
-              >
-                <Users size={16} />
-              </Link>
+              <div className="management-row">
+                <Link 
+                  to={`/mcq/${test._id}/results`} 
+                  className="btn-sec results-btn" 
+                  title="View Results"
+                >
+                  <Users size={16} /> Results
+                </Link>
+                <button 
+                  className="btn-sec assign-btn"
+                  onClick={() => setAssigningTask(test)}
+                  title="Assign to Students"
+                >
+                  <UserPlus size={16} /> Assign
+                </button>
+                <button 
+                  className="btn-sec delete-btn" 
+                  onClick={(e) => { e.preventDefault(); handleDelete(test._id); }}
+                  title="Delete Test"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
             )}
             
-            {isCompleted ? (
-              <Link 
-                to={`/mcq/${test._id}`} 
-                className="btn-sec review-btn"
-              >
-                 <BookOpen size={16} /> Review
-              </Link>
-            ) : (
-              <Link 
-                to={`/mcq/${test._id}`} 
-                className="btn-primary" 
-              >
-                {user.role === 'TEACHER' ? 'Participate' : 'Attend'}
-              </Link>
-            )}
-
-            {user.role === 'TEACHER' && test.createdBy?._id === user._id && (
-              <button 
-                className="btn-sec delete-btn" 
-                onClick={(e) => { e.preventDefault(); handleDelete(test._id); }}
-                title="Delete Test"
-              >
-                <Trash2 size={16} />
-              </button>
-            )}
+            <div className="primary-row">
+              {isCompleted ? (
+                <Link 
+                  to={`/mcq/${test._id}`} 
+                  className="btn-sec review-btn"
+                >
+                   <BookOpen size={16} /> Review Mission
+                </Link>
+              ) : (
+                <Link 
+                  to={`/mcq/${test._id}`} 
+                  className="btn-primary" 
+                >
+                  {user.role === 'TEACHER' ? 'Participate In Training' : 'Attend Training Session'}
+                </Link>
+              )}
+            </div>
           </div>
         </div>
 
@@ -225,7 +313,12 @@ const MCQDashboard = () => {
                             <div className="title">{res.testTitle}</div>
                             <div className="subject">{res.subject}</div>
                           </div>
-                          <div className="score">{res.score}/{res.total}</div>
+                          <div className="action-group">
+                             <div className="score-badge">{res.score} / {res.total}</div>
+                             <Link to={`/mcq/${res.testId}/results`} className="review-btn-small" title="Review Submission">
+                               <Eye size={14} />
+                             </Link>
+                          </div>
                         </div>
                       ))}
                       {results.length === 0 && <div className="empty-msg">No missions completed yet.</div>}
@@ -422,8 +515,8 @@ const MCQDashboard = () => {
         )}
         
         {error && (
-          <div className="error-state" style={{ textAlign: 'center', padding: '4rem' }}>
-            <p className="error-text" style={{ color: '#ef4444', marginBottom: '1.5rem' }}>{error}</p>
+          <div className="error-state">
+            <p className="error-text">{error}</p>
             <button onClick={fetchMyTests} className="btn-primary">Retry Sync</button>
           </div>
         )}
@@ -446,6 +539,14 @@ const MCQDashboard = () => {
            </div>
         </div>
       )}
+
+      {assigningTask && (
+        <AssignStudentsModal 
+          task={assigningTask}
+          onClose={() => setAssigningTask(null)}
+        />
+      )}
+
     </div>
   );
 };

@@ -121,6 +121,49 @@ export const getOverview = asyncHandler(async (req, res) => {
     data: overview,
   });
 });
+export const assign = asyncHandler(async (req, res) => {
+  const { studentIds } = req.body;
+  const { test, newAssignments } = await mcqService.assignTest(req.params.id, req.user._id, studentIds);
+  
+  // 📡 NOTIFICATION SYSTEM for new students
+  const io = req.app.get('socketio');
+  const payload = {
+    id: test._id,
+    title: test.title,
+    subject: test.subject,
+    mentorName: req.user.name,
+    type: 'TASK_ALERT',
+    taskType: 'MCQ'
+  };
+  
+  if (io && newAssignments.length > 0) {
+    newAssignments.forEach(studentId => {
+      io.to(studentId.toString()).emit('new_task', payload);
+    });
+  }
+  
+  // Push notifications
+  if (newAssignments.length > 0) {
+    try {
+      const targetUsers = await User.find({ _id: { $in: newAssignments } });
+      targetUsers.forEach(user => {
+        notifyUser(user, {
+          title: `INCOMING TRANSMISSION: Mentor ${req.user.name}`,
+          body: `New Tactical Assessment detected in ${test.subject}: ${test.title}`,
+          url: `/mcq/${test._id}`
+        });
+      });
+    } catch (pushErr) {
+      console.error('[Notification] Push broadcast failed:', pushErr.message);
+    }
+  }
+
+  res.status(200).json({
+    success: true,
+    message: `${newAssignments.length} new students assigned successfully`,
+    data: test,
+  });
+});
 export const remove = asyncHandler(async (req, res) => {
   await mcqService.deleteTest(req.params.id, req.user._id);
   

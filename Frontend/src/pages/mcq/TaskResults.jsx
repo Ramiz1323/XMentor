@@ -1,38 +1,52 @@
-import { useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import useMCQStore from '../../store/useMCQStore';
-import { Users, Target, Clock, ArrowLeft, Award, Calendar } from 'lucide-react';
+import { Users, Target, Clock, ArrowLeft, Award, Calendar, Eye, UserX, Trash2 } from 'lucide-react';
 import Skeleton from '../../components/ui/Skeleton';
+import SubmissionDetail from './SubmissionDetail';
 
 const TaskResults = () => {
   const { id } = useParams();
-  const { analytics: data, fetchAnalytics, isLoading, error } = useMCQStore();
+  const navigate = useNavigate();
+  const { analytics: data, fetchAnalytics, deleteTest, isLoading, error } = useMCQStore();
+  const [selectedSubmission, setSelectedSubmission] = useState(null);
 
   useEffect(() => {
     fetchAnalytics(id);
   }, [id, fetchAnalytics]);
 
+  const handleDelete = async () => {
+    if (window.confirm('CRITICAL: Are you sure you want to terminate this intelligence task? This action cannot be reversed.')) {
+      try {
+        await deleteTest(id);
+        navigate('/mcq');
+      } catch (err) {
+        alert('Termination failed: ' + err.message);
+      }
+    }
+  };
+
   const ResultsSkeleton = () => (
     <div className="task-results-container">
       <header>
         <Skeleton width="100px" height="20px" className="mb-4" />
-        <div className="header-main" style={{ marginBottom: '2rem' }}>
-          <div style={{ flex: 1 }}>
+        <div className="header-main">
+          <div>
             <Skeleton width="300px" height="36px" className="mb-2" />
             <Skeleton width="200px" height="16px" />
           </div>
           <Skeleton width="100px" height="60px" />
         </div>
       </header>
-      <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '2rem' }}>
+      <div className="stats-grid">
         {[...Array(3)].map((_, i) => <Skeleton key={i} width="100%" height="100px" variant="rect" />)}
       </div>
       <div className="results-section">
-        <div className="section-header" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between' }}>
+        <div className="section-header">
           <Skeleton width="150px" height="24px" />
         </div>
         <div className="results-table-wrapper">
-          {[...Array(5)].map((_, i) => <Skeleton key={i} width="100%" height="70px" style={{ marginBottom: '8px' }} />)}
+          {[...Array(5)].map((_, i) => <Skeleton key={i} width="100%" height="70px" className="mb-2" />)}
         </div>
       </div>
     </div>
@@ -42,17 +56,17 @@ const TaskResults = () => {
 
   if (error || !data) {
     return (
-      <div className="error-page" style={{ textAlign: 'center', padding: '10rem 2rem' }}>
+      <div className="error-page">
         <h2 className="glow-text">Task Data Corrupted or Unauthorized</h2>
-        <p style={{ color: 'rgba(255,255,255,0.6)', marginTop: '1rem' }}>{error || "We couldn't retrieve the intelligence data for this task."}</p>
-        <Link to="/mcq" className="btn-primary mt-6" style={{ display: 'inline-flex', gap: '0.5rem' }}>
+        <p className="error-description">{error || "We couldn't retrieve the intelligence data for this task."}</p>
+        <Link to="/mcq" className="btn-primary mt-6">
           <ArrowLeft size={18} /> Back to Hub
         </Link>
       </div>
     );
   }
 
-  const { test, results, stats } = data;
+  const { test, results, pendingStudents, stats } = data;
 
   return (
     <div className="task-results-container">
@@ -61,61 +75,81 @@ const TaskResults = () => {
           <ArrowLeft size={16} /> Back to Hub
         </Link>
         <div className="header-main">
-          <div>
-            <h1 className="glow-text">{test.title} | Performance Intelligence</h1>
-            <div className="meta-row">
-              <span className="meta-tag"><Calendar size={14} /> Created {new Date(test.createdAt).toLocaleDateString()}</span>
-              <span className="meta-tag"><Target size={14} /> {test.totalQuestions} Questions</span>
-              <span className="meta-tag"><Clock size={14} /> {test.duration}m Limit</span>
+          <div className="title-section">
+            <h1 className="compact-title">
+              <span className="accent">{test.title}</span> 
+              <span className="divider">/</span> 
+              Analytics
+            </h1>
+            <div className="meta-row compact">
+              <span className="meta-tag"><Calendar size={12} /> {new Date(test.createdAt).toLocaleDateString()}</span>
+              {test.deadline && (
+                <span className={`meta-tag ${new Date(test.deadline) < new Date() ? 'expired' : ''}`}>
+                  <Clock size={12} /> {new Date(test.deadline).toLocaleDateString()}
+                </span>
+              )}
+              <span className="meta-tag"><Target size={12} /> {test.totalQuestions}Q</span>
+              <span className="meta-tag"><Clock size={12} /> {test.duration}m</span>
+              
+              <button className="delete-task-btn" onClick={handleDelete} title="Terminate Task">
+                <Trash2 size={14} /> Terminate
+              </button>
             </div>
           </div>
-          <div className="avg-score-box">
-             <div className="score">{stats.avgScore} / {test.totalQuestions}</div>
-             <div className="label">Avg Cohort Score</div>
+          <div className="avg-score-box compact">
+             <div className="score">{stats.avgScore} <span className="small">/ {test.totalQuestions}</span></div>
+             <div className="label">Cohort Average</div>
           </div>
         </div>
       </header>
 
       <div className="stats-grid">
          <div className="stat-card completion">
-            <Users size={24} />
-            <div className="value">{stats.totalAttempts}</div>
-            <div className="label">Total Completions</div>
+            <Users size={20} />
+            <div className="info-wrap">
+              <div className="value">{stats.totalAttempts} / {stats.totalAssigned}</div>
+              <div className="label">Cohort Completion</div>
+            </div>
          </div>
          <div className="stat-card perfect">
-            <Award size={24} />
-            <div className="value">{results.filter(r => r.score === test.totalQuestions).length}</div>
-            <div className="label">Perfect Scores</div>
+            <Award size={20} />
+            <div className="info-wrap">
+              <div className="value">{results.filter(r => r.score === test.totalQuestions).length}</div>
+              <div className="label">Perfect Scores</div>
+            </div>
          </div>
          <div className="stat-card time">
-            <Clock size={24} />
-            <div className="value">
-              {results.length > 0 ? (results.reduce((acc, r) => acc + r.timeTaken, 0) / results.length / 60).toFixed(1) : 0}m
+            <Clock size={20} />
+            <div className="info-wrap">
+              <div className="value">
+                {results.length > 0 ? (results.reduce((acc, r) => acc + r.timeTaken, 0) / results.length / 60).toFixed(1) : 0}m
+              </div>
+              <div className="label">Avg Efficiency</div>
             </div>
-            <div className="label">Avg Completion Time</div>
          </div>
       </div>
 
       <div className="results-section">
         <div className="section-header">
-          <h3>Recipient Field Data</h3>
+          <h3>Completed Field Data</h3>
+          <div className="line"></div>
         </div>
 
         <div className="results-table-wrapper">
           <table>
             <thead>
               <tr>
-                <th>Student</th>
-                <th>Score</th>
-                <th>Efficiency</th>
-                <th>Submission</th>
-                <th>Status</th>
+                <th>Student Intelligence</th>
+                <th>Performance Score</th>
+                <th>Time Efficiency</th>
+                <th>Sync Date</th>
+                <th>Operation</th>
               </tr>
             </thead>
             <tbody>
               {(results || []).map((res) => (
                 <tr key={res._id}>
-                  <td>
+                  <td className="student-info-cell" data-label="Student">
                     <div className="student-info">
                       <div className="avatar">
                         {res.studentId?.profilePic ? (
@@ -124,25 +158,32 @@ const TaskResults = () => {
                           res.studentId?.name?.charAt(0) || '?'
                         )}
                       </div>
-                      <div>
-                        <div className="name">{res.studentId?.name || 'Unknown Participant'}</div>
+                      <div className="details">
+                        <div className="name">{res.studentId?.name || 'Unknown Agent'}</div>
                         <div className="username">@{res.studentId?.username || 'unknown'}</div>
                       </div>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Score">
                      <span className={`score-pill ${test.totalQuestions > 0 && res.score / test.totalQuestions >= 0.8 ? 'score-high' : test.totalQuestions > 0 && res.score / test.totalQuestions >= 0.5 ? 'score-mid' : 'score-low'}`}>
                        {res.score} / {test.totalQuestions}
                      </span>
                   </td>
-                  <td>
-                    {Math.floor(res.timeTaken / 60)}m {res.timeTaken % 60}s
+                  <td data-label="Time">
+                    <span className="efficiency-val">
+                      {Math.floor(res.timeTaken / 60)}m {res.timeTaken % 60}s
+                    </span>
                   </td>
-                  <td className="date-cell">
+                  <td className="date-cell" data-label="Sync Date">
                     {new Date(res.createdAt).toLocaleDateString()}
                   </td>
-                  <td>
-                    <span className="status-pill">Completed</span>
+                  <td data-label="Action">
+                    <button 
+                      className="btn-sec detail-btn"
+                      onClick={() => setSelectedSubmission(res)}
+                    >
+                      <Eye size={14} /> Detail
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -157,6 +198,37 @@ const TaskResults = () => {
           </table>
         </div>
       </div>
+
+      {pendingStudents && pendingStudents.length > 0 && (
+        <div className="results-section mt-8">
+          <div className="section-header">
+            <h3>Pending Recipients</h3>
+            <div className="line"></div>
+          </div>
+          <div className="pending-grid">
+            {pendingStudents.map(student => (
+              <div key={student._id} className="pending-student-card">
+                 <div className="avatar">
+                    {student.profilePic ? <img src={student.profilePic} alt="" /> : (student.name?.charAt(0) || '?')}
+                 </div>
+                 <div className="info">
+                    <div className="name">{student.name}</div>
+                    <div className="username">@{student.username}</div>
+                 </div>
+                 <div className="status"><Clock size={12} /> Pending</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {selectedSubmission && (
+        <SubmissionDetail 
+          test={test}
+          submission={selectedSubmission}
+          onClose={() => setSelectedSubmission(null)}
+        />
+      )}
     </div>
   );
 };
