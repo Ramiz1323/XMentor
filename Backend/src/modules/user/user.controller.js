@@ -62,7 +62,7 @@ export const getStats = asyncHandler(async (req, res) => {
 });
 
 export const getLeaderboard = asyncHandler(async (req, res) => {
-  const cacheKey = 'global_leaderboard';
+  const cacheKey = `leaderboard_${req.user._id}`;
   const cachedData = cache.get(cacheKey);
 
   if (cachedData) {
@@ -73,7 +73,7 @@ export const getLeaderboard = asyncHandler(async (req, res) => {
     });
   }
 
-  const leaderboard = await userService.getGlobalLeaderboard();
+  const leaderboard = await userService.getGlobalLeaderboard(req.user._id);
   
   // Cache for 5 minutes
   cache.set(cacheKey, leaderboard, 300);

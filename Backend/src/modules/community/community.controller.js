@@ -82,3 +82,11 @@ export const verifyPasscode = asyncHandler(async (req, res) => {
   await communityService.verifyDailyPasscode(passcode);
   res.status(200).json({ success: true, message: 'Passcode verified' });
 });
+
+export const inviteMember = asyncHandler(async (req, res) => {
+  const { studentId, alias } = req.body;
+  if (!studentId) throw new ErrorResponse('Student ID is required for recruitment', 400);
+
+  const result = await communityService.addMember(req.params.id, req.user._id, studentId, alias);
+  res.status(200).json({ success: true, message: 'Student recruited to hub', data: result });
+});

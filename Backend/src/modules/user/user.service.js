@@ -164,12 +164,39 @@ export const getDashboardStats = async (userId, role) => {
   };
 };
 
-export const getGlobalLeaderboard = async () => {
+export const getGlobalLeaderboard = async (requestingUserId) => {
   const { MCQResult } = await import('../mcq/mcq.model.js');
   const { SubjectiveResult } = await import('../subjective/subjective.model.js');
   
-  // 1. Fetch all student profiles
-  const students = await User.find({ role: 'STUDENT' })
+  // 0. Identify the "Recruitment Circle"
+  const currentUser = await User.findById(requestingUserId).select('role students teachers').lean();
+  if (!currentUser) throw new ErrorResponse('User not found', 404);
+
+  let targetStudentIds = [];
+
+  if (currentUser.role === 'TEACHER') {
+    // Teachers only see students they have recruited
+    targetStudentIds = currentUser.students || [];
+  } else {
+    // Students see fellow recruits of their teachers
+    const teachers = await User.find({ _id: { $in: currentUser.teachers || [] } }).select('students').lean();
+    const classmateIds = new Set();
+    
+    // Add self to the list
+    classmateIds.add(requestingUserId.toString());
+    
+    // Add classmates from all linked teachers
+    teachers.forEach(t => {
+      (t.students || []).forEach(sId => classmateIds.add(sId.toString()));
+    });
+    
+    targetStudentIds = Array.from(classmateIds).map(id => new mongoose.Types.ObjectId(id));
+  }
+
+  if (targetStudentIds.length === 0) return [];
+
+  // 1. Fetch filtered student profiles
+  const students = await User.find({ _id: { $in: targetStudentIds } })
     .select('name username profilePic')
     .lean();
 
@@ -186,10 +213,11 @@ export const getGlobalLeaderboard = async () => {
     });
   });
 
-  // 2. Aggregate MCQ results (Modern + Legacy)
+  // 2. Aggregate MCQ results (Modern + Legacy) for target circle
   const mcqResults = await MCQResult.aggregate([
     {
       $match: {
+        studentId: { $in: targetStudentIds },
         $or: [
           { status: 'COMPLETED' },
           { status: { $exists: false } }
@@ -216,13 +244,14 @@ export const getGlobalLeaderboard = async () => {
     }
   });
 
-  // 3. Aggregate Subjective results (Graded + Legacy with marks)
+  // 3. Aggregate Subjective results (Graded + Legacy with marks) for target circle
   const subjectiveResults = await SubjectiveResult.aggregate([
     { 
       $match: { 
+        studentId: { $in: targetStudentIds },
         $or: [
           { status: 'GRADED' },
-          { marksObtained: { $gt: 0 } } // Robust check for older graded tasks
+          { marksObtained: { $gt: 0 } }
         ] 
       } 
     },
@@ -251,9 +280,6 @@ export const getGlobalLeaderboard = async () => {
     .filter(entry => entry.totalTests > 0)
     .map(entry => {
       const avgAccuracy = entry.totalPossible > 0 ? (entry.totalScore / entry.totalPossible) * 100 : 0;
-      
-      // Ranking Score: (Accuracy * 0.75) + (Participation Log Factor * 25)
-      // Encourages both mastery and consistent engagement
       const participationScore = Math.min(Math.log10(entry.totalTests + 1) * 30, 25);
       const rankingScore = (avgAccuracy * 0.75) + participationScore;
 
@@ -266,7 +292,7 @@ export const getGlobalLeaderboard = async () => {
 
   return leaderboardData
     .sort((a, b) => b.score - a.score || b.totalTests - a.totalTests)
-    .slice(0, 30)
+    .slice(0, 50) // Increased slightly for class size
     .map((entry, index) => ({
       rank: index + 1,
       id: entry.studentId,

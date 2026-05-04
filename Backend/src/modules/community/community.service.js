@@ -2,7 +2,19 @@ import Community, { Message } from './community.model.js';
 import ErrorResponse from '../../utils/errorResponse.js';
 
 export const getAllCommunities = async (userId, filters = {}) => {
-  const communities = await Community.find(filters)
+  const user = await import('../auth/auth.model.js').then(m => m.default.findById(userId).select('role'));
+  
+  let query = { ...filters };
+  
+  if (user.role === 'TEACHER') {
+    // Teachers only see their own tactical hubs
+    query.createdBy = userId;
+  } else {
+    // Students only see hubs they have been invited to/joined
+    query['members.user'] = userId;
+  }
+
+  const communities = await Community.find(query)
     .select('name description type memberCount maxMembers createdBy members')
     .lean();
 
@@ -17,6 +29,29 @@ export const getAllCommunities = async (userId, filters = {}) => {
       myAlias: member?.alias || null
     };
   });
+};
+
+export const addMember = async (communityId, teacherId, studentId, alias) => {
+  const community = await Community.findById(communityId);
+  if (!community) throw new ErrorResponse('Community not found', 404);
+
+  if (community.createdBy.toString() !== teacherId.toString()) {
+    throw new ErrorResponse('Only the creator can manually add members', 403);
+  }
+
+  const alreadyMember = community.members.some(m => m.user.toString() === studentId.toString());
+  if (alreadyMember) throw new ErrorResponse('Student is already a member', 400);
+
+  const finalAlias = alias || `Student_${Math.floor(1000 + Math.random() * 9000)}`;
+
+  return await Community.findByIdAndUpdate(
+    communityId,
+    { 
+      $push: { members: { user: studentId, alias: finalAlias } },
+      $inc: { memberCount: 1 }
+    },
+    { new: true, runValidators: true }
+  );
 };
 
 export const getCommunityById = async (communityId, userId) => {
