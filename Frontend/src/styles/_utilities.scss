@@ -205,6 +205,17 @@
 .glow-text { @include glow-text; }
 .btn-primary { @include btn-primary; }
 
+.w-full { width: 100% !important; }
+.mb-16 { margin-bottom: 4rem !important; }
+.mb-8 { margin-bottom: 2rem !important; }
+.mb-4 { margin-bottom: 1rem !important; }
+.mt-8 { margin-top: 2rem !important; }
+.mt-4 { margin-top: 1rem !important; }
+.gap-4 { gap: 1rem !important; }
+.flex-row { display: flex !important; flex-direction: row !important; }
+.danger-text { color: $color-danger !important; }
+.btn-danger-gradient { background: linear-gradient(135deg, #ff4d4d, #ff8c42) !important; }
+
 .close-btn, .modal-close {
   background: transparent !important;
   border: none !important;

@@ -48,18 +48,43 @@ const SubjectiveCreator = () => {
 
   const subjectOptions = [
     { value: 'MATHS', label: 'Mathematics' },
+    { value: 'SCIENCE', label: 'General Science' },
     { value: 'PHYSICS', label: 'Physics' },
     { value: 'CHEMISTRY', label: 'Chemistry' },
     { value: 'BIOLOGY', label: 'Biology' },
+    { value: 'HISTORY', label: 'History' },
+    { value: 'GEOGRAPHY', label: 'Geography' },
+    { value: 'ENGLISH', label: 'English' },
+    { value: 'BENGALI', label: 'Bengali' },
+    { value: 'HINDI', label: 'Hindi' },
+    { value: 'EVS', label: 'EVS' },
+    { value: 'SOCIAL_SCIENCE', label: 'Social Science' },
+    { value: 'COMPUTER', label: 'Computer Science' },
     { value: 'CODING', label: 'Coding' },
     { value: 'OTHERS', label: 'Others' }
   ];
 
+  const classOptions = [
+    { value: '1', label: 'Class 1' },
+    { value: '2', label: 'Class 2' },
+    { value: '3', label: 'Class 3' },
+    { value: '4', label: 'Class 4' },
+    { value: '5', label: 'Class 5' },
+    { value: '6', label: 'Class 6' },
+    { value: '7', label: 'Class 7' },
+    { value: '8', label: 'Class 8' },
+    { value: '9', label: 'Class 9' },
+    { value: '10', label: 'Class 10' },
+    { value: '11', label: 'Class 11' },
+    { value: '12', label: 'Class 12' },
+    { value: 'UG', label: 'Undergraduate' },
+    { value: 'PG', label: 'Postgraduate' }
+  ];
+
   const difficultyOptions = [
-    { value: 'EASY', label: 'Easy' },
-    { value: 'MEDIUM', label: 'Medium' },
-    { value: 'HARD', label: 'Hard' },
-    { value: 'EXPERT', label: 'Expert' }
+    { value: 'EASY', label: 'Beginner' },
+    { value: 'MEDIUM', label: 'Intermediate' },
+    { value: 'HARD', label: 'Advanced' }
   ];
 
   const boardOptions = [
@@ -71,10 +96,9 @@ const SubjectiveCreator = () => {
   ];
 
   const languageOptions = [
-    { value: 'English', label: 'English' },
-    { value: 'Hindi', label: 'Hindi' },
-    { value: 'Bengali', label: 'Bengali' },
-    { value: 'Others', label: 'Others' }
+    { value: 'english', label: 'English' },
+    { value: 'bengali', label: 'Bengali' },
+    { value: 'hindi', label: 'Hindi' }
   ];
 
   useEffect(() => {
@@ -97,18 +121,31 @@ const SubjectiveCreator = () => {
     if (!importData.jsonText) return alert('JSON Data field empty. Systems unresponsive.');
 
     try {
+      let cleanJson = importData.jsonText.trim();
+      
+      // Self-healing: Remove Markdown block wrappers if AI included them
+      if (cleanJson.startsWith('```')) {
+        cleanJson = cleanJson.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '').trim();
+      }
+
+      // PRE-PARSE NORMALIZATION: Detect unescaped backslashes (e.g. \theta)
+      let normalizedJson = cleanJson.replace(/\\([a-zA-Z])/g, (match, p1) => {
+        return '\\\\' + p1;
+      });
+
       let parsed = null;
       try {
-        parsed = JSON.parse(importData.jsonText);
+        parsed = JSON.parse(normalizedJson);
       } catch (e) {
-        // Self-healing logic
         try {
-          const healed = importData.jsonText
-            .replace(/\\([a-zA-Z])/g, '\\\\$1')
-            .replace(/\\(?!"|\\|\/|b|f|n|r|t|u)/g, '\\\\');
-          parsed = JSON.parse(healed);
+          parsed = JSON.parse(cleanJson);
         } catch (err) {
-          throw new Error(e.message);
+          try {
+            const extremeHeal = cleanJson.replace(/\\/g, '\\\\');
+            parsed = JSON.parse(extremeHeal);
+          } catch (lastErr) {
+             throw new Error('Tactical Malform: JSON parsing failed.');
+          }
         }
       }
 
@@ -122,10 +159,7 @@ const SubjectiveCreator = () => {
 
         if (!text) throw new Error(`Entry ${index + 1} is invalid.`);
 
-        // SELF-HEALING: Automatically fix over-escaped backslashes (\\\\frac -> \frac)
-        const sanitizedText = text.replace(/\\\\([a-zA-Z]+)/g, '\\$1');
-
-        return { text: sanitizedText, marks: baseMarks };
+        return { text, marks: baseMarks };
       });
 
       const totalMarks = formattedQs.reduce((acc, q) => acc + q.marks, 0);
@@ -150,27 +184,46 @@ const SubjectiveCreator = () => {
     } catch (err) {
       alert('Strategic Analysis Failed: ' + err.message);
     }
-
   };
 
   const copyPrompt = () => {
+    let subjectSpecificRules = '';
+    const sub = importData.subject;
+    if (sub === 'PHYSICS' || sub === 'SCIENCE') {
+      subjectSpecificRules = `
+PHYSICS/SCIENCE RULES:
+- ALL units MUST be in LaTeX (e.g., $m/s^2$, $kg \\cdot m/s$).
+- Use scientific notation in LaTeX (e.g., $3 \\times 10^8 m/s$).`;
+    } else if (sub === 'CHEMISTRY') {
+      subjectSpecificRules = `
+CHEMISTRY RULES:
+- Use LaTeX for all chemical formulas (e.g., $H_2SO_4$, $Fe^{2+}$).
+- Use LaTeX for equilibrium arrows and reactions (e.g., $\\rightarrow$, $\\rightleftharpoons$).`;
+    } else if (sub === 'BIOLOGY') {
+      subjectSpecificRules = `
+BIOLOGY RULES:
+- Focus on precise anatomical and physiological terminology.`;
+    } else if (sub === 'COMPUTER' || sub === 'CODING') {
+      subjectSpecificRules = `
+COMPUTING RULES:
+- Use LaTeX \\texttt{...} for code snippets or algorithms.`;
+    }
+
     const prompt = `Act as a high-level academic curriculum architect for ${importData.board} board. 
-Language: ${importData.language}
+Language: ${importData.language === 'bengali' ? 'BENGALI' : 'ENGLISH'}
 Class/Grade: ${importData.class}
 Subject: ${importData.subject}
 Topic: ${importData.topic || 'General Concepts'}
 Difficulty: ${importData.difficulty}
+Requirement: Generate a JSON array of ${importData.count} SUBJECTIVE (Long Answer) questions.
+${subjectSpecificRules}
 
-Requirement: Generate a JSON array of ${importData.count} SUBJECTIVE (Long Answer) questions. Focus on the ${importData.board} curriculum patterns. The questions MUST be written in ${importData.language}. Lengthy according to the class and marks.
-
-CRITICAL: ALL mathematical expressions, formulas, and scientific symbols MUST be wrapped in LaTeX delimiters ($...$ for inline, $$...$$ for block). 
-Always use professional LaTeX notation (e.g., \\frac{a}{b}, \\sin, \\theta, \\sqrt{x}).
-
-IMPORTANT FOR JSON INTEGRITY: 
-- Use SINGLE escaping for backslashes in your JSON response (e.g., "\\frac" in the JSON string becomes "\frac" when parsed).
-- DO NOT use double-escaped backslashes like "\\\\frac" unless strictly necessary for the environment.
-
-Format: Return ONLY a JSON array of objects. Example: [{"text": "Question with $\\frac{a}{b}$ math", "marks": ${importData.defaultMarks}}]`;
+CRITICAL FORMATTING RULES:
+1. Output MUST be a valid JSON array of objects ONLY.
+2. NO conversational text, NO intro, NO outro, NO markdown code blocks.
+3. ALL mathematical expressions MUST be wrapped in LaTeX delimiters ($...$ for inline, $$...$$ for block).
+4. **JSON ESCAPING**: Use DOUBLE backslashes for all LaTeX commands in the JSON string (e.g., "\\\\frac{a}{b}", "\\\\sin", "\\\\theta").
+5. Format: Return ONLY a JSON array of objects. Example: [{"text": "Question text with $\\\\frac{a}{b}$ math", "marks": ${importData.defaultMarks}}]`;
     
     navigator.clipboard.writeText(prompt);
     alert('Strategic Pro Prompt Copied!');
@@ -269,15 +322,13 @@ Format: Return ONLY a JSON array of objects. Example: [{"text": "Question with $
                     onChange={(val) => setImportData({...importData, subject: val})}
                     icon={GraduationCap}
                   />
-                  <div className="input-group">
-                    <label>Target Class</label>
-                    <input 
-                      className="glass-input" 
-                      placeholder="e.g. Class 10"
-                      value={importData.class}
-                      onChange={(e) => setImportData({...importData, class: e.target.value})}
-                    />
-                  </div>
+                  <GlassDropdown 
+                    label="Target Class"
+                    options={classOptions}
+                    value={importData.class}
+                    onChange={(val) => setImportData({...importData, class: val})}
+                    icon={Target}
+                  />
                 </div>
                 
                 <div className="input-grid two-cols">
@@ -448,15 +499,13 @@ Format: Return ONLY a JSON array of objects. Example: [{"text": "Question with $
                   onChange={(val) => setTestData({...testData, subject: val})}
                   icon={GraduationCap}
                 />
-                <div className="input-group">
-                    <label>Target Class</label>
-                    <input 
-                      className="glass-input" 
-                      placeholder="e.g. Class 10"
-                      value={testData.class}
-                      onChange={(e) => setTestData({...testData, class: e.target.value})}
-                    />
-                </div>
+                <GlassDropdown 
+                  label="Target Class"
+                  options={classOptions}
+                  value={testData.class}
+                  onChange={(val) => setTestData({...testData, class: val})}
+                  icon={Target}
+                />
               </div>
               <div className="input-grid">
                 <GlassDropdown 

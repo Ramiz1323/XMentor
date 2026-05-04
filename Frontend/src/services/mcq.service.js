@@ -31,6 +31,11 @@ const mcqService = {
     return data;
   },
 
+  pauseTest: async (id, pauseData) => {
+    const { data } = await api.post(`/mcq/${id}/pause`, pauseData);
+    return data;
+  },
+
   getTeacherOverview: async () => {
     const { data } = await api.get(`/mcq/teacher/overview?t=${Date.now()}`);
     return data;

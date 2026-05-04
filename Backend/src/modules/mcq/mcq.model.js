@@ -35,7 +35,11 @@ const mcqTestSchema = new mongoose.Schema(
     },
     subject: {
       type: String,
-      enum: ['MATHS', 'PHYSICS', 'CHEMISTRY', 'BIOLOGY', 'CODING', 'OTHERS'],
+      enum: [
+        'MATHS', 'PHYSICS', 'CHEMISTRY', 'BIOLOGY', 'SCIENCE', 
+        'HISTORY', 'GEOGRAPHY', 'ENGLISH', 'BENGALI', 'HINDI', 
+        'EVS', 'SOCIAL_SCIENCE', 'COMPUTER', 'CODING', 'OTHERS'
+      ],
       required: true,
     },
     createdBy: {
@@ -74,6 +78,10 @@ const mcqTestSchema = new mongoose.Schema(
       type: String,
       enum: ['english', 'bengali'],
       default: 'english',
+    },
+    pauseLimit: {
+      type: Number,
+      default: 0,
     }
   },
   {
@@ -108,6 +116,22 @@ const mcqResultSchema = new mongoose.Schema(
     answers: {
       type: [Number],
       required: true,
+    },
+    status: {
+      type: String,
+      enum: ['IN_PROGRESS', 'COMPLETED'],
+      default: 'COMPLETED',
+    },
+    pausesUsed: {
+      type: Number,
+      default: 0,
+    },
+    currentQuestionIndex: {
+      type: Number,
+      default: 0,
+    },
+    timeLeft: {
+      type: Number,
     },
   },
   {

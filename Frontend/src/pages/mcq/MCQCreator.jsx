@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useMCQStore from '../../store/useMCQStore';
 import useUserStore from '../../store/useUserStore';
-import { Plus, Trash2, X, ChevronRight, GraduationCap, BookOpen, Users, Target, AlertCircle, RefreshCw } from 'lucide-react';
+import { Plus, Trash2, X, ChevronRight, GraduationCap, BookOpen, Users, Target, AlertCircle, RefreshCw, Loader2 } from 'lucide-react';
 import GlassDropdown from '../../components/ui/GlassDropdown';
 import Skeleton from '../../components/ui/Skeleton';
 import MathRenderer from '../../components/ui/MathRenderer';
@@ -15,11 +15,13 @@ const MCQCreator = () => {
   
   const [creationMode, setCreationMode] = useState(null); // null, 'MANUAL', 'JSON'
   const [step, setStep] = useState(1); 
+  const [deploySuccess, setDeploySuccess] = useState(false);
   const [testData, setTestData] = useState({
     title: '',
     subject: 'CODING',
     duration: 10,
     hasTimer: true,
+    pauseLimit: 0,
     deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Default 3 days
     language: 'english',
     assignedStudents: [],
@@ -35,6 +37,7 @@ const MCQCreator = () => {
     count: 10,
     jsonText: '',
     hasTimer: true,
+    pauseLimit: 0,
     duration: 10,
     board: 'CBSE',
     classLevel: '12',
@@ -58,11 +61,37 @@ const MCQCreator = () => {
     { value: 'HARD', label: 'Advanced' }
   ];
 
+  const classOptions = [
+    { value: '1', label: 'Class 1' },
+    { value: '2', label: 'Class 2' },
+    { value: '3', label: 'Class 3' },
+    { value: '4', label: 'Class 4' },
+    { value: '5', label: 'Class 5' },
+    { value: '6', label: 'Class 6' },
+    { value: '7', label: 'Class 7' },
+    { value: '8', label: 'Class 8' },
+    { value: '9', label: 'Class 9' },
+    { value: '10', label: 'Class 10' },
+    { value: '11', label: 'Class 11' },
+    { value: '12', label: 'Class 12' },
+    { value: 'UG', label: 'Undergraduate' },
+    { value: 'PG', label: 'Postgraduate' }
+  ];
+
   const subjectOptions = [
     { value: 'MATHS', label: 'Mathematics' },
+    { value: 'SCIENCE', label: 'General Science' },
     { value: 'PHYSICS', label: 'Physics' },
     { value: 'CHEMISTRY', label: 'Chemistry' },
     { value: 'BIOLOGY', label: 'Biology' },
+    { value: 'HISTORY', label: 'History' },
+    { value: 'GEOGRAPHY', label: 'Geography' },
+    { value: 'ENGLISH', label: 'English' },
+    { value: 'BENGALI', label: 'Bengali' },
+    { value: 'HINDI', label: 'Hindi' },
+    { value: 'EVS', label: 'EVS' },
+    { value: 'SOCIAL_SCIENCE', label: 'Social Science' },
+    { value: 'COMPUTER', label: 'Computer Science' },
     { value: 'CODING', label: 'Coding' },
     { value: 'OTHERS', label: 'Others' }
   ];
@@ -83,18 +112,39 @@ const MCQCreator = () => {
     if (!importData.jsonText) return alert('JSON Data field empty. Systems unresponsive.');
 
     try {
+      let cleanJson = importData.jsonText.trim();
+      
+      // Self-healing: Remove Markdown block wrappers if AI included them
+      if (cleanJson.startsWith('```')) {
+        cleanJson = cleanJson.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '').trim();
+      }
+
+      // PRE-PARSE NORMALIZATION:
+      // ChatGPT often sends raw backslashes (e.g. \theta) which JSON.parse interprets as 
+      // control characters (like \t for tab) instead of LaTeX commands.
+      // We double the backslashes for any LaTeX-like command to ensure integrity.
+      let normalizedJson = cleanJson.replace(/\\([a-zA-Z])/g, (match, p1) => {
+        // If it's a known non-LaTeX escape that might be intentional (like \n), we could skip it,
+        // but for MCQ content, almost all \letter patterns are LaTeX (like \sin, \theta).
+        // Therefore, we double them to ensure they reach the LaTeX renderer intact.
+        return '\\\\' + p1;
+      });
+
       let parsed = null;
       try {
-        parsed = JSON.parse(importData.jsonText);
+        parsed = JSON.parse(normalizedJson);
       } catch (e) {
-        // Self-healing: if parse fails, try to fix common LaTeX escaping issues
+        // Fallback: If normalization failed, try the original or a generic escape
         try {
-          const healed = importData.jsonText
-            .replace(/\\([a-zA-Z])/g, '\\\\$1') // Double the backslashes
-            .replace(/\\(?!"|\\|\/|b|f|n|r|t|u)/g, '\\\\'); // Escape other unescaped backslashes
-          parsed = JSON.parse(healed);
+          parsed = JSON.parse(cleanJson);
         } catch (err) {
-          throw new Error(e.message); // Re-throw original parse error if healing fails
+          try {
+            const extremeHeal = cleanJson.replace(/\\/g, '\\\\');
+            parsed = JSON.parse(extremeHeal);
+          } catch (lastErr) {
+             console.error('JSON Parse failed:', e);
+             throw new Error('Tactical Malform: JSON parsing failed. Ensure the format is a valid array of objects.');
+          }
         }
       }
 
@@ -134,6 +184,7 @@ const MCQCreator = () => {
         duration: parseInt(importData.duration) || 10,
         deadline: importData.deadline,
         language: importData.language,
+        pauseLimit: parseInt(importData.pauseLimit) || 0,
         questions: formattedQs
       });
 
@@ -150,6 +201,42 @@ const MCQCreator = () => {
       ? 'Focus on lengthy, multi-step calculative and theory based problems where students need to solve on paper before selecting the option (JEE/NEET/WBCHSE Style).' 
       : 'Focus on conceptual clarity and rapid theoretical analysis.';
 
+    let subjectSpecificRules = '';
+    const sub = importData.subject;
+    if (sub === 'PHYSICS' || sub === 'SCIENCE') {
+      subjectSpecificRules = `
+PHYSICS/SCIENCE RULES:
+- ALL units MUST be in LaTeX (e.g., $m/s^2$, $kg \\cdot m/s$).
+- Use scientific notation in LaTeX (e.g., $3 \\times 10^8 m/s$).
+- Ensure numerical accuracy for all kinematic, dynamic, and electromagnetic calculations.`;
+    } else if (sub === 'CHEMISTRY') {
+      subjectSpecificRules = `
+CHEMISTRY RULES:
+- Use LaTeX for all chemical formulas (e.g., $H_2SO_4$, $Fe^{2+}$).
+- Use LaTeX for equilibrium arrows and reactions (e.g., $\\rightarrow$, $\\rightleftharpoons$).`;
+    } else if (sub === 'BIOLOGY') {
+      subjectSpecificRules = `
+BIOLOGY RULES:
+- Focus on precise anatomical and physiological terminology.
+- For diagram-based questions, provide a clear textual description of the visual setup.`;
+    } else if (sub === 'HISTORY' || sub === 'GEOGRAPHY' || sub === 'SOCIAL_SCIENCE') {
+      subjectSpecificRules = `
+HUMANITIES RULES:
+- Ensure strict chronological accuracy and date verification for History.
+- Use precise geographic coordinates and terminology for Geography.
+- Focus on authentic data and civic frameworks for Social Sciences.`;
+    } else if (sub === 'ENGLISH' || sub === 'BENGALI' || sub === 'HINDI') {
+      subjectSpecificRules = `
+LANGUAGE RULES:
+- Focus on complex grammar, sophisticated vocabulary, and literary devices.
+- For comprehension, ensure the "answer" is strictly derivable from the provided context.`;
+    } else if (sub === 'COMPUTER' || sub === 'CODING') {
+      subjectSpecificRules = `
+COMPUTING RULES:
+- Use LaTeX \\texttt{...} or clear spacing for code snippets.
+- Ensure syntax correctness for all provided algorithms or code logic.`;
+    }
+
     const prompt = `Act as a high-level academic curriculum architect. Generate a JSON array of ${importData.count} MCQ questions for class ${importData.classLevel} students studying ${importData.board || 'Standards'}.
 The entire content (questions, options, and explanations) MUST be in ${importData.language === 'bengali' ? 'BENGALI' : 'ENGLISH'} language.
 Subject: ${importData.subject}
@@ -157,16 +244,22 @@ Topic: ${importData.topic || 'General Concepts'}
 Difficulty: ${importData.difficulty}
 Weightage: ${importData.marksPerQ} Marks per question
 Instruction: ${complexityTxt}
+${subjectSpecificRules}
 
-CRITICAL: ALL mathematical expressions, formulas, and scientific symbols MUST be wrapped in LaTeX delimiters ($...$ for inline, $$...$$ for block). 
-Always use professional LaTeX notation (e.g., \\frac{a}{b}, \\sin, \\theta, \\sqrt{x}).
+CRITICAL FORMATTING RULES:
+1. Output MUST be a valid JSON array of objects ONLY.
+2. NO conversational text, NO intro, NO outro, NO markdown code blocks (NO \`\`\`json).
+3. ALL mathematical expressions MUST be wrapped in LaTeX delimiters ($...$ for inline, $$...$$ for block).
+4. **JSON ESCAPING**: Use DOUBLE backslashes for all LaTeX commands in the JSON string (e.g., "\\\\frac{a}{b}", "\\\\sin", "\\\\theta"). Single backslashes will break the JSON parse.
+5. **ACCURACY CHECK**: Perform a mental "Chain of Thought" to verify the mathematical/scientific logic before picking the "answer" index. The correct answer MUST be present in the "options" array.
+6. Ensure options are exactly 4 unique strings in an array.
+7. The "answer" field MUST be an integer from 0 to 3 representing the index of the correct option.
+8. The "explanation" should be a clear, tactical breakdown of the correct derivation.
 
-IMPORTANT FOR JSON INTEGRITY: 
-- Use SINGLE escaping for backslashes in your JSON response (e.g., "\\frac" in the JSON string becomes "\frac" when parsed).
-- DO NOT use double-escaped backslashes like "\\\\frac" unless strictly necessary for the environment.
+JSON SCHEMA: 
+[{"question": "string", "options": ["string", "string", "string", "string"], "answer": integer, "explanation": "string"}]
 
-Format strictly as a JSON array: [{"question": "...", "options": ["A", "B", "C", "D"], "answer": 0, "explanation": "..."}]
-Return ONLY the raw JSON array. No conversational text.`;
+Return ONLY the raw JSON array. DO NOT WRAP IN MARKDOWN.`;
     
     navigator.clipboard.writeText(prompt);
     alert('Strategic Intelligence Prompt Copied!');
@@ -198,8 +291,11 @@ Return ONLY the raw JSON array. No conversational text.`;
       };
       
       await createTest(formattedData);
-      alert('Task Deployed Successfully!');
-      navigate('/mcq');
+      setDeploySuccess(true);
+      setTimeout(() => {
+        alert('Task Deployed Successfully!');
+        navigate('/mcq');
+      }, 500);
     } catch (err) {
       alert(err.message || 'Deployment failed');
     }
@@ -243,7 +339,7 @@ Return ONLY the raw JSON array. No conversational text.`;
       {[...Array(4)].map((_, i) => (
         <div key={i} className="student-select-card skeleton-card">
           <Skeleton width="40px" height="40px" variant="circle" />
-          <div className="student-info" style={{ width: '100%' }}>
+          <div className="student-info w-full">
             <Skeleton width="60%" height="16px" className="mb-1" />
             <Skeleton width="40%" height="12px" />
           </div>
@@ -255,9 +351,12 @@ Return ONLY the raw JSON array. No conversational text.`;
   if (!creationMode) {
     return (
       <div className="creation-method-selection">
-        <header className="creator-header" style={{ marginBottom: '4rem' }}>
-          <h1 className="glow-text">Strategic Entry Point</h1>
-          <p className="subtitle">Select your method of curriculum architecting.</p>
+        <header className="creator-header mb-16">
+          <div className="icon-badge">
+            <BookOpen size={32} />
+          </div>
+          <h1 className="glow-text">Intelligence Uplink Initialized</h1>
+          <p className="subtitle">Select your method of curriculum deployment to the designated cohort.</p>
         </header>
 
         <div className="selection-grid">
@@ -265,8 +364,8 @@ Return ONLY the raw JSON array. No conversational text.`;
             <div className="icon-wrapper">
               <Plus size={32} />
             </div>
-            <h3>Manual Architect</h3>
-            <p>Design every task entry with absolute precision for maximum tactical engagement.</p>
+            <h3>Manual Construct</h3>
+            <p>Hand-craft each tactical query for maximum precision and control.</p>
             <button className="btn-primary full-width mt-4">Initiate Manual Path</button>
           </div>
 
@@ -274,14 +373,14 @@ Return ONLY the raw JSON array. No conversational text.`;
             <div className="icon-wrapper">
               <BookOpen size={32} />
             </div>
-            <h3>JSON Intelligence Uplink</h3>
-            <p>Deploy curriculum via strategic data packets or ChatGPT-generated intelligence.</p>
-            <button className="btn-primary full-width mt-4" style={{ background: 'linear-gradient(135deg, #ff4d4d, #ff8c42)' }}>Initiate Intelligence Uplink</button>
+            <h3>Neural Import</h3>
+            <p>Deploy large-scale assessments via tactical JSON data structures.</p>
+            <button className="btn-primary full-width mt-4 btn-danger-gradient">Initiate Intelligence Uplink</button>
           </div>
         </div>
 
         <button onClick={() => navigate('/mcq')} className="abort-btn mt-8">
-           <X size={16} /> Abort Selection
+           <X size={18} /> Abort Selection
         </button>
       </div>
     );
@@ -327,15 +426,13 @@ Return ONLY the raw JSON array. No conversational text.`;
                       onChange={(e) => setImportData({...importData, topic: e.target.value})}
                     />
                   </div>
-                  <div className="input-group">
-                    <label>Target Class</label>
-                    <input 
-                      className="glass-input" 
-                      placeholder="e.g. 12"
-                      value={importData.classLevel}
-                      onChange={(e) => setImportData({...importData, classLevel: e.target.value})}
-                    />
-                  </div>
+                  <GlassDropdown 
+                    label="Target Class"
+                    options={classOptions}
+                    value={importData.classLevel}
+                    onChange={(val) => setImportData({...importData, classLevel: val})}
+                    icon={Target}
+                  />
                 </div>
 
                 <div className="input-grid three-cols">
@@ -383,6 +480,15 @@ Return ONLY the raw JSON array. No conversational text.`;
                       onChange={(e) => setImportData({...importData, deadline: e.target.value})}
                     />
                   </div>
+                  <div className="input-group">
+                    <label>Max Pauses</label>
+                    <input 
+                      type="number"
+                      className="glass-input" 
+                      value={importData.pauseLimit}
+                      onChange={(e) => setImportData({...importData, pauseLimit: e.target.value})}
+                    />
+                  </div>
                 </div>
 
                 <div className={`toggle-grid ${importData.hasTimer ? 'three-cols' : ''}`}>
@@ -411,7 +517,7 @@ Return ONLY the raw JSON array. No conversational text.`;
                     </div>
                   )}
                   <div className="tactical-toggle mt-2">
-                    <span>Lengthy</span>
+                    <span>Lengthy (JEE Style)</span>
                     <label className="switch">
                         <input 
                           type="checkbox" 
@@ -522,6 +628,21 @@ Return ONLY the raw JSON array. No conversational text.`;
                     value={testData.deadline}
                     onChange={(e) => setTestData({...testData, deadline: e.target.value})}
                     className="glass-input" 
+                  />
+                </div>
+              </div>
+              <div className="input-grid">
+                <div className="input-group">
+                  <label>Max Pauses Allowed</label>
+                  <input 
+                    type="number"
+                    value={testData.pauseLimit}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      setTestData({...testData, pauseLimit: isNaN(val) ? 0 : val});
+                    }}
+                    className="glass-input" 
+                    placeholder="0 = No Pauses"
                   />
                 </div>
               </div>
@@ -660,11 +781,16 @@ Return ONLY the raw JSON array. No conversational text.`;
             <div className="action-row mt-8">
               <button className="btn-sec" onClick={() => setStep(creationMode === 'JSON' ? 1 : 2)}>Adjust Intel</button>
               <button 
-                className="btn-primary" 
+                className={`btn-primary ${deploySuccess ? 'success-pulse' : ''}`} 
                 onClick={handleCreate}
-                disabled={isCreating}
+                disabled={isCreating || deploySuccess}
               >
-                {isCreating ? 'Deploying...' : 'Finalize and Deploy Task'}
+                {isCreating ? (
+                  <>
+                    <Loader2 className="animate-spin btn-loader" size={18} />
+                    Deploying...
+                  </>
+                ) : deploySuccess ? 'Task Deployed Successfully!' : 'Finalize and Deploy Task'}
               </button>
             </div>
 

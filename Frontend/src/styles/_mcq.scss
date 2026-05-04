@@ -122,6 +122,12 @@
         text-transform: uppercase;
         letter-spacing: 0.05rem;
         border: 1px solid alpha($color-success, 0.2);
+
+        &.paused-badge {
+          background: alpha($accent-primary, 0.1);
+          color: $accent-primary;
+          border-color: alpha($accent-primary, 0.3);
+        }
       }
 
       .card-meta {
@@ -1375,6 +1381,30 @@
   gap: 2rem;
   padding: 2rem;
 
+  .creator-header {
+    text-align: center;
+    @include flex-column;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+
+    .icon-badge {
+      width: 64px;
+      height: 64px;
+      background: alpha($accent-primary, 0.1);
+      border: 1px solid alpha($accent-primary, 0.3);
+      border-radius: 50%;
+      @include flex-center;
+      color: $accent-primary;
+      margin-bottom: 0.5rem;
+      box-shadow: 0 0 20px alpha($accent-primary, 0.2);
+    }
+
+    h1 {
+      margin-bottom: 0.5rem;
+    }
+  }
+
   .selection-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -1843,6 +1873,50 @@
       &.critical { color: $color-danger; border-color: alpha($color-danger, 0.3); }
       &.fluid { background: alpha(white, 0.1); color: alpha(white, 0.6); border-color: alpha(white, 0.1); }
     }
+
+    .pause-btn-tactical {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.75rem 1.25rem;
+      @include glass-card;
+      background: alpha($accent-primary, 0.1);
+      border: 1px solid alpha($accent-primary, 0.3);
+      color: $accent-primary;
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: $transition-smooth;
+
+      &:hover {
+        background: alpha($accent-primary, 0.2);
+        border-color: $accent-primary;
+        box-shadow: 0 0 15px alpha($accent-primary, 0.2);
+        transform: translateY(-2px);
+      }
+
+      svg {
+        filter: drop-shadow(0 0 5px alpha($accent-primary, 0.5));
+      }
+    }
+  }
+
+  .success-pulse {
+    background: linear-gradient(135deg, $color-success, #10b981) !important;
+    animation: success-pulse 1s infinite;
+  }
+
+  .btn-loader {
+    margin-right: 0.5rem;
+  }
+
+
+  @keyframes success-pulse {
+    0% { box-shadow: 0 0 0 0 alpha($color-success, 0.4); }
+    70% { box-shadow: 0 0 0 10px alpha($color-success, 0); }
+    100% { box-shadow: 0 0 0 0 alpha($color-success, 0); }
   }
 
   .test-lobby-container {
@@ -1932,6 +2006,11 @@
             padding-left: 1.5rem;
             line-height: 1.5;
             display: block; // Changed from flex to block for better text wrap
+
+            .nav-restriction-hint {
+              font-size: 0.8rem;
+              opacity: 0.7;
+            }
 
             &::before {
               content: '▶';
@@ -3539,3 +3618,50 @@
 .mb-2 { margin-bottom: 0.5rem; }
 .mt-6 { margin-top: 1.5rem; }
 .mt-8 { margin-top: 2rem; }
+
+// TACTICAL COMPONENT STYLES (GLOBAL)
+.btn-resume {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24) !important;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3) !important;
+  color: #000 !important;
+  
+  &:hover {
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4) !important;
+    transform: translateY(-2px) !important;
+  }
+
+  svg {
+    color: #000 !important;
+  }
+}
+
+.btn-attend {
+  background: linear-gradient(135deg, #10b981, #34d399) !important;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3) !important;
+  color: #fff !important;
+  
+  &:hover {
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4) !important;
+    transform: translateY(-2px) !important;
+  }
+}
+
+.skeleton-bar-container {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 2rem;
+}
+
+.skeleton-option {
+  margin-bottom: 1rem;
+}
+
+.security-icon-wrapper-yellow {
+  background: rgba(251, 191, 36, 0.1) !important;
+  border: 1px solid rgba(251, 191, 36, 0.3) !important;
+  
+  svg {
+    color: #fbbf24 !important;
+  }
+}
+

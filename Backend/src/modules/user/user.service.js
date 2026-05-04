@@ -29,7 +29,7 @@ export const handleImageUpload = async (userId, fileBuffer, fileName) => {
 
 export const updateProfile = async (userId, updateData) => {
   const flattenedData = {};
-  
+
   const flatten = (obj, prefix = '') => {
     Object.keys(obj).forEach(key => {
       const value = obj[key];
@@ -61,13 +61,13 @@ export const getProfile = async (userId) => {
   const profile = await User.findById(userId)
     .populate('students', 'name username profilePic')
     .populate('teachers', 'name username profilePic');
-    
+
   if (!profile) throw new ErrorResponse('Profile not found', 404);
 
   if (!profile.username) {
     let baseUsername = profile.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
     if (baseUsername.length < 3) baseUsername = 'user' + Math.floor(Math.random() * 1000);
-    
+
     // Atomic attempt to claim username via retry
     let attempts = 0;
     while (attempts < 5) {
@@ -133,12 +133,12 @@ export const getDashboardStats = async (userId, role) => {
       const { MCQResult } = await import('../mcq/mcq.model.js');
       const results = await MCQResult.find({ studentId: userId });
       const totalTests = results.length;
-      const avgScore = totalTests > 0 
-        ? (results.reduce((acc, r) => acc + (r.score / r.total), 0) / totalTests) * 100 
+      const avgScore = totalTests > 0
+        ? (results.reduce((acc, r) => acc + (r.score / r.total), 0) / totalTests) * 100
         : 0;
       return { totalTests, avgScore: Math.round(avgScore) };
     })(),
-    
+
     // Doubt Stats
     (async () => {
       const Doubt = (await import('../doubt/doubt.model.js')).default;
@@ -168,34 +168,64 @@ export const getGlobalLeaderboard = async () => {
   const { MCQResult } = await import('../mcq/mcq.model.js');
   const { SubjectiveResult } = await import('../subjective/subjective.model.js');
   
-  // 1. Aggregate MCQ results
-  const mcqLeaderboard = await MCQResult.aggregate([
+  // 1. Fetch all student profiles
+  const students = await User.find({ role: 'STUDENT' })
+    .select('name username profilePic')
+    .lean();
+
+  const mergedMap = new Map();
+  students.forEach(s => {
+    mergedMap.set(s._id.toString(), {
+      studentId: s._id,
+      name: s.name,
+      username: s.username,
+      profilePic: s.profilePic,
+      totalTests: 0,
+      totalScore: 0,
+      totalPossible: 0
+    });
+  });
+
+  // 2. Aggregate MCQ results (Modern + Legacy)
+  const mcqResults = await MCQResult.aggregate([
     {
-      $lookup: {
-        from: 'users',
-        localField: 'studentId',
-        foreignField: '_id',
-        as: 'studentInfo'
+      $match: {
+        $or: [
+          { status: 'COMPLETED' },
+          { status: { $exists: false } }
+        ]
       }
     },
-    { $unwind: '$studentInfo' },
-    { $match: { 'studentInfo.role': 'STUDENT' } },
     {
       $group: {
         _id: '$studentId',
         totalTests: { $sum: 1 },
         totalScore: { $sum: '$score' },
-        totalPossible: { $sum: '$total' },
-        studentName: { $first: '$studentInfo.name' },
-        studentUsername: { $first: '$studentInfo.username' },
-        studentPic: { $first: '$studentInfo.profilePic' }
+        totalPossible: { $sum: '$total' }
       }
     }
   ]);
 
-  // 2. Aggregate Subjective results (only GRADED)
-  const subjectiveLeaderboard = await SubjectiveResult.aggregate([
-    { $match: { status: 'GRADED' } },
+  mcqResults.forEach(m => {
+    const idStr = m._id.toString();
+    if (mergedMap.has(idStr)) {
+      const entry = mergedMap.get(idStr);
+      entry.totalTests += m.totalTests;
+      entry.totalScore += m.totalScore;
+      entry.totalPossible += m.totalPossible;
+    }
+  });
+
+  // 3. Aggregate Subjective results (Graded + Legacy with marks)
+  const subjectiveResults = await SubjectiveResult.aggregate([
+    { 
+      $match: { 
+        $or: [
+          { status: 'GRADED' },
+          { marksObtained: { $gt: 0 } } // Robust check for older graded tasks
+        ] 
+      } 
+    },
     {
       $group: {
         _id: '$studentId',
@@ -206,53 +236,37 @@ export const getGlobalLeaderboard = async () => {
     }
   ]);
 
-  // 3. Merge data in memory
-  const mergedMap = new Map();
-
-  mcqLeaderboard.forEach(m => {
-    mergedMap.set(m._id.toString(), {
-      studentId: m._id,
-      name: m.studentName,
-      username: m.studentUsername,
-      profilePic: m.studentPic,
-      totalTests: m.totalTests,
-      totalScore: m.totalScore,
-      totalPossible: m.totalPossible
-    });
-  });
-
-  subjectiveLeaderboard.forEach(s => {
+  subjectiveResults.forEach(s => {
     const idStr = s._id.toString();
     if (mergedMap.has(idStr)) {
-      const existing = mergedMap.get(idStr);
-      existing.totalTests += s.totalTests;
-      existing.totalScore += s.totalScore;
-      existing.totalPossible += s.totalPossible;
-    } else {
-      // Need to fetch student info if they haven't done any MCQ
-      // But for performance, we assume most active students do both.
-      // For safety, we'll keep it simple or fetch missing ones later.
+      const entry = mergedMap.get(idStr);
+      entry.totalTests += s.totalTests;
+      entry.totalScore += s.totalScore;
+      entry.totalPossible += s.totalPossible;
     }
   });
 
-  // Final transformation and ranking
-  const leaderboardData = Array.from(mergedMap.values()).map(entry => {
-    const avgAccuracy = entry.totalPossible > 0 ? (entry.totalScore / entry.totalPossible) * 100 : 0;
-    
-    // A weighted score for ranking: (Accuracy * 0.8) + (Participation * 0.2)
-    const participationBonus = Math.min(entry.totalTests, 10) * 2;
-    const rankingScore = (avgAccuracy * 0.8) + participationBonus;
+  // 4. Final tactical ranking calculation
+  const leaderboardData = Array.from(mergedMap.values())
+    .filter(entry => entry.totalTests > 0)
+    .map(entry => {
+      const avgAccuracy = entry.totalPossible > 0 ? (entry.totalScore / entry.totalPossible) * 100 : 0;
+      
+      // Ranking Score: (Accuracy * 0.75) + (Participation Log Factor * 25)
+      // Encourages both mastery and consistent engagement
+      const participationScore = Math.min(Math.log10(entry.totalTests + 1) * 30, 25);
+      const rankingScore = (avgAccuracy * 0.75) + participationScore;
 
-    return {
-      ...entry,
-      accuracy: Math.round(avgAccuracy),
-      score: Math.round(rankingScore)
-    };
-  });
+      return {
+        ...entry,
+        accuracy: Math.round(avgAccuracy),
+        score: Math.round(rankingScore)
+      };
+    });
 
   return leaderboardData
     .sort((a, b) => b.score - a.score || b.totalTests - a.totalTests)
-    .slice(0, 20)
+    .slice(0, 30)
     .map((entry, index) => ({
       rank: index + 1,
       id: entry.studentId,

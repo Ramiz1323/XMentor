@@ -16,6 +16,7 @@ router.get('/:id', mcqController.getById);
 router.get('/:id/analytics', authorize('TEACHER'), mcqController.getAnalytics);
 router.post('/:id/assign', authorize('TEACHER'), mcqController.assign);
 router.post('/:id/submit', validate(submitTestSchema), mcqController.submit);
+router.post('/:id/pause', mcqController.pause);
 router.delete('/:id', authorize('TEACHER'), mcqController.remove);
 
 export default router;

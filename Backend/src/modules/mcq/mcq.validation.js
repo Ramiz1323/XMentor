@@ -17,6 +17,7 @@ export const createTestSchema = z.object({
     hasTimer: z.boolean().optional(),
     deadline: z.string().datetime({ message: 'Invalid deadline format' }),
     language: z.enum(['english', 'bengali']).optional().default('english'),
+    pauseLimit: z.number().int().min(0).optional().default(0),
     questions: z.array(questionSchema).min(1, 'At least one question is required'),
   }),
 });
@@ -26,7 +27,7 @@ export const submitTestSchema = z.object({
     id: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid Test ID'),
   }),
   body: z.object({
-    answers: z.array(z.number().int().min(0).max(3)),
+    answers: z.array(z.number().int().min(-1).max(3)),
     timeTaken: z.number().int().min(1, 'Time taken is required'),
   }),
 });

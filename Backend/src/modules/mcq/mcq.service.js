@@ -2,16 +2,17 @@ import { MCQTest, MCQResult } from './mcq.model.js';
 import ErrorResponse from '../../utils/errorResponse.js';
 
 export const createTest = async (testData, teacherId) => {
-  const { 
-    title, 
-    subject, 
-    communityId, 
-    duration, 
-    hasTimer = true, 
+  const {
+    title,
+    subject,
+    communityId,
+    duration,
+    hasTimer = true,
     deadline,
     language = 'english',
-    assignedStudents = [], 
-    questions: inputQuestions 
+    pauseLimit = 0,
+    assignedStudents = [],
+    questions: inputQuestions
   } = testData;
 
   const questions = Array.isArray(inputQuestions) ? inputQuestions : [];
@@ -24,6 +25,7 @@ export const createTest = async (testData, teacherId) => {
     hasTimer,
     deadline,
     language,
+    pauseLimit: parseInt(pauseLimit) || 0,
     assignedStudents,
     questions,
     totalQuestions: questions.length,
@@ -39,7 +41,7 @@ export const getTestForStudent = async (testId, studentId) => {
 
   const result = await MCQResult.findOne({ testId, studentId }).lean();
 
-  if (!result) {
+  if (!result || result.status === 'IN_PROGRESS') {
     const sanitizedQuestions = test.questions.map(q => ({
       _id: q._id,
       q: q.q,
@@ -49,7 +51,8 @@ export const getTestForStudent = async (testId, studentId) => {
     return {
       ...test,
       questions: sanitizedQuestions,
-      isSubmitted: false
+      isSubmitted: result?.status === 'COMPLETED',
+      progress: result || null
     };
   }
 
@@ -70,29 +73,92 @@ export const submitTest = async (testId, studentId, studentAnswers, timeTaken) =
 
   let score = 0;
   test.questions.forEach((question, index) => {
+    // If studentAnswers[index] is -1 or null, it won't match question.correct (0-3)
     if (studentAnswers[index] === question.correct) {
       score++;
     }
   });
 
   try {
-    const result = await MCQResult.create({
-      testId,
-      studentId,
-      score,
-      total: test.totalQuestions,
-      timeTaken,
-      answers: studentAnswers
-    });
+    // Find if there's an existing in-progress result
+    let result = await MCQResult.findOne({ testId, studentId });
+
+    if (result) {
+      if (result.status === 'COMPLETED') {
+        throw new ErrorResponse('You have already submitted this test', 400);
+      }
+
+      // Update existing result
+      result.score = score;
+      result.timeTaken = timeTaken;
+      result.answers = studentAnswers;
+      result.status = 'COMPLETED';
+      await result.save();
+    } else {
+      // Create new result
+      result = await MCQResult.create({
+        testId,
+        studentId,
+        score,
+        total: test.totalQuestions,
+        timeTaken,
+        answers: studentAnswers,
+        status: 'COMPLETED'
+      });
+    }
 
     return result;
   } catch (error) {
-    // Catch MongoDB duplicate key error (E11000) to solve TOCTOU race condition
     if (error.code === 11000) {
       throw new ErrorResponse('You have already submitted this test', 400);
     }
     throw error;
   }
+};
+
+export const pauseTest = async (testId, studentId, pauseData) => {
+  const { answers, timeTaken, currentQuestionIndex, timeLeft } = pauseData;
+  const test = await MCQTest.findById(testId);
+  if (!test) throw new ErrorResponse('Test not found', 404);
+
+  let result = await MCQResult.findOne({ testId, studentId });
+
+  if (result) {
+    if (result.status === 'COMPLETED') {
+      throw new ErrorResponse('Cannot pause a completed test', 400);
+    }
+
+    if (result.pausesUsed >= test.pauseLimit && test.pauseLimit > 0) {
+      throw new ErrorResponse('Maximum pause limit reached', 400);
+    }
+
+    result.answers = answers;
+    result.timeTaken = timeTaken;
+    result.currentQuestionIndex = currentQuestionIndex;
+    result.timeLeft = timeLeft;
+    result.pausesUsed += 1;
+    result.status = 'IN_PROGRESS';
+    await result.save();
+  } else {
+    if (test.pauseLimit === 0) {
+      throw new ErrorResponse('Pausing is not allowed for this test', 400);
+    }
+
+    result = await MCQResult.create({
+      testId,
+      studentId,
+      score: 0, // Placeholder
+      total: test.totalQuestions,
+      timeTaken,
+      answers,
+      currentQuestionIndex,
+      timeLeft,
+      pausesUsed: 1,
+      status: 'IN_PROGRESS'
+    });
+  }
+
+  return result;
 };
 
 export const deleteTest = async (testId, teacherId) => {
@@ -122,13 +188,13 @@ export const getAssignedTests = async (userId) => {
       { assignedStudents: userId }
     ]
   })
-  .select('title subject totalQuestions duration hasTimer deadline language createdAt createdBy')
-  .populate('createdBy', 'name profilePic')
-  .sort({ createdAt: -1 })
-  .lean();
+    .select('title subject totalQuestions duration hasTimer deadline language createdAt createdBy')
+    .populate('createdBy', 'name profilePic')
+    .sort({ createdAt: -1 })
+    .lean();
 
   // For each test, check if the current user has already submitted a result
-  const results = await MCQResult.find({ 
+  const results = await MCQResult.find({
     studentId: userId,
     testId: { $in: tests.map(t => t._id) }
   }).lean();
@@ -142,7 +208,8 @@ export const getAssignedTests = async (userId) => {
     const userResult = resultsMap[test._id.toString()];
     return {
       ...test,
-      isSubmitted: !!userResult,
+      isSubmitted: userResult ? userResult.status === 'COMPLETED' : false,
+      isPaused: userResult ? userResult.status === 'IN_PROGRESS' : false,
       result: userResult || null
     };
   });
@@ -164,7 +231,7 @@ export const getTestAnalytics = async (testId, teacherId) => {
 
   // Find students who are assigned but haven't completed
   const completedStudentIds = new Set(results.map(r => r.studentId._id.toString()));
-  const pendingStudents = test.assignedStudents.filter(student => 
+  const pendingStudents = test.assignedStudents.filter(student =>
     !completedStudentIds.has(student._id.toString())
   );
 
@@ -175,8 +242,8 @@ export const getTestAnalytics = async (testId, teacherId) => {
     stats: {
       totalAttempts: results.length,
       totalAssigned: test.assignedStudents.length,
-      avgScore: results.length > 0 
-        ? parseFloat((results.reduce((acc, curr) => acc + curr.score, 0) / results.length).toFixed(1)) 
+      avgScore: results.length > 0
+        ? parseFloat((results.reduce((acc, curr) => acc + curr.score, 0) / results.length).toFixed(1))
         : 0
     }
   };
@@ -223,23 +290,28 @@ export const getTeacherOverview = async (teacherId) => {
 
   // 3. Get all results for these tests
   const testIds = tests.map(t => t._id);
-  const allResults = await MCQResult.find({ 
-    testId: { $in: testIds } 
+  const allResults = await MCQResult.find({
+    testId: { $in: testIds }
   }).lean();
 
   // Map results to student-wise view
   const studentStats = students.map(student => {
-    const studentResults = allResults.filter(r => r.studentId.toString() === student._id.toString());
-    const completedTestIds = new Set(studentResults.map(r => r.testId.toString()));
+    const sIdStr = student._id.toString();
+    const studentResults = allResults.filter(r => r.studentId.toString() === sIdStr);
     
-    // Find tests where student is assigned but hasn't completed
-    const pendingTasks = tests.filter(test => 
-      test.assignedStudents.map(id => id.toString()).includes(student._id.toString()) &&
-      !completedTestIds.has(test._id.toString())
-    );
+    // Legacy support: Include results where status is COMPLETED or missing
+    const completedResults = studentResults.filter(r => !r.status || r.status === 'COMPLETED');
+    const completedTestIds = new Set(completedResults.map(r => r.testId.toString()));
 
-    // Sort student results by date (most recent first)
-    const sortedResults = studentResults
+    // Find tests where student is assigned but hasn't completed
+    const pendingTasks = tests.filter(test => {
+      const isAssigned = test.assignedStudents.some(id => id.toString() === sIdStr);
+      const isCompleted = completedTestIds.has(test._id.toString());
+      return isAssigned && !isCompleted;
+    });
+
+    // Map all completed results for display
+    const sortedCompletedResults = completedResults
       .map(r => {
         const test = tests.find(t => t._id.toString() === r.testId.toString());
         return {
@@ -252,11 +324,11 @@ export const getTeacherOverview = async (teacherId) => {
 
     return {
       student,
-      completedCount: sortedResults.length,
+      completedCount: sortedCompletedResults.length,
       pendingCount: pendingTasks.length,
       pendingTasks: pendingTasks.map(t => ({ _id: t._id, title: t.title, subject: t.subject })),
-      results: sortedResults,
-      lastSubmissionAt: sortedResults.length > 0 ? sortedResults[0].createdAt : null
+      results: sortedCompletedResults,
+      lastSubmissionAt: sortedCompletedResults.length > 0 ? sortedCompletedResults[0].createdAt : null
     };
   });
 

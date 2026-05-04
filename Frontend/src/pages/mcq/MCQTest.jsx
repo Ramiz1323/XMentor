@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import useMCQStore from '../../store/useMCQStore';
-import { Timer, ArrowRight, ArrowLeft, CheckCircle, XCircle, HelpCircle, AlertCircle, RefreshCw, Trophy, Target, Clock, Star } from 'lucide-react';
+import { Timer, ArrowRight, ArrowLeft, CheckCircle, XCircle, HelpCircle, AlertCircle, RefreshCw, Trophy, Target, Clock, Star, Pause } from 'lucide-react';
 import Skeleton from '../../components/ui/Skeleton';
 import MathRenderer from '../../components/ui/MathRenderer';
 import confetti from 'canvas-confetti';
@@ -10,7 +10,7 @@ import confetti from 'canvas-confetti';
 const MCQTest = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { currentTest: test, fetchTestById, submitTest, isLoading, error } = useMCQStore();
+  const { currentTest: test, fetchTestById, submitTest, pauseTest, isLoading, error } = useMCQStore();
 
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answers, setAnswers] = useState([]);
@@ -24,7 +24,9 @@ const MCQTest = () => {
   const [securityWarning, setSecurityWarning] = useState('');
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [visited, setVisited] = useState([]);
+  const [pausesUsed, setPausesUsed] = useState(0);
 
 
   const answersRef = useRef([]);
@@ -56,6 +58,7 @@ const MCQTest = () => {
       setSecurityWarning('');
       setShowSubmitConfirm(false);
       setVisited([]);
+      setPausesUsed(0);
 
       await fetchTestById(id);
     };
@@ -64,13 +67,22 @@ const MCQTest = () => {
 
   useEffect(() => {
     if (test) {
-      setAnswers(new Array(test.questions.length).fill(-1));
-      setVisited(new Array(test.questions.length).fill(false));
-      if (!test.isSubmitted) {
-        setTimeLeft(test.duration * 60);
+      if (test.progress) {
+        setAnswers(test.progress.answers || new Array(test.questions.length).fill(-1));
+        setCurrentIdx(test.progress.currentQuestionIndex || 0);
+        setPausesUsed(test.progress.pausesUsed || 0);
+        if (test.hasTimer) {
+          setTimeLeft(test.progress.timeLeft !== undefined ? test.progress.timeLeft : (test.duration * 60));
+        }
       } else {
-        setResult(test.result);
+        setAnswers(new Array(test.questions.length).fill(-1));
+        if (!test.isSubmitted) {
+          setTimeLeft(test.duration * 60);
+        } else {
+          setResult(test.result);
+        }
       }
+      setVisited(new Array(test.questions.length).fill(false));
     }
   }, [test]);
 
@@ -136,6 +148,37 @@ const MCQTest = () => {
       setSubmitting(false);
     }
   }, [id, submitting, result, answers, elapsedTime, submitTest, fetchTestById]);
+
+  const handlePause = async () => {
+    if (submitting || result || !test) return;
+
+    try {
+      setSubmitting(true);
+      const timeTaken = test.hasTimer
+        ? (test.duration * 60 - timeLeft)
+        : elapsedTime;
+
+      await pauseTest(id, {
+        answers,
+        timeTaken: Math.max(1, timeTaken),
+        currentQuestionIndex: currentIdx,
+        timeLeft: timeLeft
+      });
+
+      alert('Strategic Pause Engaged. Progress synchronized with Central Command.');
+      
+      // Exit full screen if active
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      }
+      
+      navigate('/mcq');
+    } catch (err) {
+      setSecurityWarning(`Strategic Failure: ${err.message || 'Pause failed. Operations must continue.'}`);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const preSubmitCheck = () => {
     const unansweredCount = answers.filter(a => a === -1).length;
@@ -310,12 +353,12 @@ const MCQTest = () => {
         <Skeleton width="80px" height="40px" />
       </header>
       <div className="question-container">
-        <div style={{ display: 'flex', gap: '4px', marginBottom: '2rem' }}>
+        <div className="skeleton-bar-container">
           {[...Array(5)].map((_, i) => <Skeleton key={i} width="100%" height="4px" />)}
         </div>
         <Skeleton width="80%" height="24px" className="mb-8" />
         <div className="options-list">
-          {[...Array(4)].map((_, i) => <Skeleton key={i} width="100%" height="60px" style={{ marginBottom: '1rem' }} />)}
+          {[...Array(4)].map((_, i) => <Skeleton key={i} width="100%" height="60px" className="skeleton-option" />)}
         </div>
       </div>
     </div>
@@ -340,7 +383,7 @@ const MCQTest = () => {
                 onClick={() => window.location.reload()}
                 className="btn-primary full-width"
               >
-                <RefreshCw size={18} style={{ marginRight: '8px' }} />
+                <RefreshCw size={18} className="btn-loader" />
                 Re-establish Uplink
               </button>
             </div>
@@ -379,6 +422,13 @@ const MCQTest = () => {
                 <li>The timer starts the moment you initialize the uplink.</li>
                 <li>Unanswered questions are counted as <strong>failed tactical nodes</strong>.</li>
                 <li>Do not refresh the page during the operation.</li>
+                {test.pauseLimit > 0 && (
+                  <li>
+                    Strategic Pause: You have <strong>{test.pauseLimit - pausesUsed}</strong> pauses remaining. 
+                    <br />
+                    <span className="nav-restriction-hint">Note: Navigation is restricted to sequential only.</span>
+                  </li>
+                )}
                 <li>Ensure a stable connection before proceeding.</li>
               </ul>
             </div>
@@ -429,22 +479,23 @@ const MCQTest = () => {
         </div>
       )}
 
+
       {/* SUBMISSION CONFIRMATION MODAL */}
       {showSubmitConfirm && (
         <div className="result-modal-overlay security-overlay">
           <div className="result-modal-card glass-card">
             <div className="modal-header">
-              <div className="trophy-wrapper security-icon-wrapper" style={{ background: 'rgba(251, 191, 36, 0.1)', borderColor: 'rgba(251, 191, 36, 0.3)' }}>
-                <HelpCircle size={48} style={{ color: '#fbbf24' }} />
+              <div className="trophy-wrapper security-icon-wrapper-yellow">
+                <HelpCircle size={48} className="warning-icon" />
               </div>
               <h2 className="glow-text">Submission Warning</h2>
               <p className="security-msg">
                 Tactical Alert: You have <strong>{answers.filter(a => a === -1).length}</strong> unanswered questions.
-                These will be logged as <span style={{ color: '#ff4d4d' }}>FAILED NODES</span>.
+                These will be logged as <span className="danger-text">FAILED NODES</span>.
                 Proceed with final submission?
               </p>
             </div>
-            <div className="modal-footer" style={{ display: 'flex', gap: '1rem' }}>
+            <div className="modal-footer flex-row gap-4">
               <button
                 onClick={() => setShowSubmitConfirm(false)}
                 className="btn-sec full-width"
@@ -453,8 +504,7 @@ const MCQTest = () => {
               </button>
               <button
                 onClick={() => handleSubmit(false)}
-                className="btn-primary full-width"
-                style={{ background: 'linear-gradient(135deg, #ff4d4d, #ff8c42)' }}
+                className="btn-primary full-width btn-danger-gradient"
               >
                 Confirm Submission
               </button>
@@ -463,8 +513,32 @@ const MCQTest = () => {
         </div>
       )}
 
-
-      {/* CONGRATULATIONS MODAL */}
+      {/* EXIT CONFIRMATION MODAL */}
+      {showExitConfirm && (
+        <div className="result-modal-overlay security-overlay">
+          <div className="result-modal-card glass-card">
+            <div className="modal-header">
+              <div className="trophy-wrapper security-icon-wrapper-yellow">
+                <HelpCircle size={48} className="warning-icon" />
+              </div>
+              <h2 className="glow-text">Terminate Operation?</h2>
+              <p className="security-msg">
+                Exiting now will forfeit all progress in the current sector. 
+                These will be logged as <span className="danger-text">FAILED NODES</span>.
+              </p>
+            </div>
+            <div className="modal-footer flex-row gap-4">
+              <button className="btn-sec full-width" onClick={() => setShowExitConfirm(false)}>Resume Intel</button>
+              <button 
+                className="btn-primary full-width btn-danger-gradient" 
+                onClick={() => navigate('/mcq')}
+              >
+                Confirm Termination
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {showResultModal && result && (
         <div className="result-modal-overlay">
           <div className="result-modal-card glass-card">
@@ -527,6 +601,16 @@ const MCQTest = () => {
                   <span>{formatTime(elapsedTime)}</span>
                 </div>
               )
+            )}
+            {!result && test.pauseLimit > 0 && pausesUsed < test.pauseLimit && (
+              <button 
+                onClick={handlePause} 
+                className="pause-btn-tactical"
+                title={`Pauses used: ${pausesUsed}/${test.pauseLimit}`}
+              >
+                <Pause size={18} />
+                <span>Pause ({pausesUsed}/{test.pauseLimit})</span>
+              </button>
             )}
           </header>
 
@@ -605,7 +689,7 @@ const MCQTest = () => {
 
             <div className="navigation-footer">
               <button
-                disabled={currentIdx === 0}
+                disabled={currentIdx === 0 || test.pauseLimit > 0}
                 onClick={() => setCurrentIdx(prev => prev - 1)}
                 className="nav-btn"
               >
@@ -653,8 +737,9 @@ const MCQTest = () => {
                 <button
                   key={i}
                   className={`grid-item ${status}`}
-                  onClick={() => setCurrentIdx(i)}
-                  title={`Question ${i + 1}`}
+                  disabled={test.pauseLimit > 0}
+                  onClick={() => test.pauseLimit === 0 && setCurrentIdx(i)}
+                  title={test.pauseLimit > 0 ? "Sequential navigation only" : `Question ${i + 1}`}
                 >
                   {i + 1}
                 </button>

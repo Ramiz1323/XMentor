@@ -101,7 +101,10 @@ export const getPendingSubmissions = async (req, res, next) => {
 
     const submissions = await SubjectiveResult.find({ 
       testId: { $in: testIds },
-      status: 'PENDING'
+      $or: [
+        { status: 'PENDING' },
+        { status: { $exists: false } }
+      ]
     }).populate('studentId', 'name username profilePic')
       .populate('testId', 'title subject questions');
 

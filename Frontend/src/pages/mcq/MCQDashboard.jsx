@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
 import useMCQStore from '../../store/useMCQStore';
 import useUserStore from '../../store/useUserStore';
-import { Plus, BookOpen, Clock, Target, Users, TrendingUp, Star, CheckCircle, Trash2, UserPlus, X, Eye } from 'lucide-react';
+import { Plus, BookOpen, Clock, Target, Users, TrendingUp, Star, CheckCircle, Trash2, UserPlus, X, Eye, Play, RefreshCw } from 'lucide-react';
 import TaskSkeleton from '../../components/skeletons/TaskSkeleton';
 import LoadingOverlay from '../../components/ui/LoadingOverlay';
 
@@ -134,6 +134,11 @@ const MCQDashboard = () => {
                    <Target size={10} /> Finished
                  </span>
                )}
+                {test.isPaused && (
+                  <span className="completed-badge paused-badge">
+                    <Clock size={10} /> Paused
+                  </span>
+                )}
             </div>
             <h3>{test.title}</h3>
           </div>
@@ -212,9 +217,19 @@ const MCQDashboard = () => {
               ) : (
                 <Link 
                   to={`/mcq/${test._id}`} 
-                  className="btn-primary" 
+                  className={`btn-primary ${test.isPaused ? 'btn-resume' : 'btn-attend'}`} 
                 >
-                  {user.role === 'TEACHER' ? 'Participate In Training' : 'Attend Training Session'}
+                  {test.isPaused ? (
+                    <>
+                      <RefreshCw size={18} className="btn-loader" />
+                      Resume Training Session
+                    </>
+                  ) : (
+                    <>
+                      <Play size={18} fill="currentColor" className="btn-loader" />
+                      {user.role === 'TEACHER' ? 'Participate In Training' : 'Attend Training Session'}
+                    </>
+                  )}
                 </Link>
               )}
             </div>

@@ -69,6 +69,19 @@ const useMCQStore = create((set) => ({
           set({ isLoading: false });
         }
       },
+      
+      pauseTest: async (id, pauseData) => {
+        try {
+          set({ isLoading: true, error: null });
+          const data = await mcqService.pauseTest(id, pauseData);
+          return data;
+        } catch (err) {
+          set({ error: err.message || 'Failed to pause test' });
+          throw err;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
 
       fetchTeacherOverview: async () => {
         try {
@@ -105,17 +118,19 @@ const useMCQStore = create((set) => ({
       createdBy: { name: 'You (Mentor)' }
     };
 
-    set((state) => ({ tests: [optimisticTest, ...state.tests] }));
+    set((state) => ({ tests: [optimisticTest, ...state.tests], isLoading: true, error: null }));
 
     try {
       const data = await mcqService.createTest(testData);
       set((state) => ({
-        tests: state.communities ? state.tests.map(t => t._id === tempId ? data.data : t) : [data.data, ...state.tests]
+        tests: state.communities ? state.tests.map(t => t._id === tempId ? data.data : t) : [data.data, ...state.tests],
+        isLoading: false
       }));
       return data;
     } catch (err) {
       set((state) => ({
         tests: state.tests.filter(t => t._id !== tempId),
+        isLoading: false,
         error: err.message || 'Failed to create test'
       }));
       throw err;

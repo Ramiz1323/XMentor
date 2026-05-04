@@ -152,6 +152,60 @@
   }
 }
 
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  gap: 2rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+
+  .section-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin: 0;
+  }
+
+  .search-box {
+    position: relative;
+    width: 350px;
+
+    @media (max-width: 768px) {
+      width: 100%;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 1.25rem;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.4;
+      color: var(--accent-primary);
+    }
+
+    .glass-input {
+      width: 100% !important;
+      padding-left: 3.5rem !important;
+      height: 48px !important;
+      background: rgba(255, 255, 255, 0.03) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 12px !important;
+      font-size: 0.95rem !important;
+
+      &:focus {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-color: var(--accent-primary) !important;
+        box-shadow: 0 0 20px rgba(var(--accent-primary-rgb), 0.1);
+      }
+    }
+  }
+}
+
 // Hub Specifics
 .empty-state {
   padding: 6rem 2rem;
