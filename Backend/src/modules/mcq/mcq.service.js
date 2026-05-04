@@ -51,7 +51,7 @@ export const getTestForStudent = async (testId, studentId) => {
     return {
       ...test,
       questions: sanitizedQuestions,
-      isSubmitted: result?.status === 'COMPLETED',
+      isSubmitted: result ? (!result.status || result.status === 'COMPLETED') : false,
       progress: result || null
     };
   }
@@ -208,7 +208,7 @@ export const getAssignedTests = async (userId) => {
     const userResult = resultsMap[test._id.toString()];
     return {
       ...test,
-      isSubmitted: userResult ? userResult.status === 'COMPLETED' : false,
+      isSubmitted: userResult ? (!userResult.status || userResult.status === 'COMPLETED') : false,
       isPaused: userResult ? userResult.status === 'IN_PROGRESS' : false,
       result: userResult || null
     };

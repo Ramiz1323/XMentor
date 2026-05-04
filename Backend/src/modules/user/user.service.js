@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import User from '../auth/auth.model.js';
 import imagekit from '../../config/imagekit.js';
 import ErrorResponse from '../../utils/errorResponse.js';

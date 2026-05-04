@@ -1,5 +1,6 @@
 import asyncHandler from '../../utils/asyncHandler.js';
 import * as communityService from './community.service.js';
+import ErrorResponse from '../../utils/errorResponse.js';
 
 export const create = asyncHandler(async (req, res) => {
   const result = await communityService.createCommunity(req.body, req.user._id);

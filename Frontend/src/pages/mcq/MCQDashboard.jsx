@@ -19,7 +19,7 @@ const MCQDashboard = () => {
 
   useEffect(() => {
     fetchMyTests();
-    if (user.role === 'TEACHER') {
+    if (user?.role === 'TEACHER') {
       fetchProfile();
       fetchTeacherOverview()
         .then(data => setOverviewData(data))
@@ -28,7 +28,7 @@ const MCQDashboard = () => {
           setOverviewData(null);
         });
     }
-  }, [fetchMyTests, fetchTeacherOverview, fetchProfile, user.role]);
+  }, [fetchMyTests, fetchTeacherOverview, fetchProfile, user?.role]);
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this MCQ test? This action cannot be undone and all student results will be permanently removed.')) {
@@ -119,7 +119,7 @@ const MCQDashboard = () => {
     const isCompleted = test.isSubmitted;
 
     return (
-      <div className={`glass-card task-card ${test.createdBy?._id === user._id ? 'owned' : ''} ${isCompleted ? 'completed-task' : ''}`}>
+      <div className={`glass-card task-card ${test.createdBy?._id === user?._id ? 'owned' : ''} ${isCompleted ? 'completed-task' : ''}`}>
         <div className="card-header">
           <div className="title-group">
             <div className="top-row">
@@ -180,7 +180,7 @@ const MCQDashboard = () => {
           </div>
           
           <div className="card-actions">
-            {user.role === 'TEACHER' && test.createdBy?._id === user._id && (
+            {user?.role === 'TEACHER' && test.createdBy?._id === user?._id && (
               <div className="management-row">
                 <Link 
                   to={`/mcq/${test._id}/results`} 
@@ -227,7 +227,7 @@ const MCQDashboard = () => {
                   ) : (
                     <>
                       <Play size={18} fill="currentColor" className="btn-loader" />
-                      {user.role === 'TEACHER' ? 'Participate In Training' : 'Attend Training Session'}
+                      {user?.role === 'TEACHER' ? 'Participate In Training' : 'Attend Training Session'}
                     </>
                   )}
                 </Link>
@@ -236,15 +236,15 @@ const MCQDashboard = () => {
           </div>
         </div>
 
-        {test.createdBy?._id === user._id && (
+        {test.createdBy?._id === user?._id && (
           <div className="owner-indicator" />
         )}
       </div>
     );
   };
 
-  const pendingTests = tests.filter(t => !t.isSubmitted);
-  const completedTests = tests.filter(t => t.isSubmitted);
+  const pendingTests = (tests || []).filter(t => !t.isSubmitted);
+  const completedTests = (tests || []).filter(t => t.isSubmitted);
 
   if (isLoading && tests.length === 0) return <LoadingOverlay />;
 
@@ -349,7 +349,7 @@ const MCQDashboard = () => {
   };
 
   const StudentAnalytics = ({ tests }) => {
-    const completed = tests.filter(t => t.isSubmitted);
+    const completed = (tests || []).filter(t => t.isSubmitted);
     if (completed.length === 0) return null;
 
     // Calculate metrics
@@ -451,11 +451,11 @@ const MCQDashboard = () => {
       <header>
         <div className="header-info">
           <h1 className="glow-text">MCQ Task Hub</h1>
-          <p className="subtitle">{user.role === 'TEACHER' ? 'Oversee assignments and student performance' : 'Access your designated training tasks'}</p>
+          <p className="subtitle">{user?.role === 'TEACHER' ? 'Oversee assignments and student performance' : 'Access your designated training tasks'}</p>
         </div>
         
         <div className="header-actions">
-          {user.role === 'TEACHER' && (
+          {user?.role === 'TEACHER' && (
             <div className="view-toggle">
               <button 
                 onClick={() => setViewMode('TASK_WISE')}
@@ -471,7 +471,7 @@ const MCQDashboard = () => {
               </button>
             </div>
           )}
-          {user.role === 'TEACHER' && (
+          {user?.role === 'TEACHER' && (
             <Link to="/mcq/create" className="btn-primary">
               <Plus size={20} /> Create Task
             </Link>
@@ -480,13 +480,13 @@ const MCQDashboard = () => {
       </header>
 
       <div className="dashboard-sections">
-        {user.role === 'TEACHER' && viewMode === 'STUDENT_WISE' && (
+        {user?.role === 'TEACHER' && viewMode === 'STUDENT_WISE' && (
           <StudentWiseView data={overviewData} />
         )}
 
         {viewMode === 'TASK_WISE' && (
           <>
-            {user.role === 'STUDENT' && <StudentAnalytics tests={tests} />}
+            {user?.role === 'STUDENT' && <StudentAnalytics tests={tests} />}
 
             <section className="dashboard-section">
               <div className="section-header">
@@ -517,7 +517,7 @@ const MCQDashboard = () => {
                 <div className="section-header">
                   <h2 className="section-title completed">
                      <Target size={22} /> 
-                     <span>Completed Training</span>
+                     <span>COMPLETED MISSIONS</span>
                      <span className="count-badge">{completedTests.length}</span>
                   </h2>
                 </div>
@@ -540,12 +540,12 @@ const MCQDashboard = () => {
           <div className="empty-state">
             <Target size={48} className="empty-icon" />
             <h3>No tasks currently detected in your sector.</h3>
-            {user.role === 'TEACHER' && <p>Start by creating a new curriculum task above.</p>}
+            {user?.role === 'TEACHER' && <p>Start by creating a new curriculum task above.</p>}
           </div>
         )}
       </div>
 
-      {user.role === 'TEACHER' && (!user.students || user.students.length === 0) && (
+      {user?.role === 'TEACHER' && (!user?.students || user?.students?.length === 0) && (
         <div className="cohort-alert">
            <Users size={32} />
            <div className="alert-content">

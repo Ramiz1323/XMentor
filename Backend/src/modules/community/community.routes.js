@@ -5,7 +5,8 @@ import { validate } from '../../middleware/community.middleware.js';
 import { 
   createCommunitySchema, 
   joinCommunitySchema, 
-  leaveCommunitySchema 
+  leaveCommunitySchema,
+  inviteMemberSchema
 } from './community.validation.js';
 
 const router = express.Router();
@@ -23,7 +24,7 @@ router.post('/:id/leave', validate(leaveCommunitySchema), communityController.le
 router.get('/:id/members', communityController.getMembers);
 router.post('/:id/verify-passcode', communityController.verifyPasscode);
 router.get('/:id/history', communityController.getHistory);
-router.post('/:id/invite', authorize('TEACHER'), communityController.inviteMember);
+router.post('/:id/invite', authorize('TEACHER'), validate(inviteMemberSchema), communityController.inviteMember);
 router.delete('/:id', authorize('TEACHER'), communityController.remove);
 
 export default router;

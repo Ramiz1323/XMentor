@@ -3,6 +3,7 @@ import ErrorResponse from '../../utils/errorResponse.js';
 
 export const getAllCommunities = async (userId, filters = {}) => {
   const user = await import('../auth/auth.model.js').then(m => m.default.findById(userId).select('role'));
+  if (!user) throw new ErrorResponse('User not found in the tactical database', 404);
   
   let query = { ...filters };
   
@@ -39,19 +40,31 @@ export const addMember = async (communityId, teacherId, studentId, alias) => {
     throw new ErrorResponse('Only the creator can manually add members', 403);
   }
 
-  const alreadyMember = community.members.some(m => m.user.toString() === studentId.toString());
-  if (alreadyMember) throw new ErrorResponse('Student is already a member', 400);
-
   const finalAlias = alias || `Student_${Math.floor(1000 + Math.random() * 9000)}`;
 
-  return await Community.findByIdAndUpdate(
-    communityId,
+  // Atomic update to ensure membership, alias uniqueness, and capacity
+  const updatedCommunity = await Community.findOneAndUpdate(
+    { 
+      _id: communityId,
+      "members.user": { $ne: studentId },
+      "members.alias": { $ne: finalAlias },
+      memberCount: { $lt: community.maxMembers }
+    },
     { 
       $push: { members: { user: studentId, alias: finalAlias } },
       $inc: { memberCount: 1 }
     },
     { new: true, runValidators: true }
-  );
+  ).lean();
+
+  if (!updatedCommunity) {
+    const isMember = community.members.some(m => m.user.toString() === studentId.toString());
+    if (isMember) throw new ErrorResponse('Student is already a member of this hub', 400);
+    if (community.memberCount >= community.maxMembers) throw new ErrorResponse('Hub is at maximum capacity', 400);
+    throw new ErrorResponse('Alias conflict or race condition detected during recruitment', 400);
+  }
+
+  return updatedCommunity;
 };
 
 export const getCommunityById = async (communityId, userId) => {

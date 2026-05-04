@@ -33,3 +33,13 @@ export const leaveCommunitySchema = z.object({
     id: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid Community ID'),
   }),
 });
+
+export const inviteMemberSchema = z.object({
+  params: z.object({
+    id: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid Community ID'),
+  }),
+  body: z.object({
+    studentId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid Student ID'),
+    alias: z.string().trim().min(2).max(30).optional(),
+  }),
+});
