@@ -282,7 +282,8 @@ export const reassignTest = async (testId, teacherId, studentId) => {
   await MCQResult.deleteMany({ testId, studentId });
 
   // Ensure they are in the assignedStudents list
-  if (!test.assignedStudents.includes(studentId)) {
+  const currentAssigned = test.assignedStudents.map(id => id.toString());
+  if (!currentAssigned.includes(studentId.toString())) {
     test.assignedStudents.push(studentId);
     await test.save();
   }

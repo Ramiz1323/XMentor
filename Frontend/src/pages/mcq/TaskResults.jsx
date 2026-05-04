@@ -203,7 +203,8 @@ const TaskResults = () => {
                       </button>
                       <button 
                         className="btn-sec reassign-btn"
-                        onClick={() => handleReassign(res.studentId._id, res.studentId.name)}
+                        onClick={() => res.studentId && handleReassign(res.studentId._id, res.studentId.name)}
+                        disabled={!res.studentId}
                       >
                         Reassign
                       </button>

@@ -154,12 +154,21 @@ const useMCQStore = create((set) => ({
   reassignStudent: async (testId, studentId) => {
     try {
       set({ isLoading: true, error: null });
-      await mcqService.reassign(testId, studentId);
-      // Refresh analytics after reassigning
-      const analyticsData = await mcqService.getAnalytics(testId);
-      set({ analytics: analyticsData.data });
+      try {
+        await mcqService.reassign(testId, studentId);
+      } catch (err) {
+        throw new Error(`Reassign failed: ${err.message || 'Operation failed'}`);
+      }
+      
+      try {
+        // Refresh analytics after reassigning
+        const analyticsData = await mcqService.getAnalytics(testId);
+        set({ analytics: analyticsData.data });
+      } catch (err) {
+        throw new Error(`Failed to refresh analytics: ${err.message || 'Data fetch failed'}`);
+      }
     } catch (err) {
-      set({ error: err.message || 'Failed to reassign student' });
+      set({ error: err.message });
       throw err;
     } finally {
       set({ isLoading: false });

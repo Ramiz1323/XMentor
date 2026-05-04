@@ -2,12 +2,15 @@ import { ArrowLeft, CheckCircle, Info, Target, Users, BookOpen } from 'lucide-re
 import MathRenderer from '../../components/ui/MathRenderer';
 
 const ExamReviewModal = ({ test, results, onClose }) => {
-  if (!test) return null;
+  const safeQuestions = Array.isArray(test?.questions) ? test.questions : [];
+  const safeResults = Array.isArray(results) ? results : [];
+
+  if (!test || safeQuestions.length === 0) return null;
 
   // Calculate cohort performance per question
-  const questionStats = test.questions.map((q, qIdx) => {
-    const correctCount = results.filter(r => r.answers[qIdx] === q.correct).length;
-    const totalAttempts = results.length;
+  const questionStats = safeQuestions.map((q, qIdx) => {
+    const correctCount = safeResults.filter(r => Array.isArray(r.answers) && r.answers[qIdx] === q.correct).length;
+    const totalAttempts = safeResults.length;
     const successRate = totalAttempts > 0 ? Math.round((correctCount / totalAttempts) * 100) : 0;
     return { successRate, correctCount, totalAttempts };
   });
@@ -32,7 +35,7 @@ const ExamReviewModal = ({ test, results, onClose }) => {
           <div className="task-summary-banner">
              <div className="summary-item">
                 <Users size={18} />
-                <div className="val">{results.length}</div>
+                <div className="val">{safeResults.length}</div>
                 <div className="lab">Total Participants</div>
              </div>
              <div className="summary-item">
@@ -42,14 +45,14 @@ const ExamReviewModal = ({ test, results, onClose }) => {
              </div>
              <div className="summary-item">
                 <CheckCircle size={18} />
-                <div className="val">{results.length > 0 ? Math.round(results.reduce((acc, curr) => acc + curr.score, 0) / results.length) : 0}</div>
+                <div className="val">{safeResults.length > 0 ? Math.round(safeResults.reduce((acc, curr) => acc + (Number(curr.score) || 0), 0) / safeResults.length) : 0}</div>
                 <div className="lab">Avg Tactical Score</div>
              </div>
           </div>
         </header>
 
         <div className="questions-review-list">
-          {test.questions.map((q, idx) => {
+          {safeQuestions.map((q, idx) => {
             const stats = questionStats[idx];
             
             return (
