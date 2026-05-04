@@ -36,7 +36,7 @@ const mcqTestSchema = new mongoose.Schema(
     subject: {
       type: String,
       enum: [
-        'MATHS', 'PHYSICS', 'CHEMISTRY', 'BIOLOGY', 'SCIENCE', 
+        'MATHS', 'SCIENCE', 'PHYSICS', 'CHEMISTRY', 'BIOLOGY', 
         'HISTORY', 'GEOGRAPHY', 'ENGLISH', 'BENGALI', 'HINDI', 
         'EVS', 'SOCIAL_SCIENCE', 'COMPUTER', 'CODING', 'OTHERS'
       ],

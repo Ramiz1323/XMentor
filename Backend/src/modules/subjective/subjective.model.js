@@ -13,7 +13,11 @@ const subjectiveTestSchema = new mongoose.Schema(
     },
     subject: {
       type: String,
-      enum: ['MATHS', 'PHYSICS', 'CHEMISTRY', 'BIOLOGY', 'CODING', 'OTHERS'],
+      enum: [
+        'MATHS', 'SCIENCE', 'PHYSICS', 'CHEMISTRY', 'BIOLOGY', 
+        'HISTORY', 'GEOGRAPHY', 'ENGLISH', 'BENGALI', 'HINDI', 
+        'EVS', 'SOCIAL_SCIENCE', 'COMPUTER', 'CODING', 'OTHERS'
+      ],
       required: true,
     },
     class: {

@@ -10,7 +10,11 @@ const questionSchema = z.object({
 export const createTestSchema = z.object({
   body: z.object({
     title: z.string().trim().min(3, 'Title is too short'), // Trim before min
-    subject: z.enum(['MATHS', 'PHYSICS', 'CHEMISTRY', 'BIOLOGY', 'CODING', 'OTHERS']),
+    subject: z.enum([
+      'MATHS', 'SCIENCE', 'PHYSICS', 'CHEMISTRY', 'BIOLOGY', 
+      'HISTORY', 'GEOGRAPHY', 'ENGLISH', 'BENGALI', 'HINDI', 
+      'EVS', 'SOCIAL_SCIENCE', 'COMPUTER', 'CODING', 'OTHERS'
+    ]),
     communityId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid Community ID').optional(),
     assignedStudents: z.array(z.string().regex(/^[0-9a-fA-F]{24}$/)).optional(),
     duration: z.number().int().min(1, 'Duration must be at least 1 minute'),
