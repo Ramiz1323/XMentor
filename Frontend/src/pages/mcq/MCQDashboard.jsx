@@ -6,6 +6,7 @@ import useUserStore from '../../store/useUserStore';
 import { Plus, BookOpen, Clock, Target, Users, TrendingUp, Star, CheckCircle, Trash2, UserPlus, X, Eye, Play, RefreshCw } from 'lucide-react';
 import TaskSkeleton from '../../components/skeletons/TaskSkeleton';
 import LoadingOverlay from '../../components/ui/LoadingOverlay';
+import SEO from '../../components/common/SEO';
 
 const MCQDashboard = () => {
   const { user } = useAuthStore();
@@ -448,6 +449,10 @@ const MCQDashboard = () => {
 
   return (
     <div className="mcq-dashboard-container">
+      <SEO 
+        title="MCQ Training Grounds" 
+        description="Engage in tactical MCQ assessments, analyze cohort performance, and master your intelligence objectives." 
+      />
       <header>
         <div className="header-info">
           <h1 className="glow-text">MCQ Task Hub</h1>

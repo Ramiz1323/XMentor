@@ -6,6 +6,7 @@ import { BookOpen, Users, Trophy, MessageSquare, Target, CheckCircle, Clock, Arr
 import { Link } from 'react-router-dom';
 import Skeleton from '../../components/ui/Skeleton';
 import LoadingOverlay from '../../components/ui/LoadingOverlay';
+import SEO from '../../components/common/SEO';
 
 const Dashboard = () => {
   const { user } = useAuthStore();
@@ -25,6 +26,10 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
+      <SEO 
+        title="Strategic Dashboard" 
+        description="Manage your learning path, track assessment scores, and collaborate with your mentors in the XMentor tactical hub." 
+      />
       <header className="dashboard-header">
         <div className="welcome-text">
           <h1 className="glow-text">Strategic Overview, {user?.name}</h1>

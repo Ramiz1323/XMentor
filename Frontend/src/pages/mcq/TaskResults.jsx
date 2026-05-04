@@ -5,6 +5,7 @@ import { Users, Target, Clock, ArrowLeft, Award, Calendar, Eye, UserX, Trash2, B
 import Skeleton from '../../components/ui/Skeleton';
 import SubmissionDetail from './SubmissionDetail';
 import ExamReviewModal from './ExamReviewModal';
+import SEO from '../../components/common/SEO';
 
 const TaskResults = () => {
   const { id } = useParams();
@@ -82,6 +83,10 @@ const TaskResults = () => {
 
   return (
     <div className="task-results-container">
+      <SEO 
+        title={`${test.title} - Tactical Results`} 
+        description={`Performance intelligence for ${test.title} (${test.subject}). Review cohort success rates, score distributions, and individual student submissions.`} 
+      />
       <header>
         <Link to="/mcq" className="back-link">
           <ArrowLeft size={16} /> Back to Hub

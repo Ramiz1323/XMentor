@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /mcq/*/results
+Disallow: /profile
+Disallow: /doubts
+Disallow: /leaderboard
+Disallow: /subjective/review
+
+Sitemap: https://xmentor.skramizraza.tech/sitemap.xml
