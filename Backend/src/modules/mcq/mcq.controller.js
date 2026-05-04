@@ -174,6 +174,42 @@ export const assign = asyncHandler(async (req, res) => {
     data: test,
   });
 });
+export const reassign = asyncHandler(async (req, res) => {
+  const test = await mcqService.reassignTest(req.params.id, req.user._id, req.params.studentId);
+  
+  // 📡 NOTIFICATION
+  const io = req.app.get('socketio');
+  if (io) {
+    const payload = {
+      id: test._id,
+      title: test.title,
+      subject: test.subject,
+      mentorName: req.user.name,
+      type: 'TASK_ALERT',
+      taskType: 'MCQ'
+    };
+    io.to(req.params.studentId).emit('new_task', payload);
+  }
+
+  // Push notification
+  try {
+    const user = await User.findById(req.params.studentId);
+    if (user) {
+      notifyUser(user, {
+        title: `TASK REASSIGNED: Mentor ${req.user.name}`,
+        body: `You have been reassigned: ${test.title}. Retake available now.`,
+        url: `/mcq/${test._id}`
+      });
+    }
+  } catch (err) {
+    console.error('Reassign notification failed:', err.message);
+  }
+
+  res.status(200).json({
+    success: true,
+    message: 'Test reassigned successfully',
+  });
+});
 export const remove = asyncHandler(async (req, res) => {
   await mcqService.deleteTest(req.params.id, req.user._id);
   

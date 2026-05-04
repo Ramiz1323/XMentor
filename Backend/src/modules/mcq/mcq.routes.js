@@ -10,13 +10,14 @@ router.use(protect);
 
 router.post('/', authorize('TEACHER'), validate(createTestSchema), mcqController.create);
 router.get('/my-tests', mcqController.getMine);
-router.get('/community/:communityId', mcqController.getByCommunity); 
+router.get('/community/:communityId', mcqController.getByCommunity);
 router.get('/teacher/overview', authorize('TEACHER'), mcqController.getOverview);
 router.get('/:id', mcqController.getById);
 router.get('/:id/analytics', authorize('TEACHER'), mcqController.getAnalytics);
 router.post('/:id/assign', authorize('TEACHER'), mcqController.assign);
 router.post('/:id/submit', validate(submitTestSchema), mcqController.submit);
 router.post('/:id/pause', mcqController.pause);
+router.post('/:id/reassign/:studentId', authorize('TEACHER'), mcqController.reassign);
 router.delete('/:id', authorize('TEACHER'), mcqController.remove);
 
 export default router;

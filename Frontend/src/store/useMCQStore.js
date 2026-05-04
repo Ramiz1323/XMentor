@@ -47,7 +47,7 @@ const useMCQStore = create((set) => ({
 
       fetchAnalytics: async (id) => {
         try {
-          set({ isLoading: true, error: null });
+          set({ isLoading: true, error: null, analytics: null });
           const data = await mcqService.getAnalytics(id);
           set({ analytics: data.data });
         } catch (err) {
@@ -148,6 +148,21 @@ const useMCQStore = create((set) => ({
     } catch (err) {
       set({ tests: previousTests, error: err.message || 'Failed to delete test' });
       throw err;
+    }
+  },
+
+  reassignStudent: async (testId, studentId) => {
+    try {
+      set({ isLoading: true, error: null });
+      await mcqService.reassign(testId, studentId);
+      // Refresh analytics after reassigning
+      const analyticsData = await mcqService.getAnalytics(testId);
+      set({ analytics: analyticsData.data });
+    } catch (err) {
+      set({ error: err.message || 'Failed to reassign student' });
+      throw err;
+    } finally {
+      set({ isLoading: false });
     }
   }
 }));

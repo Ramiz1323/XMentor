@@ -5,7 +5,7 @@ const SubmissionDetail = ({ test, submission, onClose }) => {
   if (!test || !submission) return null;
 
   return (
-    <div className="submission-detail-overlay">
+    <div className="tactical-modal-overlay">
       <div className="submission-detail-modal">
         <header className="detail-header">
           <div className="header-top">

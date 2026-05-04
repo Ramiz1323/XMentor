@@ -48,6 +48,10 @@ const mcqService = {
   deleteTest: async (id) => {
     const { data } = await api.delete(`/mcq/${id}`);
     return data;
+  },
+  reassign: async (testId, studentId) => {
+    const { data } = await api.post(`/mcq/${testId}/reassign/${studentId}`);
+    return data;
   }
 };
 

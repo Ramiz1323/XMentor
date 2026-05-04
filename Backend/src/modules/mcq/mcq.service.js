@@ -270,6 +270,25 @@ export const assignTest = async (testId, teacherId, studentIds) => {
 
   return { test, newAssignments };
 };
+export const reassignTest = async (testId, teacherId, studentId) => {
+  const test = await MCQTest.findById(testId);
+  if (!test) throw new ErrorResponse('Test not found', 404);
+
+  if (test.createdBy.toString() !== teacherId.toString()) {
+    throw new ErrorResponse('Unauthorized: Only creator can reassign this test', 403);
+  }
+
+  // Delete existing results for this student on this test
+  await MCQResult.deleteMany({ testId, studentId });
+
+  // Ensure they are in the assignedStudents list
+  if (!test.assignedStudents.includes(studentId)) {
+    test.assignedStudents.push(studentId);
+    await test.save();
+  }
+
+  return test;
+};
 
 export const getTeacherOverview = async (teacherId) => {
   // 1. Get teacher's tests

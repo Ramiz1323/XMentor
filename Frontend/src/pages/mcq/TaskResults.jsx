@@ -1,15 +1,27 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import useMCQStore from '../../store/useMCQStore';
-import { Users, Target, Clock, ArrowLeft, Award, Calendar, Eye, UserX, Trash2 } from 'lucide-react';
+import { Users, Target, Clock, ArrowLeft, Award, Calendar, Eye, UserX, Trash2, BookOpen, RotateCcw } from 'lucide-react';
 import Skeleton from '../../components/ui/Skeleton';
 import SubmissionDetail from './SubmissionDetail';
+import ExamReviewModal from './ExamReviewModal';
 
 const TaskResults = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { analytics: data, fetchAnalytics, deleteTest, isLoading, error } = useMCQStore();
+  const { analytics: data, fetchAnalytics, deleteTest, isLoading, error, reassignStudent } = useMCQStore();
   const [selectedSubmission, setSelectedSubmission] = useState(null);
+  const [showExamReview, setShowExamReview] = useState(false);
+
+  const handleReassign = async (studentId, studentName) => {
+    if (window.confirm(`Are you sure you want to reassign this test to ${studentName}? This will delete their current score and allow them to retake the test.`)) {
+      try {
+        await reassignStudent(id, studentId);
+      } catch (err) {
+        alert('Reassignment failed: ' + err.message);
+      }
+    }
+  };
 
   useEffect(() => {
     fetchAnalytics(id);
@@ -52,9 +64,9 @@ const TaskResults = () => {
     </div>
   );
 
-  if (isLoading && !data) return <ResultsSkeleton />;
+  if (isLoading || !data || (data.test && data.test._id !== id)) return <ResultsSkeleton />;
 
-  if (error || !data) {
+  if (error) {
     return (
       <div className="error-page">
         <h2 className="glow-text">Task Data Corrupted or Unauthorized</h2>
@@ -91,6 +103,10 @@ const TaskResults = () => {
               <span className="meta-tag"><Target size={12} /> {test.totalQuestions}Q</span>
               <span className="meta-tag"><Clock size={12} /> {test.duration}m</span>
               
+              <button className="btn-review-exam" onClick={() => setShowExamReview(true)}>
+                <BookOpen size={12} /> Review Paper
+              </button>
+
               <button className="delete-task-btn" onClick={handleDelete} title="Terminate Task">
                 <Trash2 size={14} /> Terminate
               </button>
@@ -178,12 +194,20 @@ const TaskResults = () => {
                     {new Date(res.createdAt).toLocaleDateString()}
                   </td>
                   <td data-label="Action">
-                    <button 
-                      className="btn-sec detail-btn"
-                      onClick={() => setSelectedSubmission(res)}
-                    >
-                      <Eye size={14} /> Detail
-                    </button>
+                    <div className="action-row">
+                      <button 
+                        className="btn-sec detail-btn"
+                        onClick={() => setSelectedSubmission(res)}
+                      >
+                        <Eye size={14} /> Detail
+                      </button>
+                      <button 
+                        className="btn-sec reassign-btn"
+                        onClick={() => handleReassign(res.studentId._id, res.studentId.name)}
+                      >
+                        Reassign
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -227,6 +251,14 @@ const TaskResults = () => {
           test={test}
           submission={selectedSubmission}
           onClose={() => setSelectedSubmission(null)}
+        />
+      )}
+
+      {showExamReview && (
+        <ExamReviewModal 
+          test={test}
+          results={results}
+          onClose={() => setShowExamReview(false)}
         />
       )}
     </div>

@@ -187,7 +187,7 @@ const MCQDashboard = () => {
                   className="btn-sec results-btn" 
                   title="View Results"
                 >
-                  <Users size={16} /> Results
+                  <Users size={16} /> Details
                 </Link>
                 <button 
                   className="btn-sec assign-btn"
