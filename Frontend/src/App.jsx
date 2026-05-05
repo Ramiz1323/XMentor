@@ -25,6 +25,7 @@ const SubjectiveHub = lazy(() => import('./pages/subjective/SubjectiveHub'));
 const ReviewCenter = lazy(() => import('./pages/subjective/ReviewCenter'));
 const NotFoundPage = lazy(() => import('./pages/error/NotFoundPage'));
 const MaintenancePage = lazy(() => import('./pages/error/MaintenancePage'));
+const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, authChecked } = useAuthStore();
@@ -69,22 +70,28 @@ function AppContent({ isAuthenticated }) {
   const isMCQTestPage = /^\/mcq\/[^\/]+$/.test(location.pathname) &&
     location.pathname !== '/mcq/create';
 
+  const isLandingPage = location.pathname === '/' && !isAuthenticated;
+
   return (
-    <div className={`app-container ${isAuthenticated ? 'with-sidebar' : 'auth-mode'} ${isSidebarOpen ? 'sidebar-open' : ''} ${isMCQTestPage ? 'tactical-mode' : ''} theme-${user?.theme || 'blue'}`}>
+    <div className={`app-container ${isAuthenticated ? 'with-sidebar' : isLandingPage ? 'landing-mode' : 'auth-mode'} ${isSidebarOpen ? 'sidebar-open' : ''} ${isMCQTestPage ? 'tactical-mode' : ''} theme-${user?.theme || 'blue'}`}>
       {isLoading && <LoadingOverlay message="Terminating Strategic Session..." />}
       {isAuthenticated && !isMCQTestPage && (
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       )}
 
       <div className="main-layout">
-        {!isMCQTestPage && <Navbar onMenuClick={toggleSidebar} />}
+        {!isMCQTestPage && !isLandingPage && <Navbar onMenuClick={toggleSidebar} />}
         <main className={`content ${isMCQTestPage ? 'full-width-tactical' : ''}`}>
           <Suspense fallback={<LoadingOverlay message="Establishing Data Link..." />}>
             <Routes>
               <Route path="/login" element={<AuthRoute><LoginPage /></AuthRoute>} />
               <Route path="/register" element={<AuthRoute><RegisterPage /></AuthRoute>} />
 
-              <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/" element={
+                isAuthenticated
+                  ? <ProtectedRoute><Dashboard /></ProtectedRoute>
+                  : <LandingPage />
+              } />
               <Route path="/communities" element={<ProtectedRoute><CommunityList /></ProtectedRoute>} />
               <Route path="/communities/:id/chat" element={<ProtectedRoute><ChatRoom /></ProtectedRoute>} />
               <Route path="/mcq" element={<ProtectedRoute><MCQDashboard /></ProtectedRoute>} />

@@ -12,6 +12,7 @@
 @use 'subjective';
 @use 'error';
 @use 'notifications';
+@use 'landing';
 
 * {
   margin: 0;
@@ -70,6 +71,13 @@ body {
 
     @media (max-width: 480px) {
       padding: 0.5rem;
+    }
+  }
+
+  &.landing-mode {
+    .main-layout {
+      width: 100%;
+      margin-left: 0;
     }
   }
 
