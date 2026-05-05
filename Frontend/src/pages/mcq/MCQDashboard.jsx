@@ -537,7 +537,18 @@ const MCQDashboard = () => {
         {error && (
           <div className="error-state">
             <p className="error-text">{error}</p>
-            <button onClick={fetchMyTests} className="btn-primary">Retry Sync</button>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <button onClick={fetchMyTests} className="btn-primary">Retry Sync</button>
+              {/token|authorized|unauthori[sz]ed/i.test(error) && (
+                <button
+                  onClick={async () => { await useAuthStore.getState().logout(); window.location.href = '/login'; }}
+                  className="btn-primary"
+                  style={{ background: 'linear-gradient(135deg,#ef4444,#f97316)' }}
+                >
+                  Login Again
+                </button>
+              )}
+            </div>
           </div>
         )}
 

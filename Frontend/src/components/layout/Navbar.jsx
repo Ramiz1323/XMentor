@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
 import logo from '../../assets/logo.png';
 import { LogOut, Bell, Menu } from 'lucide-react';
@@ -9,9 +9,12 @@ const Navbar = ({ onMenuClick }) => {
   // Mock notification state - in a real app this would come from a notification store or API
   const [hasNotifications] = useState(true);
 
+  const navigate = useNavigate();
+
   const handleLogout = async () => {
     if (window.confirm('Are you sure you want to terminate your strategic session?')) {
       await logout();
+      navigate('/');
     }
   };
 

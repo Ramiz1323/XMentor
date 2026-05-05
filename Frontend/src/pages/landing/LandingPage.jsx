@@ -116,7 +116,7 @@ const LandingPage = () => {
           </h1>
 
           <p className="hero-subtitle">
-            XMentor is a full-stack EdTech platform used by <strong>3 teachers</strong> and <strong>30+ students</strong> daily.
+            XMentor is a full-stack EdTech platform used by <strong>multiple teachers</strong> and <strong>students</strong> daily.
             Assign exams, grade answers, resolve doubts, and track performance — all in one place.
           </p>
 

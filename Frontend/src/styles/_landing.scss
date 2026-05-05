@@ -26,6 +26,10 @@
 
 // ── Base ───────────────────────────────────────────────────
 .landing-page {
+  // Scope heading block display — prevents global flex/inline conflicts
+  h1, h2, h3, h4, h5, h6 {
+    display: block;
+  }
   min-height: 100vh;
   background: $bg-primary;
   color: $text-primary;
@@ -46,18 +50,15 @@
   backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(white,0.06);
 
-  @media (max-width: 768px) {
-    padding: 1rem 1.5rem;
-    &__links { display: none; }
-  }
-
   &__brand {
     font-family: $font-family-display;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     font-weight: 700;
     letter-spacing: 2px;
+    flex-shrink: 0;
   }
 
+  // Links: flex on desktop, hidden on mobile
   &__links {
     display: flex;
     gap: 2rem;
@@ -68,14 +69,29 @@
       text-transform: uppercase;
       letter-spacing: 0.08em;
       transition: color 0.2s;
+      border-radius: 4px;
+      outline: none;
       &:hover { color: $text-primary; }
+      &:focus { color: $text-primary; }
+      &:focus-visible {
+        color: $text-primary;
+        box-shadow: 0 0 0 2px var(--accent-primary);
+        outline: 2px solid transparent;
+        outline-offset: 3px;
+      }
     }
+    // Hide nav links on mobile — defined AFTER the flex rule to win cascade
+    @media (max-width: 768px) { display: none; }
   }
 
   &__cta {
     display: flex;
     gap: 0.75rem;
     align-items: center;
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem 1.25rem;
   }
 }
 
@@ -92,7 +108,18 @@
   text-decoration: none;
   font-size: 0.85rem;
   transition: $transition-smooth;
+  outline: none;
+  // Hide "Sign In" outline button on very small screens to save space
+  @media (max-width: 400px) { display: none; }
   &:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+  &:focus { border-color: var(--accent-primary); color: var(--accent-primary); }
+  &:focus-visible {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.35);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
 }
 
 .nav-btn-filled {
@@ -107,7 +134,16 @@
   font-size: 0.85rem;
   font-weight: 600;
   transition: $transition-smooth;
+  outline: none;
+  white-space: nowrap;
   &:hover { opacity: 0.85; transform: translateY(-1px); }
+  &:focus { opacity: 0.85; }
+  &:focus-visible {
+    opacity: 0.85;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.45);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
 }
 
 // ── Hero ───────────────────────────────────────────────────
@@ -126,6 +162,12 @@
     padding: 7rem 2rem 4rem;
     text-align: center;
   }
+
+  @media (max-width: 480px) {
+    padding: 6rem 1.25rem 3rem;
+    min-height: auto;
+    padding-bottom: 4rem;
+  }
 }
 
 .hero-grid-bg {
@@ -135,6 +177,7 @@
     linear-gradient(rgba(59,130,246,0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(59,130,246,0.05) 1px, transparent 1px);
   background-size: 50px 50px;
+  -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
   mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
   pointer-events: none;
 }
@@ -221,6 +264,11 @@
   animation: grid-fade 0.7s ease 0.3s both;
 
   @media (max-width: 1024px) { justify-content: center; }
+  @media (max-width: 480px) {
+    flex-direction: column;
+    width: 100%;
+    .btn-hero-primary { width: 100%; justify-content: center; }
+  }
 }
 
 .btn-hero-primary {
@@ -236,7 +284,16 @@
   font-size: 1rem;
   transition: $transition-smooth;
   animation: pulse-glow 3s ease-in-out infinite;
+  outline: none;
   &:hover { transform: translateY(-2px); opacity: 0.9; }
+  &:focus { opacity: 0.9; }
+  &:focus-visible {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.4), 0 0 0 5px var(--accent-primary);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
 }
 
 .btn-hero-secondary {
@@ -244,7 +301,16 @@
   text-decoration: none;
   font-size: 0.95rem;
   transition: color 0.2s;
+  border-radius: 6px;
+  outline: none;
   &:hover { color: $text-primary; }
+  &:focus { color: $text-primary; }
+  &:focus-visible {
+    color: $text-primary;
+    box-shadow: 0 0 0 2px var(--accent-primary);
+    outline: 2px solid transparent;
+    outline-offset: 3px;
+  }
 }
 
 .hero-trust {
@@ -257,6 +323,7 @@
   animation: grid-fade 0.7s ease 0.4s both;
 
   @media (max-width: 1024px) { justify-content: center; }
+  @media (max-width: 480px) { font-size: 0.72rem; gap: 0.35rem; }
 }
 .trust-icon { color: var(--color-success); flex-shrink: 0; }
 .trust-dot { opacity: 0.4; }
@@ -436,6 +503,12 @@
   flex-wrap: wrap;
 
   @media (max-width: 768px) { padding: 2rem 1.5rem; gap: 1rem; }
+  @media (max-width: 480px) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 1.5rem 1.25rem;
+    gap: 0.75rem;
+  }
 }
 
 .stat-pill {
@@ -446,6 +519,8 @@
   border-radius: 16px;
   border: 1px solid rgba(white,0.08);
 
+  @media (max-width: 480px) { padding: 0.85rem 1rem; }
+
   &__icon { color: var(--accent-secondary); }
   &__value {
     font-family: $font-family-display;
@@ -455,22 +530,34 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    @media (max-width: 480px) { font-size: 1.3rem; }
   }
-  &__label { font-size: 0.8rem; color: $text-secondary; }
+  &__label { font-size: 0.8rem; color: $text-secondary; @media (max-width: 480px) { font-size: 0.72rem; } }
 }
 
 // ── Section Common ─────────────────────────────────────────
 .section-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
   margin-bottom: 4rem;
 
   h2 {
+    display: block;
     font-family: $font-family-display;
     font-size: clamp(1.8rem, 3vw, 2.5rem);
+    line-height: 1.25;
     margin-bottom: 1rem;
+    max-width: 700px;
   }
 
-  p { color: $text-secondary; max-width: 540px; margin: 0 auto; line-height: 1.7; }
+  p {
+    display: block;
+    color: $text-secondary;
+    max-width: 540px;
+    line-height: 1.7;
+  }
 }
 
 .section-tag {
@@ -491,6 +578,7 @@
 .landing-features {
   padding: 5rem 4rem;
   @media (max-width: 768px) { padding: 4rem 1.5rem; }
+  @media (max-width: 480px) { padding: 3rem 1.25rem; }
 }
 
 .features-grid {
@@ -509,6 +597,8 @@
   border-radius: 20px;
   border: 1px solid rgba(white,0.08);
   transition: $transition-smooth;
+
+  @media (max-width: 480px) { padding: 1.5rem; }
 
   &:hover {
     transform: translateY(-6px);
@@ -549,6 +639,7 @@
   padding: 5rem 4rem;
   background: rgba(white,0.015);
   @media (max-width: 768px) { padding: 4rem 1.5rem; }
+  @media (max-width: 480px) { padding: 3rem 1.25rem; }
 }
 
 .steps-track {
@@ -631,6 +722,14 @@
 
   h3 { font-family: $font-family-display; font-size: 1.2rem; margin-bottom: 0.75rem; color: #ff6b6b; }
   p  { font-size: 0.9rem; color: $text-secondary; line-height: 1.7; max-width: 480px; }
+
+  @media (max-width: 768px) {
+    padding: 1.75rem;
+    flex-direction: column;
+    gap: 1.25rem;
+    border-radius: 18px;
+  }
+  @media (max-width: 480px) { padding: 1.25rem; }
 }
 
 .security-icon { color: #ff6b6b; flex-shrink: 0; margin-top: 0.25rem; }
@@ -701,6 +800,7 @@
   overflow: hidden;
 
   @media (max-width: 768px) { padding: 5rem 1.5rem; }
+  @media (max-width: 480px) { padding: 4rem 1.25rem; }
 }
 
 .cta-orb {
@@ -756,13 +856,23 @@
   gap: 2rem;
   justify-content: center;
   margin-bottom: 1.5rem;
+  flex-wrap: wrap;
 
   a {
     color: rgba(white,0.5);
     text-decoration: none;
     font-size: 0.85rem;
     transition: color 0.2s;
+    border-radius: 4px;
+    outline: none;
     &:hover { color: $text-primary; }
+    &:focus { color: $text-primary; }
+    &:focus-visible {
+      color: $text-primary;
+      box-shadow: 0 0 0 2px var(--accent-primary);
+      outline: 2px solid transparent;
+      outline-offset: 3px;
+    }
   }
 }
 

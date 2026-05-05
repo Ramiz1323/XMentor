@@ -88,14 +88,26 @@ const CommunityList = () => {
   };
 
   if (error) {
+    const isAuthError = /token|authorized|unauthori[sz]ed/i.test(error);
     return (
       <div className="error-container" style={{ textAlign: 'center', padding: '10rem 2rem' }}>
         <AlertCircle size={48} color="#ef4444" style={{ marginBottom: '1.5rem' }} />
         <h2 className="glow-text">Signal Interference Detected</h2>
         <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '2rem' }}>{error}</p>
-        <button onClick={fetchAllCommunities} className="btn-primary">
-          <RefreshCw size={18} /> Retry Sync
-        </button>
+        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button onClick={fetchAllCommunities} className="btn-primary">
+            <RefreshCw size={18} /> Retry Sync
+          </button>
+          {isAuthError && (
+            <button
+              onClick={async () => { await useAuthStore.getState().logout(); navigate('/login'); }}
+              className="btn-primary"
+              style={{ background: 'linear-gradient(135deg,#ef4444,#f97316)' }}
+            >
+              <LogIn size={18} /> Login Again
+            </button>
+          )}
+        </div>
       </div>
     );
   }

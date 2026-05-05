@@ -46,7 +46,7 @@ const AuthRoute = ({ children }) => {
 };
 
 function AppContent({ isAuthenticated }) {
-  const { isServerDown, isLoading, user } = useAuthStore();
+  const { isServerDown, isLoading, user, authChecked } = useAuthStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
 
@@ -70,7 +70,8 @@ function AppContent({ isAuthenticated }) {
   const isMCQTestPage = /^\/mcq\/[^\/]+$/.test(location.pathname) &&
     location.pathname !== '/mcq/create';
 
-  const isLandingPage = location.pathname === '/' && !isAuthenticated;
+  // Only show the landing page once we know the user is definitely NOT authenticated
+  const isLandingPage = location.pathname === '/' && authChecked && !isAuthenticated;
 
   return (
     <div className={`app-container ${isAuthenticated ? 'with-sidebar' : isLandingPage ? 'landing-mode' : 'auth-mode'} ${isSidebarOpen ? 'sidebar-open' : ''} ${isMCQTestPage ? 'tactical-mode' : ''} theme-${user?.theme || 'blue'}`}>
@@ -88,9 +89,11 @@ function AppContent({ isAuthenticated }) {
               <Route path="/register" element={<AuthRoute><RegisterPage /></AuthRoute>} />
 
               <Route path="/" element={
-                isAuthenticated
-                  ? <ProtectedRoute><Dashboard /></ProtectedRoute>
-                  : <LandingPage />
+                !authChecked
+                  ? null
+                  : isAuthenticated
+                    ? <ProtectedRoute><Dashboard /></ProtectedRoute>
+                    : <LandingPage />
               } />
               <Route path="/communities" element={<ProtectedRoute><CommunityList /></ProtectedRoute>} />
               <Route path="/communities/:id/chat" element={<ProtectedRoute><ChatRoom /></ProtectedRoute>} />
