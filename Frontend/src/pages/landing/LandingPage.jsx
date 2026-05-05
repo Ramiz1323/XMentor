@@ -67,8 +67,8 @@ const LandingPage = () => {
   ];
 
   const stats = [
-    { value: '3', label: 'Active Teachers', icon: <Users size={20} /> },
-    { value: '30+', label: 'Real Students', icon: <Star size={20} /> },
+    { value: 'Multi', label: 'Active Teachers', icon: <Users size={20} /> },
+    { value: 'Many+', label: 'Real Students', icon: <Star size={20} /> },
     { value: '2', label: 'Exam Types', icon: <Layers size={20} /> },
     { value: 'Live', label: 'Production Deployed', icon: <Globe size={20} /> },
   ];

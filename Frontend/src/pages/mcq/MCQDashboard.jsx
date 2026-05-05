@@ -539,9 +539,17 @@ const MCQDashboard = () => {
             <p className="error-text">{error}</p>
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
               <button onClick={fetchMyTests} className="btn-primary">Retry Sync</button>
-              {/token|authorized|unauthori[sz]ed/i.test(error) && (
+              {/\btoken\b|\bunauthori[sz]ed\b/i.test(error) && (
                 <button
-                  onClick={async () => { await useAuthStore.getState().logout(); window.location.href = '/login'; }}
+                  onClick={async () => {
+                    try {
+                      await useAuthStore.getState().logout();
+                    } catch (e) {
+                      console.error('Logout failed during session recovery', e);
+                    } finally {
+                      window.location.href = '/login';
+                    }
+                  }}
                   className="btn-primary"
                   style={{ background: 'linear-gradient(135deg,#ef4444,#f97316)' }}
                 >
