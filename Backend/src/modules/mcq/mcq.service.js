@@ -180,39 +180,103 @@ export const getTestsByCommunity = async (communityId) => {
     .lean();
 };
 
-export const getAssignedTests = async (userId) => {
-  // Find tests created by teacher OR tests where student is in assignedStudents
-  const tests = await MCQTest.find({
+export const getAssignedTests = async (userId, query = {}) => {
+  const { page = 1, limit = 10, search = '', subject = 'ALL', status = 'ALL' } = query;
+  const skip = (page - 1) * limit;
+
+  // Build match stage
+  const match = {
     $or: [
       { createdBy: userId },
       { assignedStudents: userId }
     ]
-  })
-    .select('title subject totalQuestions duration hasTimer deadline language createdAt createdBy')
-    .populate('createdBy', 'name profilePic')
-    .sort({ createdAt: -1 })
-    .lean();
+  };
 
-  // For each test, check if the current user has already submitted a result
-  const results = await MCQResult.find({
-    studentId: userId,
-    testId: { $in: tests.map(t => t._id) }
-  }).lean();
+  if (search) {
+    match.title = { $regex: search, $options: 'i' };
+  }
 
-  const resultsMap = results.reduce((acc, r) => {
-    acc[r.testId.toString()] = r;
-    return acc;
-  }, {});
+  if (subject !== 'ALL') {
+    match.subject = subject;
+  }
 
-  return tests.map(test => {
-    const userResult = resultsMap[test._id.toString()];
-    return {
-      ...test,
-      isSubmitted: userResult ? (!userResult.status || userResult.status === 'COMPLETED') : false,
-      isPaused: userResult ? userResult.status === 'IN_PROGRESS' : false,
-      result: userResult || null
-    };
-  });
+  // Use aggregation to join with results for status filtering
+  const pipeline = [
+    { $match: match },
+    {
+      $lookup: {
+        from: 'mcqresults',
+        let: { testId: '$_id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$testId', '$$testId'] },
+                  { $eq: ['$studentId', userId] }
+                ]
+              }
+            }
+          }
+        ],
+        as: 'userResult'
+      }
+    },
+    {
+      $addFields: {
+        result: { $arrayElemAt: ['$userResult', 0] }
+      }
+    },
+    {
+      $addFields: {
+        isSubmitted: {
+          $cond: {
+            if: { $and: ['$result', { $or: [{ $eq: ['$result.status', 'COMPLETED'] }, { $not: ['$result.status'] }] }] },
+            then: true,
+            else: false
+          }
+        },
+        isPaused: {
+          $cond: {
+            if: { $eq: ['$result.status', 'IN_PROGRESS'] },
+            then: true,
+            else: false
+          }
+        }
+      }
+    }
+  ];
+
+  // Apply status filter
+  if (status === 'COMPLETED') {
+    pipeline.push({ $match: { isSubmitted: true } });
+  } else if (status === 'PENDING') {
+    pipeline.push({ $match: { isSubmitted: false } });
+  }
+
+  // Total count for pagination
+  const totalResults = await MCQTest.aggregate([...pipeline, { $count: 'count' }]);
+  const total = totalResults.length > 0 ? totalResults[0].count : 0;
+
+  // Sorting and Pagination
+  pipeline.push({ $sort: { createdAt: -1 } });
+  pipeline.push({ $skip: skip });
+  pipeline.push({ $limit: parseInt(limit) });
+
+  // Populate creator info (Aggregation doesn't support populate, so we use another lookup or map later)
+  // Let's use map for simplicity after aggregate
+  const tests = await MCQTest.aggregate(pipeline);
+  
+  // Populate creator manually
+  const populatedTests = await MCQTest.populate(tests, { path: 'createdBy', select: 'name profilePic' });
+
+  return {
+    data: populatedTests,
+    total,
+    page: parseInt(page),
+    limit: parseInt(limit),
+    hasMore: skip + populatedTests.length < total
+  };
 };
 
 export const getTestAnalytics = async (testId, teacherId) => {

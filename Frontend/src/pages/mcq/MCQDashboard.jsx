@@ -1,22 +1,70 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
 import useMCQStore from '../../store/useMCQStore';
 import useUserStore from '../../store/useUserStore';
-import { Plus, BookOpen, Clock, Target, Users, TrendingUp, Star, CheckCircle, Trash2, UserPlus, X, Eye, Play, RefreshCw } from 'lucide-react';
+import { Plus, BookOpen, Clock, Target, Users, TrendingUp, Star, CheckCircle, Trash2, UserPlus, X, Eye, Play, RefreshCw, Search, Filter, ChevronDown } from 'lucide-react';
 import TaskSkeleton from '../../components/skeletons/TaskSkeleton';
 import LoadingOverlay from '../../components/ui/LoadingOverlay';
 import SEO from '../../components/common/SEO';
 
+const TacticalSelect = ({ value, onChange, options, icon: Icon, placeholder }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find(opt => opt.value === value) || options[0];
+
+  return (
+    <div className="tactical-select-container" ref={dropdownRef}>
+      <div 
+        className={`select-trigger ${isOpen ? 'active' : ''}`} 
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        {Icon && <Icon size={16} className="trigger-icon" />}
+        <span className="current-value">{selectedOption.label}</span>
+        <ChevronDown size={14} className={`arrow-icon ${isOpen ? 'rotate' : ''}`} />
+      </div>
+
+      {isOpen && (
+        <div className="select-dropdown">
+          {options.map((opt) => (
+            <div 
+              key={opt.value} 
+              className={`select-option ${value === opt.value ? 'selected' : ''}`}
+              onClick={() => {
+                onChange(opt.value);
+                setIsOpen(false);
+              }}
+            >
+              {opt.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const MCQDashboard = () => {
   const { user } = useAuthStore();
-  const { tests, fetchMyTests, fetchTeacherOverview, assignToStudents, deleteTest, isLoading, error } = useMCQStore();
+  const { tests, hasMore, fetchMyTests, fetchTeacherOverview, assignToStudents, deleteTest, isLoading, isLoadingMore, error, filters, setFilters, total } = useMCQStore();
   const { profile, fetchProfile } = useUserStore();
   
   const [viewMode, setViewMode] = useState('TASK_WISE');
   const [overviewData, setOverviewData] = useState(null);
   const [expandedStudentId, setExpandedStudentId] = useState(null);
   const [assigningTask, setAssigningTask] = useState(null);
+  const [searchLocal, setSearchLocal] = useState(filters.search);
 
   useEffect(() => {
     fetchMyTests();
@@ -29,7 +77,41 @@ const MCQDashboard = () => {
           setOverviewData(null);
         });
     }
-  }, [fetchMyTests, fetchTeacherOverview, fetchProfile, user?.role]);
+  }, [user?.role]); // Only refetch on mount or role change
+
+  // Debounced Search & Filter effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchLocal !== filters.search) {
+        setFilters({ search: searchLocal });
+        fetchMyTests();
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchLocal]);
+
+  const handleSubjectChange = (subject) => {
+    setFilters({ subject });
+    fetchMyTests();
+  };
+
+  const handleLoadMore = () => {
+    if (hasMore && !isLoadingMore) {
+      fetchMyTests(true);
+    }
+  };
+
+  const observer = useRef();
+  const lastElementRef = useCallback(node => {
+    if (isLoading || isLoadingMore) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        handleLoadMore();
+      }
+    });
+    if (node) observer.current.observe(node);
+  }, [isLoading, isLoadingMore, hasMore]);
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this MCQ test? This action cannot be undone and all student results will be permanently removed.')) {
@@ -247,7 +329,6 @@ const MCQDashboard = () => {
   const pendingTests = (tests || []).filter(t => !t.isSubmitted);
   const completedTests = (tests || []).filter(t => t.isSubmitted);
 
-  if (isLoading && tests.length === 0) return <LoadingOverlay />;
 
   const StudentWiseView = ({ data }) => {
     if (!data || !data.studentStats) return <div className="loading-msg">Loading strategic cohort intelligence...</div>;
@@ -493,44 +574,106 @@ const MCQDashboard = () => {
           <>
             {user?.role === 'STUDENT' && <StudentAnalytics tests={tests} />}
 
-            <section className="dashboard-section">
-              <div className="section-header">
-                <h2 className="section-title">
-                   <Clock size={22} /> 
-                   <span>Pending Missions</span>
-                   <span className="count-badge">{pendingTests.length}</span>
-                </h2>
+            {/* Tactical Filter Bar - Placed after analytics for Students, at top for Teachers */}
+            <div className="tactical-filter-bar">
+              <div className="search-box">
+                <Search size={18} className="search-icon" />
+                <input 
+                  type="text" 
+                  placeholder="Scan frequency for specific mission title..." 
+                  value={searchLocal}
+                  onChange={(e) => setSearchLocal(e.target.value)}
+                />
               </div>
               
-              {isLoading ? (
-                <div className="hub-grid">
-                  {[...Array(3)].map((_, i) => <TaskSkeleton key={i} />)}
-                </div>
-              ) : pendingTests.length > 0 ? (
-                <div className="hub-grid">
-                  {pendingTests.map(test => <TaskCard key={test._id} test={test} />)}
-                </div>
-              ) : (
-                <div className="empty-section-msg">
-                  <p>No pending tasks. Sector clear.</p>
-                </div>
-              )}
-            </section>
+              <div className="filter-group">
+                <TacticalSelect 
+                  value={filters.status || 'ALL'}
+                  icon={Filter}
+                  onChange={(val) => {
+                    setFilters({ status: val });
+                    fetchMyTests();
+                  }}
+                  options={[
+                    { value: 'ALL', label: 'All Status' },
+                    { value: 'PENDING', label: 'Pending Only' },
+                    { value: 'COMPLETED', label: 'Completed Only' }
+                  ]}
+                />
 
-            {completedTests.length > 0 && (
+                <TacticalSelect 
+                  value={filters.subject}
+                  icon={BookOpen}
+                  onChange={handleSubjectChange}
+                  options={[
+                    { value: 'ALL', label: 'All Subjects' },
+                    ...['MATHS', 'SCIENCE', 'PHYSICS', 'CHEMISTRY', 'BIOLOGY', 'HISTORY', 'GEOGRAPHY', 'ENGLISH', 'BENGALI', 'HINDI', 'COMPUTER', 'CODING', 'OTHERS'].map(sub => ({
+                      value: sub,
+                      label: sub
+                    }))
+                  ]}
+                />
+              </div>
+            </div>
+
+            {/* TEACHER ROLE: Hide Pending Missions as they don't take tests normally */}
+            {user?.role === 'STUDENT' && (
               <section className="dashboard-section">
                 <div className="section-header">
-                  <h2 className="section-title completed">
-                     <Target size={22} /> 
-                     <span>COMPLETED MISSIONS</span>
-                     <span className="count-badge">{completedTests.length}</span>
+                  <h2 className="section-title">
+                     <Clock size={22} /> 
+                     <span>Pending Missions</span>
+                     <span className="count-badge">{pendingTests.length}</span>
                   </h2>
                 </div>
+                
                 <div className="hub-grid">
-                  {completedTests.map(test => <TaskCard key={test._id} test={test} />)}
+                  {isLoading ? (
+                    [...Array(3)].map((_, i) => <TaskSkeleton key={i} />)
+                  ) : pendingTests.length > 0 ? (
+                    pendingTests.map(test => <TaskCard key={test._id} test={test} />)
+                  ) : (
+                    <div className="empty-section-msg">
+                      <p>No pending tasks. Sector clear.</p>
+                    </div>
+                  )}
                 </div>
               </section>
             )}
+
+            <section className="dashboard-section">
+              <div className="section-header">
+                <h2 className="section-title completed">
+                   <Target size={22} /> 
+                   <span>{user?.role === 'TEACHER' ? 'ACTIVE MISSIONS' : 'COMPLETED MISSIONS'}</span>
+                   <span className="count-badge">{user?.role === 'TEACHER' ? total : completedTests.length}</span>
+                </h2>
+              </div>
+              
+              <div className="hub-grid">
+                {isLoading ? (
+                  [...Array(6)].map((_, i) => <TaskSkeleton key={i} />)
+                ) : (
+                  <>
+                    {(user?.role === 'TEACHER' ? tests : completedTests).map(test => (
+                      <TaskCard key={test._id} test={test} />
+                    ))}
+                    {isLoadingMore && [...Array(3)].map((_, i) => <TaskSkeleton key={i} />)}
+                  </>
+                )}
+              </div>
+
+              {/* Infinite Scroll Trigger */}
+              {hasMore && (
+                <div className="load-more-container" ref={lastElementRef}>
+                  {!isLoadingMore && (
+                    <button className="btn-load-more" onClick={handleLoadMore}>
+                      <RefreshCw size={18} /> Load More Tactical Data
+                    </button>
+                  )}
+                </div>
+              )}
+            </section>
           </>
         )}
         

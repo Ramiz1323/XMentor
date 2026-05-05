@@ -6,8 +6,12 @@ const mcqService = {
     return data;
   },
 
-  getMyTests: async () => {
-    const { data } = await api.get(`/mcq/my-tests?t=${Date.now()}`);
+  getMyTests: async (params = {}) => {
+    const query = new URLSearchParams({
+      ...params,
+      t: Date.now()
+    }).toString();
+    const { data } = await api.get(`/mcq/my-tests?${query}`);
     return data;
   },
 

@@ -25,6 +25,7 @@ const MCQTest = () => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [showNextConfirm, setShowNextConfirm] = useState(false);
   const [visited, setVisited] = useState([]);
   const [pausesUsed, setPausesUsed] = useState(0);
 
@@ -343,6 +344,14 @@ const MCQTest = () => {
     setAnswers(newAnswers);
   };
 
+  const handleNext = () => {
+    if (test?.pauseLimit > 0) {
+      setShowNextConfirm(true);
+    } else {
+      setCurrentIdx(prev => prev + 1);
+    }
+  };
+
   const TestSkeleton = () => (
     <div className="mcq-page">
       <header>
@@ -539,6 +548,36 @@ const MCQTest = () => {
           </div>
         </div>
       )}
+
+      {/* NEXT NAVIGATION CONFIRMATION MODAL */}
+      {showNextConfirm && (
+        <div className="result-modal-overlay security-overlay">
+          <div className="result-modal-card glass-card">
+            <div className="modal-header">
+              <div className="trophy-wrapper security-icon-wrapper-yellow">
+                <HelpCircle size={48} className="warning-icon" />
+              </div>
+              <h2 className="glow-text">Proceed to Next Question?</h2>
+              <p className="security-msg">
+                In this tactical assessment, <span className="danger-text">BACKWARD NAVIGATION IS DISABLED</span>. 
+                Ensure your answer for the current node is finalized before proceeding.
+              </p>
+            </div>
+            <div className="modal-footer flex-row gap-4">
+              <button className="btn-sec full-width" onClick={() => setShowNextConfirm(false)}>Stay Here</button>
+              <button 
+                className="btn-primary full-width" 
+                onClick={() => {
+                  setShowNextConfirm(false);
+                  setCurrentIdx(prev => prev + 1);
+                }}
+              >
+                Confirm & Proceed
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {showResultModal && result && (
         <div className="result-modal-overlay">
           <div className="result-modal-card glass-card">
@@ -687,6 +726,13 @@ const MCQTest = () => {
               </div>
             )}
 
+            {test.pauseLimit > 0 && !result && (
+              <div className="nav-restriction-warning">
+                <AlertCircle size={14} />
+                <span>Tactical Restriction: Backward navigation disabled. Finalize current node before proceeding.</span>
+              </div>
+            )}
+
             <div className="navigation-footer">
               <button
                 disabled={currentIdx === 0 || test.pauseLimit > 0}
@@ -704,7 +750,7 @@ const MCQTest = () => {
                 )
               ) : (
                 <button
-                  onClick={() => setCurrentIdx(prev => prev + 1)}
+                  onClick={handleNext}
                   className="nav-btn"
                 >
                   Next <ArrowRight size={18} />

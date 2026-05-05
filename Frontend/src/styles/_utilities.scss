@@ -29,6 +29,23 @@
   flex-direction: column;
 }
 
+@mixin custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  }
+}
+
 @mixin container {
   max-width: 1200px;
   margin: 0 auto;
@@ -371,28 +388,49 @@
   to { opacity: 1; transform: translateY(0); }
 }
 @keyframes shimmer {
-  0% { background-position: -468px 0; }
-  100% { background-position: 468px 0; }
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
 }
 
 .skeleton {
-  background: rgba(white, 0.08);
+  background: rgba(white, 0.05);
   background-image: linear-gradient(
     90deg, 
     rgba(white, 0) 0%, 
-    alpha($accent-primary, 0.05) 20%, 
-    alpha($accent-primary, 0.1) 60%, 
+    alpha($accent-primary, 0.08) 35%, 
+    alpha($accent-primary, 0.15) 50%, 
+    alpha($accent-primary, 0.08) 65%, 
     rgba(white, 0) 100%
   );
-  background-size: 800px 100%;
+  background-size: 1000px 100%;
   background-repeat: no-repeat;
   display: inline-block;
   line-height: 1;
   border-radius: 4px;
   animation: shimmer 2s infinite linear;
+  position: relative;
+  overflow: hidden;
   
   &.circle { border-radius: 50%; }
   &.rect { border-radius: 8px; }
+
+  // Subtle pulsing glow for added tactical feel
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: alpha($accent-primary, 0.02);
+    animation: skeleton-pulse 2s infinite ease-in-out;
+  }
+}
+
+@keyframes skeleton-pulse {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
 }
 
 /* Loading Overlay */

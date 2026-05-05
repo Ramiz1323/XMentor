@@ -104,7 +104,7 @@ export const getByCommunity = asyncHandler(async (req, res) => {
 });
 
 export const getMine = asyncHandler(async (req, res) => {
-  const tests = await mcqService.getAssignedTests(req.user._id);
+  const tests = await mcqService.getAssignedTests(req.user._id, req.query);
   
   res.status(200).json({
     success: true,

@@ -4,22 +4,57 @@ import mcqService from '../services/mcq.service';
 
 const useMCQStore = create((set) => ({
       tests: [],
+      hasMore: true,
+      page: 1,
       currentTest: null,
       analytics: null,
       isLoading: false,
+      isLoadingMore: false,
       error: null,
+      total: 0,
+      filters: { search: '', subject: 'ALL' },
 
-      fetchMyTests: async () => {
+      fetchMyTests: async (isLoadMore = false) => {
         try {
-          set({ isLoading: true, error: null });
-          const data = await mcqService.getMyTests();
-          set({ tests: data.data });
+          const state = useMCQStore.getState();
+          if (isLoadMore) {
+            set({ isLoadingMore: true });
+          } else {
+            set({ isLoading: true, error: null, page: 1 });
+          }
+
+          const currentPage = isLoadMore ? state.page + 1 : 1;
+          const data = await mcqService.getMyTests({
+            page: currentPage,
+            limit: 10,
+            ...state.filters
+          });
+
+          const newTests = data.data.data;
+          
+          set((state) => ({
+            tests: isLoadMore ? [...state.tests, ...newTests] : newTests,
+            total: data.data.total,
+            hasMore: data.data.hasMore,
+            page: currentPage
+          }));
         } catch (err) {
           set({ error: err.message || 'Failed to fetch tests' });
         } finally {
-          set({ isLoading: false });
+          set({ isLoading: false, isLoadingMore: false });
         }
       },
+
+      setFilters: (newFilters) => {
+        set((state) => ({ 
+          filters: { ...state.filters, ...newFilters },
+          tests: [], // Clear existing tests when filters change
+          page: 1,
+          hasMore: true
+        }));
+      },
+
+      resetTests: () => set({ tests: [], page: 1, hasMore: true, total: 0 }),
 
       fetchTestsByCommunity: async (communityId) => {
         try {
