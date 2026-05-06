@@ -20,7 +20,7 @@ const Dashboard = () => {
     }
   }, [fetchStats, fetchMyTests, user?.role]);
 
-  const pendingTests = (tests || []).filter(t => !t.isSubmitted).slice(0, 3);
+  const pendingTests = (Array.isArray(tests) ? tests : []).filter(t => !t.isSubmitted).slice(0, 3);
 
   if (isLoading && !stats?.mcq) return <LoadingOverlay />;
 

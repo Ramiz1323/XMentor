@@ -30,12 +30,12 @@ const useMCQStore = create((set) => ({
             ...state.filters
           });
 
-          const newTests = data.data.data;
+          const newTests = Array.isArray(data.data?.data) ? data.data.data : [];
           
           set((state) => ({
-            tests: isLoadMore ? [...state.tests, ...newTests] : newTests,
-            total: data.data.total,
-            hasMore: data.data.hasMore,
+            tests: isLoadMore ? [...(Array.isArray(state.tests) ? state.tests : []), ...newTests] : newTests,
+            total: data.data?.total || 0,
+            hasMore: !!data.data?.hasMore,
             page: currentPage
           }));
         } catch (err) {
@@ -60,7 +60,7 @@ const useMCQStore = create((set) => ({
         try {
           set({ isLoading: true, error: null });
           const data = await mcqService.getTestsByCommunity(communityId);
-          set({ tests: data.data });
+          set({ tests: Array.isArray(data.data) ? data.data : [] });
         } catch (err) {
           set({ error: err.message || 'Failed to fetch community tests' });
         } finally {
@@ -153,18 +153,24 @@ const useMCQStore = create((set) => ({
       createdBy: { name: 'You (Mentor)' }
     };
 
-    set((state) => ({ tests: [optimisticTest, ...state.tests], isLoading: true, error: null }));
+    set((state) => ({ 
+      tests: [optimisticTest, ...(Array.isArray(state.tests) ? state.tests : [])], 
+      isLoading: true, 
+      error: null 
+    }));
 
     try {
       const data = await mcqService.createTest(testData);
       set((state) => ({
-        tests: state.communities ? state.tests.map(t => t._id === tempId ? data.data : t) : [data.data, ...state.tests],
+        tests: state.communities 
+          ? (Array.isArray(state.tests) ? state.tests : []).map(t => t._id === tempId ? data.data : t) 
+          : [data.data, ...(Array.isArray(state.tests) ? state.tests : [])],
         isLoading: false
       }));
       return data;
     } catch (err) {
       set((state) => ({
-        tests: state.tests.filter(t => t._id !== tempId),
+        tests: (Array.isArray(state.tests) ? state.tests : []).filter(t => t._id !== tempId),
         isLoading: false,
         error: err.message || 'Failed to create test'
       }));
@@ -175,7 +181,7 @@ const useMCQStore = create((set) => ({
   deleteTest: async (id) => {
     const previousTests = [...useMCQStore.getState().tests];
     set((state) => ({
-      tests: state.tests.filter(t => t._id !== id)
+      tests: (Array.isArray(state.tests) ? state.tests : []).filter(t => t._id !== id)
     }));
 
     try {

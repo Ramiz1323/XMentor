@@ -326,8 +326,8 @@ const MCQDashboard = () => {
     );
   };
 
-  const pendingTests = (tests || []).filter(t => !t.isSubmitted);
-  const completedTests = (tests || []).filter(t => t.isSubmitted);
+  const pendingTests = (Array.isArray(tests) ? tests : []).filter(t => !t.isSubmitted);
+  const completedTests = (Array.isArray(tests) ? tests : []).filter(t => t.isSubmitted);
 
 
   const StudentWiseView = ({ data }) => {
@@ -431,7 +431,7 @@ const MCQDashboard = () => {
   };
 
   const StudentAnalytics = ({ tests }) => {
-    const completed = (tests || []).filter(t => t.isSubmitted);
+    const completed = (Array.isArray(tests) ? tests : []).filter(t => t.isSubmitted);
     if (completed.length === 0) return null;
 
     // Calculate metrics
