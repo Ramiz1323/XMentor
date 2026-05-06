@@ -609,7 +609,7 @@
   h3 { font-family: $font-family-display; font-size: 1rem; margin: 1rem 0 0.5rem; }
   p  { font-size: 0.88rem; line-height: 1.65; color: $text-secondary; }
 
-  $colors: (cyan: #22d3ee, purple: #8b5cf6, blue: #3b82f6, amber: #f59e0b, green: #22c55e, red: #ef4444);
+  $colors: ("cyan": #22d3ee, "purple": #8b5cf6, "blue": #3b82f6, "amber": #f59e0b, "green": #22c55e, "red": #ef4444);
   @each $name, $hex in $colors {
     &--#{$name} {
       &:hover { border-color: rgba($hex, 0.3); box-shadow: 0 20px 60px rgba($hex, 0.1); }
@@ -624,7 +624,7 @@
   align-items: center;
   justify-content: center;
 
-  $colors: (cyan: #22d3ee, purple: #8b5cf6, blue: #3b82f6, amber: #f59e0b, green: #22c55e, red: #ef4444);
+  $colors: ("cyan": #22d3ee, "purple": #8b5cf6, "blue": #3b82f6, "amber": #f59e0b, "green": #22c55e, "red": #ef4444);
   @each $name, $hex in $colors {
     &--#{$name} {
       background: rgba($hex, 0.12);
