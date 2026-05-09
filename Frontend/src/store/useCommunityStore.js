@@ -185,6 +185,27 @@ const useCommunityStore = create((set) => ({
     } finally {
       set({ isLoading: false });
     }
+  },
+
+  inviteMember: async (communityId, studentId, alias) => {
+    try {
+      set({ isLoading: true, error: null });
+      const data = await communityService.inviteMember(communityId, studentId, alias);
+      
+      // Update member count locally if successful
+      set((state) => ({
+        communities: state.communities.map(c => 
+          c._id === communityId ? { ...c, memberCount: (c.memberCount || 0) + 1 } : c
+        )
+      }));
+      
+      return data;
+    } catch (err) {
+      set({ error: err.message || 'Failed to invite student' });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
   }
 }));
 

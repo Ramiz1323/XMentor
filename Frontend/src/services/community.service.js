@@ -44,6 +44,11 @@ const communityService = {
   verifyPasscode: async (id, passcode) => {
     const { data } = await api.post(`/community/${id}/verify-passcode`, { passcode });
     return data;
+  },
+  
+  inviteMember: async (id, studentId, alias) => {
+    const { data } = await api.post(`/community/${id}/invite`, { studentId, alias });
+    return data;
   }
 };
 

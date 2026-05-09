@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
 import useCommunityStore from '../../store/useCommunityStore';
-import { Users, LogIn, LogOut, RefreshCw, AlertCircle, MessageSquare, X, Plus, Trash2 } from 'lucide-react';
+import useUserStore from '../../store/useUserStore';
+import { Users, LogIn, LogOut, RefreshCw, AlertCircle, MessageSquare, X, Plus, Trash2, UserPlus } from 'lucide-react';
 import CommunitySkeleton from '../../components/skeletons/CommunitySkeleton';
 import LoadingOverlay from '../../components/ui/LoadingOverlay';
 
@@ -14,20 +15,41 @@ const CommunityList = () => {
     leaveCommunity, 
     createCommunity,
     deleteCommunity,
+    inviteMember,
     isLoading, 
     error 
   } = useCommunityStore();
-  const [actionLoading, setActionLoading] = useState({}); 
-  const [showAliasModal, setShowAliasModal] = useState(null); 
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [aliasInput, setAliasInput] = useState('');
-  const [createData, setCreateData] = useState({ name: '', description: '', type: 'BOARD', alias: 'Mentor' });
+  
+  const { profile, fetchProfile } = useUserStore();
   const { user } = useAuthStore();
   const navigate = useNavigate();
 
+  const [actionLoading, setActionLoading] = useState({}); 
+  const [showAliasModal, setShowAliasModal] = useState(null); 
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(null); // stores community object
+  const [aliasInput, setAliasInput] = useState('');
+  const [createData, setCreateData] = useState({ name: '', description: '', type: 'BOARD', alias: 'Mentor' });
+
+  const handleInvite = async (studentId) => {
+    if (!showInviteModal) return;
+    try {
+      setActionLoading(prev => ({ ...prev, [studentId]: true }));
+      await inviteMember(showInviteModal._id, studentId, 'Recruit'); 
+      alert('Student recruited to the hub successfully.');
+    } catch (err) {
+      alert(err.message || 'Invitation failed');
+    } finally {
+      setActionLoading(prev => ({ ...prev, [studentId]: false }));
+    }
+  };
+
   useEffect(() => {
     fetchAllCommunities();
-  }, [fetchAllCommunities]);
+    if (user?.role === 'TEACHER') {
+      fetchProfile();
+    }
+  }, [fetchAllCommunities, fetchProfile, user?.role]);
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -175,6 +197,16 @@ const CommunityList = () => {
 
                     {isCreator && (
                       <button 
+                        onClick={() => setShowInviteModal(community)} 
+                        className="leave-btn-icon invite-btn"
+                        title="Recruit Students to Hub"
+                      >
+                        <UserPlus size={18} />
+                      </button>
+                    )}
+
+                    {isCreator && (
+                      <button 
                         onClick={() => handleLeave(community._id, true)} 
                         disabled={isLoadingAction}
                         className={`leave-btn-icon delete-btn ${isLoadingAction ? 'loading' : ''}`}
@@ -287,6 +319,43 @@ const CommunityList = () => {
                 {actionLoading.creating ? 'Initializing...' : 'Manifest Hub'}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showInviteModal && (
+        <div className="modal-overlay">
+          <div className="glass-card invite-modal">
+            <div className="modal-header">
+              <h3>Recruit to: {showInviteModal.name}</h3>
+              <button onClick={() => setShowInviteModal(null)} className="close-btn"><X size={20} /></button>
+            </div>
+            <p>Deploy access tokens to your recruited students for this secure channel.</p>
+            
+            <div className="student-invite-list">
+              {profile?.students?.length === 0 ? (
+                <div className="empty-msg">No students available for recruitment. Recruit students from your profile first.</div>
+              ) : (
+                profile?.students?.map(student => (
+                  <div key={student._id} className="student-invite-item">
+                    <div className="student-info">
+                      <div className="avatar">{student.name[0]}</div>
+                      <div className="text">
+                        <div className="name">{student.name}</div>
+                        <div className="handle">@{student.username}</div>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => handleInvite(student._id)}
+                      disabled={actionLoading[student._id]}
+                      className="btn-sec recruit-btn"
+                    >
+                      {actionLoading[student._id] ? 'Recruiting...' : 'Recruit'}
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       )}

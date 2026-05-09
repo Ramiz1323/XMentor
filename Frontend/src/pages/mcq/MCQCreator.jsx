@@ -246,15 +246,17 @@ Weightage: ${importData.marksPerQ} Marks per question
 Instruction: ${complexityTxt}
 ${subjectSpecificRules}
 
-CRITICAL FORMATTING RULES:
+CRITICAL FORMATTING & ACCURACY RULES:
 1. Output MUST be a valid JSON array of objects ONLY.
 2. NO conversational text, NO intro, NO outro, NO markdown code blocks (NO \`\`\`json).
 3. ALL mathematical expressions MUST be wrapped in LaTeX delimiters ($...$ for inline, $$...$$ for block).
-4. **JSON ESCAPING**: Use DOUBLE backslashes for all LaTeX commands in the JSON string (e.g., "\\\\frac{a}{b}", "\\\\sin", "\\\\theta"). Single backslashes will break the JSON parse.
-5. **ACCURACY CHECK**: Perform a mental "Chain of Thought" to verify the mathematical/scientific logic before picking the "answer" index. The correct answer MUST be present in the "options" array.
-6. Ensure options are exactly 4 unique strings in an array.
-7. The "answer" field MUST be an integer from 0 to 3 representing the index of the correct option.
-8. The "explanation" should be a clear, tactical breakdown of the correct derivation.
+4. **JSON ESCAPING**: Use DOUBLE backslashes for all LaTeX commands in the JSON string (e.g., "\\\\frac{a}{b}", "\\\\sin", "\\\\theta").
+5. **ELIMINATE POSITION BIAS**: Randomly distribute the correct answer across indices 0, 1, 2, and 3. DO NOT always make the first or second option correct.
+6. **DOUBLE-VERIFICATION MANDATE**: You MUST double-check every question and its corresponding answer for 100% accuracy. Perform a secondary mental "Chain of Thought" audit to ensure the "answer" index precisely matches the correct mathematical/scientific solution among the options. 
+7. **ZERO TOLERANCE**: No incorrect answers or logical fallacies will be entertained. The solution provided in the "explanation" MUST logically lead to the option at the specified "answer" index.
+8. Ensure options are exactly 4 unique, plausible, but distinct strings.
+9. The "answer" field MUST be an integer from 0 to 3.
+10. The "explanation" should be a clear, tactical breakdown of the correct derivation.
 
 JSON SCHEMA: 
 [{"question": "string", "options": ["string", "string", "string", "string"], "answer": integer, "explanation": "string"}]
