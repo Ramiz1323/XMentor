@@ -5,7 +5,7 @@
  */
 export const deterministicShuffle = (array, seed) => {
   if (!array || !Array.isArray(array)) return [];
-  if (!seed) return array;
+  if (!seed) return [...array];
 
   // Create a copy to avoid mutating the original
   const shuffled = [...array];
@@ -14,12 +14,12 @@ export const deterministicShuffle = (array, seed) => {
   let seedNum = 0;
   for (let i = 0; i < seed.length; i++) {
     seedNum = ((seedNum << 5) - seedNum) + seed.charCodeAt(i);
-    seedNum |= 0; // Convert to 32bit integer
+    seedNum = seedNum >>> 0; // Convert to unsigned 32bit integer
   }
 
   // Linear Congruential Generator (simple PRNG)
   const random = () => {
-    seedNum = (seedNum * 1664525 + 1013904223) % 4294967296;
+    seedNum = (seedNum * 1664525 + 1013904223) >>> 0;
     return seedNum / 4294967296;
   };
 

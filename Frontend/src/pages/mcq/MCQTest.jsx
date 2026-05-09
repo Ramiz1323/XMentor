@@ -345,7 +345,7 @@ const MCQTest = () => {
   };
 
   const handleNext = () => {
-    if (test?.pauseLimit > 0) {
+    if (test?.pauseLimit > 0 && !result) {
       setShowNextConfirm(true);
     } else {
       setCurrentIdx(prev => prev + 1);
@@ -735,7 +735,7 @@ const MCQTest = () => {
 
             <div className="navigation-footer">
               <button
-                disabled={currentIdx === 0 || test.pauseLimit > 0}
+                disabled={currentIdx === 0 || (test.pauseLimit > 0 && !result)}
                 onClick={() => setCurrentIdx(prev => prev - 1)}
                 className="nav-btn"
               >
@@ -783,9 +783,9 @@ const MCQTest = () => {
                 <button
                   key={i}
                   className={`grid-item ${status}`}
-                  disabled={test.pauseLimit > 0}
-                  onClick={() => test.pauseLimit === 0 && setCurrentIdx(i)}
-                  title={test.pauseLimit > 0 ? "Sequential navigation only" : `Question ${i + 1}`}
+                  disabled={test.pauseLimit > 0 && !result}
+                  onClick={() => (test.pauseLimit === 0 || result) && setCurrentIdx(i)}
+                  title={test.pauseLimit > 0 && !result ? "Sequential navigation only" : `Question ${i + 1}`}
                 >
                   {i + 1}
                 </button>

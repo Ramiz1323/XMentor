@@ -60,7 +60,7 @@ export const getTestForStudent = async (testId, studentId) => {
       
       const shuffledAnswers = new Array(test.questions.length).fill(-1);
       shuffledIndices.forEach((originalIdx, currentIdx) => {
-        shuffledAnswers[currentIdx] = result.answers[originalIdx];
+        shuffledAnswers[currentIdx] = result.answers[originalIdx] !== undefined ? result.answers[originalIdx] : -1;
       });
 
       progress = {
@@ -81,7 +81,7 @@ export const getTestForStudent = async (testId, studentId) => {
   const shuffledIndices = deterministicShuffle(indices, seed);
   const shuffledAnswers = new Array(test.questions.length).fill(-1);
   shuffledIndices.forEach((originalIdx, currentIdx) => {
-    shuffledAnswers[currentIdx] = result.answers[originalIdx];
+    shuffledAnswers[currentIdx] = result.answers[originalIdx] !== undefined ? result.answers[originalIdx] : -1;
   });
 
   return {
