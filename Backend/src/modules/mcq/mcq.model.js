@@ -133,6 +133,9 @@ const mcqResultSchema = new mongoose.Schema(
     timeLeft: {
       type: Number,
     },
+    shuffleSeed: {
+      type: String,
+    },
   },
   {
     timestamps: true,

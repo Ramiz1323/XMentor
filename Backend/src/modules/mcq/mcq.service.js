@@ -1,5 +1,6 @@
 import { MCQTest, MCQResult } from './mcq.model.js';
 import ErrorResponse from '../../utils/errorResponse.js';
+import { deterministicShuffle } from '../../utils/shuffle.js';
 
 export const createTest = async (testData, teacherId) => {
   const {
@@ -41,24 +42,55 @@ export const getTestForStudent = async (testId, studentId) => {
 
   const result = await MCQResult.findOne({ testId, studentId }).lean();
 
+  const seed = studentId.toString() + testId.toString();
+  const shuffledQuestions = deterministicShuffle(test.questions, seed);
+
   if (!result || result.status === 'IN_PROGRESS') {
-    const sanitizedQuestions = test.questions.map(q => ({
+    const sanitizedQuestions = shuffledQuestions.map(q => ({
       _id: q._id,
       q: q.q,
       options: q.options
     }));
 
+    // If there is progress, re-map the answers to the shuffled order
+    let progress = null;
+    if (result) {
+      const indices = Array.from(Array(test.questions.length).keys());
+      const shuffledIndices = deterministicShuffle(indices, seed);
+      
+      const shuffledAnswers = new Array(test.questions.length).fill(-1);
+      shuffledIndices.forEach((originalIdx, currentIdx) => {
+        shuffledAnswers[currentIdx] = result.answers[originalIdx];
+      });
+
+      progress = {
+        ...result,
+        answers: shuffledAnswers
+      };
+    }
+
     return {
       ...test,
       questions: sanitizedQuestions,
       isSubmitted: result ? (!result.status || result.status === 'COMPLETED') : false,
-      progress: result || null
+      progress
     };
   }
 
+  const indices = Array.from(Array(test.questions.length).keys());
+  const shuffledIndices = deterministicShuffle(indices, seed);
+  const shuffledAnswers = new Array(test.questions.length).fill(-1);
+  shuffledIndices.forEach((originalIdx, currentIdx) => {
+    shuffledAnswers[currentIdx] = result.answers[originalIdx];
+  });
+
   return {
     ...test,
-    result,
+    questions: shuffledQuestions,
+    result: {
+      ...result,
+      answers: shuffledAnswers
+    },
     isSubmitted: true
   };
 };
@@ -71,16 +103,26 @@ export const submitTest = async (testId, studentId, studentAnswers, timeTaken) =
     throw new ErrorResponse(`Expected ${test.totalQuestions} answers, but received ${studentAnswers.length}`, 400);
   }
 
+  // Use the exact same seed to reconstruct the student's question order
+  const seed = studentId.toString() + testId.toString();
+  const shuffledQuestions = deterministicShuffle(test.questions, seed);
+
   let score = 0;
-  test.questions.forEach((question, index) => {
-    // If studentAnswers[index] is -1 or null, it won't match question.correct (0-3)
+  shuffledQuestions.forEach((question, index) => {
     if (studentAnswers[index] === question.correct) {
       score++;
     }
   });
 
+  // Map answers back to original indices before storing in DB
+  const indices = Array.from(Array(test.questions.length).keys());
+  const shuffledIndices = deterministicShuffle(indices, seed);
+  const unShuffledAnswers = new Array(test.questions.length).fill(-1);
+  shuffledIndices.forEach((originalIdx, currentIdx) => {
+    unShuffledAnswers[originalIdx] = studentAnswers[currentIdx];
+  });
+
   try {
-    // Find if there's an existing in-progress result
     let result = await MCQResult.findOne({ testId, studentId });
 
     if (result) {
@@ -88,22 +130,22 @@ export const submitTest = async (testId, studentId, studentAnswers, timeTaken) =
         throw new ErrorResponse('You have already submitted this test', 400);
       }
 
-      // Update existing result
       result.score = score;
       result.timeTaken = timeTaken;
-      result.answers = studentAnswers;
+      result.answers = unShuffledAnswers;
       result.status = 'COMPLETED';
+      result.shuffleSeed = seed;
       await result.save();
     } else {
-      // Create new result
       result = await MCQResult.create({
         testId,
         studentId,
         score,
         total: test.totalQuestions,
         timeTaken,
-        answers: studentAnswers,
-        status: 'COMPLETED'
+        answers: unShuffledAnswers,
+        status: 'COMPLETED',
+        shuffleSeed: seed
       });
     }
 
@@ -121,6 +163,14 @@ export const pauseTest = async (testId, studentId, pauseData) => {
   const test = await MCQTest.findById(testId);
   if (!test) throw new ErrorResponse('Test not found', 404);
 
+  const seed = studentId.toString() + testId.toString();
+  const indices = Array.from(Array(test.questions.length).keys());
+  const shuffledIndices = deterministicShuffle(indices, seed);
+  const unShuffledAnswers = new Array(test.questions.length).fill(-1);
+  shuffledIndices.forEach((originalIdx, currentIdx) => {
+    unShuffledAnswers[originalIdx] = answers[currentIdx];
+  });
+
   let result = await MCQResult.findOne({ testId, studentId });
 
   if (result) {
@@ -132,12 +182,13 @@ export const pauseTest = async (testId, studentId, pauseData) => {
       throw new ErrorResponse('Maximum pause limit reached', 400);
     }
 
-    result.answers = answers;
+    result.answers = unShuffledAnswers;
     result.timeTaken = timeTaken;
     result.currentQuestionIndex = currentQuestionIndex;
     result.timeLeft = timeLeft;
     result.pausesUsed += 1;
     result.status = 'IN_PROGRESS';
+    result.shuffleSeed = seed;
     await result.save();
   } else {
     if (test.pauseLimit === 0) {
@@ -147,19 +198,23 @@ export const pauseTest = async (testId, studentId, pauseData) => {
     result = await MCQResult.create({
       testId,
       studentId,
-      score: 0, // Placeholder
+      score: 0,
       total: test.totalQuestions,
       timeTaken,
-      answers,
+      answers: unShuffledAnswers,
       currentQuestionIndex,
       timeLeft,
       pausesUsed: 1,
-      status: 'IN_PROGRESS'
+      status: 'IN_PROGRESS',
+      shuffleSeed: seed
     });
   }
 
   return result;
 };
+
+
+
 
 export const deleteTest = async (testId, teacherId) => {
   const test = await MCQTest.findById(testId);
