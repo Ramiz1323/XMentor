@@ -52,7 +52,6 @@ export const getTestForStudent = async (testId, studentId) => {
       options: q.options
     }));
 
-    // If there is progress, re-map the answers to the shuffled order
     let progress = null;
     if (result) {
       const indices = Array.from(Array(test.questions.length).keys());
