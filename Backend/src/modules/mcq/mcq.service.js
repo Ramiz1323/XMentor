@@ -101,8 +101,6 @@ export const submitTest = async (testId, studentId, studentAnswers, timeTaken) =
   if (studentAnswers.length !== test.totalQuestions) {
     throw new ErrorResponse(`Expected ${test.totalQuestions} answers, but received ${studentAnswers.length}`, 400);
   }
-
-  // Use the exact same seed to reconstruct the student's question order
   const seed = studentId.toString() + testId.toString();
   const shuffledQuestions = deterministicShuffle(test.questions, seed);
 

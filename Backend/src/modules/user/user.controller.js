@@ -95,3 +95,21 @@ export const savePushSubscription = asyncHandler(async (req, res) => {
     message: 'Push subscription active on this device',
   });
 });
+
+export const getPendingTeachers = asyncHandler(async (req, res) => {
+  const teachers = await userService.fetchPendingTeachers();
+  res.status(200).json({
+    success: true,
+    data: teachers,
+  });
+});
+
+export const verifyTeacher = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const teacher = await userService.approveTeacher(id);
+  res.status(200).json({
+    success: true,
+    message: 'Teacher verified successfully',
+    data: teacher,
+  });
+});

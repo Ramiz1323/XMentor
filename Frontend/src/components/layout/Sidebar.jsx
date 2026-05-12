@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Users, BookOpen, Settings, LayoutDashboard, X, Target, HelpCircle, Trophy, Download, CheckCircle2 } from 'lucide-react';
+import { Users, BookOpen, Settings, LayoutDashboard, X, Target, HelpCircle, Trophy, Download, CheckCircle2, ShieldCheck } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
 
 const Sidebar = ({ isOpen, onClose }) => {
@@ -134,6 +134,17 @@ const Sidebar = ({ isOpen, onClose }) => {
           </NavLink>
 
           <div className="sidebar-divider" role="presentation">Settings</div>
+
+          {user?.isAdmin && (
+            <NavLink
+              to="/admin"
+              onClick={handleLinkClick}
+              className={({ isActive }) => `sidebar-item admin-link ${isActive ? 'active' : ''}`}
+            >
+              <ShieldCheck size={20} aria-hidden="true" />
+              <span>Admin Operations</span>
+            </NavLink>
+          )}
 
           <NavLink
             to="/profile"

@@ -2,13 +2,14 @@ import { useState, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
-import { UserPlus, Mail, Lock, User, GraduationCap, Sparkles, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
+import { UserPlus, Mail, Lock, User, GraduationCap, Sparkles, AlertCircle, Loader2, Eye, EyeOff, Phone, ShieldCheck } from 'lucide-react';
 import GlassDropdown from '../../components/ui/GlassDropdown';
 
 const RegisterPage = () => {
-  const { register, handleSubmit, control, formState: { errors } } = useForm({
-    defaultValues: { role: 'STUDENT' }
+  const { register, handleSubmit, control, watch, formState: { errors } } = useForm({
+    defaultValues: { role: 'STUDENT', board: 'CBSE' }
   });
+  const selectedRole = watch('role');
   const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -56,81 +57,119 @@ const RegisterPage = () => {
 
         <form onSubmit={handleSubmit(onSubmit)} className="auth-form" noValidate>
           <div className="form-group">
-            <label htmlFor="name-input">Full Name</label>
-            <div className="input-wrapper">
-              <User size={18} className="input-icon" aria-hidden="true" />
-              <input
-                id="name-input"
-                type="text"
-                placeholder="Full Name"
-                className="glass-input with-icon"
-                {...register('name', { required: 'Name is required' })}
-              />
+            <label>I am a...</label>
+            <div className="role-selector-grid">
+              <label className={`role-option ${selectedRole === 'STUDENT' ? 'active' : ''}`}>
+                <input type="radio" value="STUDENT" {...register('role')} />
+                <GraduationCap size={20} />
+                <span>Student</span>
+              </label>
+              <label className={`role-option ${selectedRole === 'TEACHER' ? 'active' : ''}`}>
+                <input type="radio" value="TEACHER" {...register('role')} />
+                <ShieldCheck size={20} />
+                <span>Teacher</span>
+              </label>
             </div>
-            {errors.name && <span id="name-error" className="error-msg" role="alert">{errors.name.message}</span>}
           </div>
 
-          <div className="form-group">
-            <label htmlFor="email-input">Email Address</label>
-            <div className="input-wrapper">
-              <Mail size={18} className="input-icon" aria-hidden="true" />
-              <input
-                id="email-input"
-                type="email"
-                placeholder="name@example.com"
-                className="glass-input with-icon"
-                {...register('email', { 
-                  required: 'Email is required',
-                  pattern: { value: /^\S+@\S+$/i, message: 'Invalid email format' }
-                })}
-              />
-            </div>
-            {errors.email && <span id="email-error" className="error-msg" role="alert">{errors.email.message}</span>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password-input">Password</label>
-            <div className="input-wrapper">
-              <Lock size={18} className="input-icon" aria-hidden="true" />
-              <input
-                id="password-input"
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                className="glass-input with-icon with-toggle"
-                {...register('password', { 
-                  required: 'Password is required',
-                  minLength: { value: 6, message: 'Min 6 characters required' }
-                })}
-              />
-              <button 
-                type="button" 
-                className="password-toggle"
-                onClick={() => setShowPassword(!showPassword)}
-                tabIndex="-1"
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-            {errors.password && <span id="password-error" className="error-msg" role="alert">{errors.password.message}</span>}
-          </div>
-
-          <div className="form-group">
-            <Controller
-              name="board"
-              control={control}
-              rules={{ required: 'Board selection required' }}
-              render={({ field }) => (
-                <GlassDropdown
-                  label="Board"
-                  options={boardOptions}
-                  value={field.value}
-                  onChange={field.onChange}
-                  icon={GraduationCap}
-                  placeholder="Select Board"
+          <div className="form-grid">
+            <div className="form-group">
+              <label htmlFor="name-input">Full Name</label>
+              <div className="input-wrapper">
+                <User size={18} className="input-icon" aria-hidden="true" />
+                <input
+                  id="name-input"
+                  type="text"
+                  placeholder="Full Name"
+                  className="glass-input with-icon"
+                  {...register('name', { required: 'Name is required' })}
                 />
-              )}
-            />
-            {errors.board && <span className="error-msg" role="alert">{errors.board.message}</span>}
+              </div>
+              {errors.name && <span id="name-error" className="error-msg" role="alert">{errors.name.message}</span>}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="email-input">Email Address</label>
+              <div className="input-wrapper">
+                <Mail size={18} className="input-icon" aria-hidden="true" />
+                <input
+                  id="email-input"
+                  type="email"
+                  placeholder="name@example.com"
+                  className="glass-input with-icon"
+                  {...register('email', { 
+                    required: 'Email is required',
+                    pattern: { value: /^\S+@\S+$/i, message: 'Invalid email format' }
+                  })}
+                />
+              </div>
+              {errors.email && <span id="email-error" className="error-msg" role="alert">{errors.email.message}</span>}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="password-input">Password</label>
+              <div className="input-wrapper">
+                <Lock size={18} className="input-icon" aria-hidden="true" />
+                <input
+                  id="password-input"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  className="glass-input with-icon with-toggle"
+                  {...register('password', { 
+                    required: 'Password is required',
+                    minLength: { value: 6, message: 'Min 6 characters required' }
+                  })}
+                />
+                <button 
+                  type="button" 
+                  className="password-toggle"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex="-1"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+              {errors.password && <span id="password-error" className="error-msg" role="alert">{errors.password.message}</span>}
+            </div>
+
+            {selectedRole === 'TEACHER' && (
+              <div className="form-group animate-slide-down">
+                <label htmlFor="phone-input">WhatsApp / Contact Number</label>
+                <div className="input-wrapper">
+                  <Phone size={18} className="input-icon" aria-hidden="true" />
+                  <input
+                    id="phone-input"
+                    type="tel"
+                    placeholder="+91 XXXXX XXXXX"
+                    className="glass-input with-icon"
+                    {...register('phoneNumber', { 
+                      required: 'Contact number is required for verification',
+                      pattern: { value: /^[0-9+\s-]{10,15}$/, message: 'Invalid phone number' }
+                    })}
+                  />
+                </div>
+                {errors.phoneNumber && <span className="error-msg" role="alert">{errors.phoneNumber.message}</span>}
+              </div>
+            )}
+
+            <div className="form-group">
+              <Controller
+                name="board"
+                control={control}
+                rules={{ required: 'Board selection required' }}
+                render={({ field }) => (
+                  <GlassDropdown
+                    label="Board"
+                    options={boardOptions}
+                    value={field.value}
+                    onChange={field.onChange}
+                    icon={GraduationCap}
+                    placeholder="Select Board"
+                  />
+                )}
+              />
+              {errors.board && <span className="error-msg" role="alert">{errors.board.message}</span>}
+            </div>
           </div>
 
           <button type="submit" className="auth-btn btn-primary" disabled={loading}>

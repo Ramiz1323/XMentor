@@ -321,3 +321,21 @@ export const updatePushSubscription = async (userId, subscription) => {
   await user.save();
   return user;
 };
+
+export const fetchPendingTeachers = async () => {
+  return await User.find({ role: 'TEACHER', isVerified: false })
+    .select('name email username phoneNumber createdAt')
+    .sort({ createdAt: -1 })
+    .lean();
+};
+
+export const approveTeacher = async (teacherId) => {
+  const teacher = await User.findByIdAndUpdate(
+    teacherId,
+    { $set: { isVerified: true } },
+    { new: true, runValidators: true }
+  ).select('name email isVerified');
+
+  if (!teacher) throw new ErrorResponse('Teacher not found', 404);
+  return teacher;
+};

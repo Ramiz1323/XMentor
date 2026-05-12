@@ -24,6 +24,18 @@ const userSchema = new mongoose.Schema(
       enum: ['TEACHER', 'STUDENT'],
       default: 'STUDENT',
     },
+    isVerified: {
+      type: Boolean,
+      default: true, // Default to true, will be set to false for TEACHERs in service
+    },
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
+    phoneNumber: {
+      type: String,
+      default: '',
+    },
     profilePic: {
       type: String,
       default: '',

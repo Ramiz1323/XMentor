@@ -12,12 +12,14 @@ const generateToken = (id, role) => {
 };
 
 export const registerUser = async (userData) => {
-  const { name, email, password, role } = userData;
+  const { name, email, password, role, phoneNumber } = userData;
 
   const userExists = await User.findOne({ email });
   if (userExists) {
     throw new ErrorResponse('User already exists', 400);
   }
+
+  const isVerified = role === 'STUDENT'; // Teachers need verification, students don't.
 
   let username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
   
@@ -30,7 +32,7 @@ export const registerUser = async (userData) => {
 
   while (attempts < maxAttempts) {
     try {
-      user = await User.create({ name, email, password, role, username });
+      user = await User.create({ name, email, password, role, username, phoneNumber, isVerified });
       break; // Success
     } catch (error) {
       if (error.code === 11000 && (error.message.includes('username') || JSON.stringify(error.keyValue).includes('username'))) {
@@ -50,6 +52,9 @@ export const registerUser = async (userData) => {
     email: user.email,
     username: user.username,
     role: user.role,
+    isVerified: user.isVerified,
+    isAdmin: user.isAdmin,
+    phoneNumber: user.phoneNumber,
     token: generateToken(user._id, user.role),
   };
 };
@@ -96,6 +101,9 @@ export const loginUser = async (email, password) => {
     email: user.email,
     username: user.username,
     role: user.role,
+    isVerified: user.isVerified,
+    isAdmin: user.isAdmin,
+    phoneNumber: user.phoneNumber,
     token: generateToken(user._id, user.role),
   };
 };

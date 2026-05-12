@@ -1,5 +1,5 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import useAuthStore from './store/useAuthStore';
 import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
@@ -23,9 +23,11 @@ const SubjectiveCreator = lazy(() => import('./pages/subjective/SubjectiveCreato
 const SubjectiveView = lazy(() => import('./pages/subjective/SubjectiveView'));
 const SubjectiveHub = lazy(() => import('./pages/subjective/SubjectiveHub'));
 const ReviewCenter = lazy(() => import('./pages/subjective/ReviewCenter'));
+const AdminPanel = lazy(() => import('./pages/admin/AdminPanel'));
 const NotFoundPage = lazy(() => import('./pages/error/NotFoundPage'));
 const MaintenancePage = lazy(() => import('./pages/error/MaintenancePage'));
 const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
+const PendingVerificationPage = lazy(() => import('./pages/error/PendingVerificationPage'));
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, authChecked } = useAuthStore();
@@ -49,6 +51,7 @@ function AppContent({ isAuthenticated }) {
   const { isServerDown, isLoading, user, authChecked } = useAuthStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Initialize Global HUD Notifications
   useHUDNotifications();
@@ -63,6 +66,17 @@ function AppContent({ isAuthenticated }) {
     setIsSidebarOpen(false);
   }, [location.pathname]);
 
+  // Global redirection for unverified teachers
+  useEffect(() => {
+    if (isAuthenticated && user?.role === 'TEACHER' && !user?.isVerified && !user?.isAdmin) {
+      if (location.pathname !== '/pending-verification') {
+        navigate('/pending-verification');
+      }
+    } else if (isAuthenticated && user?.isVerified && location.pathname === '/pending-verification') {
+      navigate('/');
+    }
+  }, [isAuthenticated, user, location.pathname, navigate]);
+
   const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
 
   // Detect if we are in a tactical MCQ operation (MCQ Test Page)
@@ -70,19 +84,23 @@ function AppContent({ isAuthenticated }) {
   const isMCQTestPage = /^\/mcq\/[^\/]+$/.test(location.pathname) &&
     location.pathname !== '/mcq/create';
 
+  const isPendingVerification = location.pathname === '/pending-verification';
+
   // Only show the landing page once we know the user is definitely NOT authenticated
   const isLandingPage = location.pathname === '/' && authChecked && !isAuthenticated;
 
+  const isFullscreenMode = isMCQTestPage || isPendingVerification || isLandingPage || !isAuthenticated;
+
   return (
-    <div className={`app-container ${isAuthenticated ? 'with-sidebar' : isLandingPage ? 'landing-mode' : 'auth-mode'} ${isSidebarOpen ? 'sidebar-open' : ''} ${isMCQTestPage ? 'tactical-mode' : ''} theme-${user?.theme || 'blue'}`}>
+    <div className={`app-container ${isAuthenticated && !isPendingVerification ? 'with-sidebar' : isLandingPage ? 'landing-mode' : 'auth-mode'} ${isSidebarOpen ? 'sidebar-open' : ''} ${isMCQTestPage || isPendingVerification ? 'tactical-mode' : ''} theme-${user?.theme || 'blue'}`}>
       {isLoading && <LoadingOverlay message="Terminating Strategic Session..." />}
-      {isAuthenticated && !isMCQTestPage && (
+      {isAuthenticated && !isMCQTestPage && !isPendingVerification && (
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       )}
 
       <div className="main-layout">
-        {!isMCQTestPage && !isLandingPage && <Navbar onMenuClick={toggleSidebar} />}
-        <main className={`content ${isMCQTestPage ? 'full-width-tactical' : ''}`}>
+        {!isMCQTestPage && !isLandingPage && !isPendingVerification && <Navbar onMenuClick={toggleSidebar} />}
+        <main className={`content ${isMCQTestPage || isPendingVerification ? 'full-width-tactical' : ''}`}>
           <Suspense fallback={<LoadingOverlay message="Establishing Data Link..." />}>
             <Routes>
               <Route path="/login" element={<AuthRoute><LoginPage /></AuthRoute>} />
@@ -109,6 +127,19 @@ function AppContent({ isAuthenticated }) {
               <Route path="/subjective/create" element={<ProtectedRoute><SubjectiveCreator /></ProtectedRoute>} />
               <Route path="/subjective/:id" element={<ProtectedRoute><SubjectiveView /></ProtectedRoute>} />
               <Route path="/subjective/review" element={<ProtectedRoute><ReviewCenter /></ProtectedRoute>} />
+              
+              <Route path="/admin" element={
+                isAuthenticated && user?.isAdmin
+                ? <AdminPanel />
+                : <Navigate to="/" />
+              } />
+              
+              <Route path="/pending-verification" element={
+                isAuthenticated && user?.role === 'TEACHER' && !user?.isVerified
+                ? <PendingVerificationPage />
+                : <Navigate to="/" />
+              } />
+
               {/* Catch-all route for 404 */}
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

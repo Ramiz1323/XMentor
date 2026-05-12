@@ -31,6 +31,16 @@ const userService = {
   getLeaderboard: async () => {
     const { data } = await api.get('/user/leaderboard');
     return data;
+  },
+
+  getPendingTeachers: async () => {
+    const { data } = await api.get('/user/pending-teachers');
+    return data;
+  },
+
+  verifyTeacher: async (id) => {
+    const { data } = await api.patch(`/user/verify-teacher/${id}`);
+    return data;
   }
 };
 

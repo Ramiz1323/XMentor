@@ -384,3 +384,197 @@
     100% { opacity: 0.4; transform: scale(0.9); }
   }
 }
+
+// Admin Panel Styles
+.admin-panel {
+  @include container;
+  padding-top: 2rem;
+  padding-bottom: 4rem;
+
+  .panel-header {
+    margin-bottom: 2rem;
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+      h1 { font-size: 2rem; }
+    }
+    p { color: $text-secondary; }
+  }
+
+  .stats-strip {
+    margin-bottom: 2rem;
+    .stat-card {
+      @include glass-card;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 1.25rem 2rem;
+      width: fit-content;
+
+      .stat-info {
+        @include flex-column;
+        .stat-value { font-size: 1.5rem; font-weight: 700; line-height: 1; }
+        .stat-label { font-size: 0.75rem; color: $text-secondary; text-transform: uppercase; letter-spacing: 1px; }
+      }
+    }
+  }
+
+  .data-controls {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+
+    .search-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0 1.25rem;
+      background: alpha(#0f172a, 0.4);
+      border: 1px solid alpha($accent-primary, 0.1);
+      border-radius: 0.75rem;
+
+      input {
+        background: none;
+        border: none;
+        color: white;
+        padding: 0.85rem 0;
+        width: 100%;
+        &:focus { outline: none; }
+      }
+      svg { color: alpha(white, 0.3); }
+    }
+
+    .refresh-btn {
+      @include flex-center;
+      width: 48px;
+      height: 48px;
+      background: alpha(white, 0.05);
+      border: 1px solid alpha(white, 0.1);
+      border-radius: 0.75rem;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover:not(:disabled) {
+        background: alpha(white, 0.1);
+        border-color: alpha($accent-secondary, 0.3);
+        color: $accent-secondary;
+      }
+      &:disabled { opacity: 0.5; cursor: not-allowed; }
+    }
+  }
+
+  .requests-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .teacher-request-card {
+    @include glass-card;
+    padding: 1.5rem;
+    @include flex-column;
+    gap: 1.25rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+      transform: translateY(-4px);
+      border-color: alpha($accent-primary, 0.3);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+
+      h3 { font-size: 1.1rem; margin-bottom: 0.2rem; }
+      .username { font-size: 0.8rem; color: $accent-secondary; opacity: 0.8; }
+      
+      .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 100px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        
+        &.pending {
+          background: alpha($color-warning, 0.1);
+          color: $color-warning;
+          border: 1px solid alpha($color-warning, 0.2);
+        }
+      }
+    }
+
+    .card-body {
+      @include flex-column;
+      gap: 0.75rem;
+
+      .detail-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.85rem;
+        color: $text-secondary;
+        
+        svg { color: alpha(white, 0.3); }
+      }
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+
+      .btn-verify {
+        flex: 1;
+        @include flex-center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        background: linear-gradient(135deg, $accent-primary, $accent-secondary);
+        border: none;
+        border-radius: 0.6rem;
+        color: white;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 15px alpha($accent-primary, 0.4);
+        }
+        &:disabled { opacity: 0.7; cursor: not-allowed; }
+      }
+
+      .btn-whatsapp {
+        @include flex-center;
+        width: 42px;
+        background: alpha(#25d366, 0.1);
+        border: 1px solid alpha(#25d366, 0.2);
+        color: #25d366;
+        border-radius: 0.6rem;
+        transition: all 0.3s ease;
+        &:hover { background: rgba(#25d366, 0.2); }
+      }
+    }
+  }
+
+  .loading-state, .empty-state {
+    grid-column: 1 / -1;
+    @include flex-center;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 5rem 2rem;
+    text-align: center;
+    color: $text-secondary;
+  }
+}
