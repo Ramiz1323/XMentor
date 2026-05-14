@@ -136,6 +136,10 @@ const mcqResultSchema = new mongoose.Schema(
     shuffleSeed: {
       type: String,
     },
+    breachCount: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,

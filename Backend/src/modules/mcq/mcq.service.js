@@ -94,7 +94,7 @@ export const getTestForStudent = async (testId, studentId) => {
   };
 };
 
-export const submitTest = async (testId, studentId, studentAnswers, timeTaken) => {
+export const submitTest = async (testId, studentId, studentAnswers, timeTaken, breachCount = 0) => {
   const test = await MCQTest.findById(testId);
   if (!test) throw new ErrorResponse('Test not found', 404);
 
@@ -132,6 +132,7 @@ export const submitTest = async (testId, studentId, studentAnswers, timeTaken) =
       result.answers = unShuffledAnswers;
       result.status = 'COMPLETED';
       result.shuffleSeed = seed;
+      result.breachCount = breachCount;
       await result.save();
     } else {
       result = await MCQResult.create({
@@ -142,7 +143,8 @@ export const submitTest = async (testId, studentId, studentAnswers, timeTaken) =
         timeTaken,
         answers: unShuffledAnswers,
         status: 'COMPLETED',
-        shuffleSeed: seed
+        shuffleSeed: seed,
+        breachCount
       });
     }
 
@@ -156,7 +158,7 @@ export const submitTest = async (testId, studentId, studentAnswers, timeTaken) =
 };
 
 export const pauseTest = async (testId, studentId, pauseData) => {
-  const { answers, timeTaken, currentQuestionIndex, timeLeft } = pauseData;
+  const { answers, timeTaken, currentQuestionIndex, timeLeft, breachCount = 0 } = pauseData;
   const test = await MCQTest.findById(testId);
   if (!test) throw new ErrorResponse('Test not found', 404);
 
@@ -186,6 +188,7 @@ export const pauseTest = async (testId, studentId, pauseData) => {
     result.pausesUsed += 1;
     result.status = 'IN_PROGRESS';
     result.shuffleSeed = seed;
+    result.breachCount = breachCount;
     await result.save();
   } else {
     if (test.pauseLimit === 0) {
@@ -203,7 +206,8 @@ export const pauseTest = async (testId, studentId, pauseData) => {
       timeLeft,
       pausesUsed: 1,
       status: 'IN_PROGRESS',
-      shuffleSeed: seed
+      shuffleSeed: seed,
+      breachCount
     });
   }
 
@@ -335,31 +339,40 @@ export const getTestAnalytics = async (testId, teacherId) => {
   const test = await MCQTest.findById(testId).populate('assignedStudents', 'name username profilePic');
   if (!test) throw new ErrorResponse('Test not found', 404);
 
-  // Verification: Only the creator can see full analytics
   if (test.createdBy.toString() !== teacherId.toString()) {
     throw new ErrorResponse('Unauthorized: High-level access required', 403);
   }
 
-  const results = await MCQResult.find({ testId })
+  const allResults = await MCQResult.find({ testId })
     .populate('studentId', 'name username profilePic')
-    .sort({ score: -1, timeTaken: 1 })
     .lean();
 
-  // Find students who are assigned but haven't completed
-  const completedStudentIds = new Set(results.map(r => r.studentId._id.toString()));
-  const pendingStudents = test.assignedStudents.filter(student =>
-    !completedStudentIds.has(student._id.toString())
-  );
+  const completedResults = allResults
+    .filter(r => r.status === 'COMPLETED')
+    .sort((a, b) => b.score - a.score || a.timeTaken - b.timeTaken);
+
+  const inProgressResults = allResults
+    .filter(r => r.status === 'IN_PROGRESS')
+    .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+  const completedStudentIds = new Set(completedResults.map(r => r.studentId._id.toString()));
+  const inProgressStudentIds = new Set(inProgressResults.map(r => r.studentId._id.toString()));
+
+  const pendingStudents = test.assignedStudents.filter(student => {
+    const sid = student._id.toString();
+    return !completedStudentIds.has(sid) && !inProgressStudentIds.has(sid);
+  });
 
   return {
     test,
-    results,
+    results: completedResults,
+    inProgressResults,
     pendingStudents,
     stats: {
-      totalAttempts: results.length,
+      totalAttempts: completedResults.length,
       totalAssigned: test.assignedStudents.length,
-      avgScore: results.length > 0
-        ? parseFloat((results.reduce((acc, curr) => acc + curr.score, 0) / results.length).toFixed(1))
+      avgScore: completedResults.length > 0
+        ? parseFloat((completedResults.reduce((acc, curr) => acc + curr.score, 0) / completedResults.length).toFixed(1))
         : 0
     }
   };
@@ -373,7 +386,6 @@ export const assignTest = async (testId, teacherId, studentIds) => {
     throw new ErrorResponse('Unauthorized: Only creator can assign this test', 403);
   }
 
-  // Filter out students already assigned
   const currentAssigned = test.assignedStudents.map(id => id.toString());
   const newAssignments = studentIds.filter(id => !currentAssigned.includes(id));
 
@@ -394,10 +406,8 @@ export const reassignTest = async (testId, teacherId, studentId) => {
     throw new ErrorResponse('Unauthorized: Only creator can reassign this test', 403);
   }
 
-  // Delete existing results for this student on this test
   await MCQResult.deleteMany({ testId, studentId });
 
-  // Ensure they are in the assignedStudents list
   const currentAssigned = test.assignedStudents.map(id => id.toString());
   if (!currentAssigned.includes(studentId.toString())) {
     test.assignedStudents.push(studentId);
@@ -408,13 +418,11 @@ export const reassignTest = async (testId, teacherId, studentId) => {
 };
 
 export const getTeacherOverview = async (teacherId) => {
-  // 1. Get teacher's tests
   const tests = await MCQTest.find({ createdBy: teacherId })
     .select('title subject totalQuestions assignedStudents createdAt')
     .sort({ createdAt: -1 })
     .lean();
 
-  // 2. Get teacher's students
   const User = MCQTest.db.model('User');
   const teacher = await User.findById(teacherId)
     .populate('students', 'name username profilePic')
@@ -424,29 +432,25 @@ export const getTeacherOverview = async (teacherId) => {
 
   const students = teacher.students || [];
 
-  // 3. Get all results for these tests
   const testIds = tests.map(t => t._id);
   const allResults = await MCQResult.find({
     testId: { $in: testIds }
   }).lean();
 
-  // Map results to student-wise view
   const studentStats = students.map(student => {
     const sIdStr = student._id.toString();
     const studentResults = allResults.filter(r => r.studentId.toString() === sIdStr);
-    
-    // Legacy support: Include results where status is COMPLETED or missing
+
+    // Include results where status is COMPLETED or missing (legacy records without a status field)
     const completedResults = studentResults.filter(r => !r.status || r.status === 'COMPLETED');
     const completedTestIds = new Set(completedResults.map(r => r.testId.toString()));
 
-    // Find tests where student is assigned but hasn't completed
     const pendingTasks = tests.filter(test => {
       const isAssigned = test.assignedStudents.some(id => id.toString() === sIdStr);
       const isCompleted = completedTestIds.has(test._id.toString());
       return isAssigned && !isCompleted;
     });
 
-    // Map all completed results for display
     const sortedCompletedResults = completedResults
       .map(r => {
         const test = tests.find(t => t._id.toString() === r.testId.toString());
@@ -468,8 +472,6 @@ export const getTeacherOverview = async (teacherId) => {
     };
   });
 
-  // Sort overall studentStats by lastSubmissionAt (most recent first)
-  // Students with no submissions go to the bottom
   studentStats.sort((a, b) => {
     if (!a.lastSubmissionAt && !b.lastSubmissionAt) return 0;
     if (!a.lastSubmissionAt) return 1;
@@ -481,4 +483,29 @@ export const getTeacherOverview = async (teacherId) => {
     tests,
     studentStats
   };
+};
+
+export const updateResultScore = async (testId, resultId, teacherId, newScore) => {
+  const test = await MCQTest.findById(testId);
+  if (!test) throw new ErrorResponse('Test not found', 404);
+
+  if (test.createdBy.toString() !== teacherId.toString()) {
+    throw new ErrorResponse('Unauthorized: Only creator can adjust scores', 403);
+  }
+
+  const result = await MCQResult.findById(resultId);
+  if (!result) throw new ErrorResponse('Result not found', 404);
+
+  if (result.testId.toString() !== testId.toString()) {
+    throw new ErrorResponse('Result does not belong to this test', 400);
+  }
+
+  if (typeof newScore !== 'number' || !Number.isFinite(newScore) || newScore < 0 || newScore > result.total) {
+    throw new ErrorResponse(`Score must be a number between 0 and ${result.total}`, 400);
+  }
+
+  result.score = Math.round(newScore);
+  await result.save();
+
+  return result;
 };

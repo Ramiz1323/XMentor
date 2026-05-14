@@ -73,8 +73,8 @@ export const getById = asyncHandler(async (req, res) => {
 });
 
 export const submit = asyncHandler(async (req, res) => {
-  const { answers, timeTaken } = req.body;
-  const result = await mcqService.submitTest(req.params.id, req.user._id, answers, timeTaken);
+  const { answers, timeTaken, breachCount } = req.body;
+  const result = await mcqService.submitTest(req.params.id, req.user._id, answers, timeTaken, breachCount);
   
   res.status(201).json({
     success: true,
@@ -216,5 +216,16 @@ export const remove = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: 'Test and associated results deleted successfully',
+  });
+});
+
+export const updateScore = asyncHandler(async (req, res) => {
+  const { newScore } = req.body;
+  const result = await mcqService.updateResultScore(req.params.id, req.params.resultId, req.user._id, newScore);
+  
+  res.status(200).json({
+    success: true,
+    message: 'Score adjusted successfully',
+    data: result,
   });
 });

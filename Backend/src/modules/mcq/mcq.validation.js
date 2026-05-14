@@ -33,5 +33,6 @@ export const submitTestSchema = z.object({
   body: z.object({
     answers: z.array(z.number().int().min(-1).max(3)),
     timeTaken: z.number().int().min(1, 'Time taken is required'),
+    breachCount: z.number().int().min(0).optional().default(0),
   }),
 });

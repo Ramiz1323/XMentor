@@ -10,16 +10,37 @@ import SEO from '../../components/common/SEO';
 const TaskResults = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { analytics: data, fetchAnalytics, deleteTest, isLoading, error, reassignStudent } = useMCQStore();
+  const { analytics: data, fetchAnalytics, deleteTest, isLoading, error, reassignStudent, updateResultScore } = useMCQStore();
   const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [showExamReview, setShowExamReview] = useState(false);
+  const [reassigningId, setReassigningId] = useState(null);
+
+  const handleAdjustScore = async (resultId, studentName, currentScore, total) => {
+    const newScore = window.prompt(`Adjust score for ${studentName}. Current Score: ${currentScore}/${total}`, currentScore);
+    if (newScore !== null) {
+      const parsedScore = parseInt(newScore);
+      if (isNaN(parsedScore) || parsedScore < 0 || parsedScore > total) {
+        alert(`Invalid score. Please enter a number between 0 and ${total}.`);
+        return;
+      }
+      try {
+        await updateResultScore(id, resultId, parsedScore);
+        alert('Score updated successfully.');
+      } catch (err) {
+        alert('Score update failed: ' + err.message);
+      }
+    }
+  };
 
   const handleReassign = async (studentId, studentName) => {
     if (window.confirm(`Are you sure you want to reassign this test to ${studentName}? This will delete their current score and allow them to retake the test.`)) {
       try {
+        setReassigningId(studentId);
         await reassignStudent(id, studentId);
       } catch (err) {
         alert('Reassignment failed: ' + err.message);
+      } finally {
+        setReassigningId(null);
       }
     }
   };
@@ -79,7 +100,7 @@ const TaskResults = () => {
     );
   }
 
-  const { test, results, pendingStudents, stats } = data;
+  const { test, results, inProgressResults, pendingStudents, stats } = data;
 
   return (
     <div className="task-results-container">
@@ -162,6 +183,7 @@ const TaskResults = () => {
               <tr>
                 <th>Student Intelligence</th>
                 <th>Performance Score</th>
+                <th>Breach Count</th>
                 <th>Time Efficiency</th>
                 <th>Sync Date</th>
                 <th>Operation</th>
@@ -186,9 +208,23 @@ const TaskResults = () => {
                     </div>
                   </td>
                   <td data-label="Score">
-                     <span className={`score-pill ${test.totalQuestions > 0 && res.score / test.totalQuestions >= 0.8 ? 'score-high' : test.totalQuestions > 0 && res.score / test.totalQuestions >= 0.5 ? 'score-mid' : 'score-low'}`}>
-                       {res.score} / {test.totalQuestions}
-                     </span>
+                    <div className="score-cell-content">
+                      <span className={`score-pill ${test.totalQuestions > 0 && res.score / test.totalQuestions >= 0.8 ? 'score-high' : test.totalQuestions > 0 && res.score / test.totalQuestions >= 0.5 ? 'score-mid' : 'score-low'}`}>
+                        {res.score} / {test.totalQuestions}
+                      </span>
+                      <button
+                        className="score-edit-btn"
+                        onClick={() => handleAdjustScore(res._id, res.studentId?.name, res.score, test.totalQuestions)}
+                        title="Adjust Score"
+                      >
+                        <RotateCcw size={10} />
+                      </button>
+                    </div>
+                  </td>
+                  <td data-label="Breaches">
+                    <span className={`breach-pill ${res.breachCount > 3 ? 'high' : res.breachCount > 0 ? 'mid' : 'low'}`}>
+                      {res.breachCount || 0}
+                    </span>
                   </td>
                   <td data-label="Time">
                     <span className="efficiency-val">
@@ -209,9 +245,9 @@ const TaskResults = () => {
                       <button 
                         className="btn-sec reassign-btn"
                         onClick={() => res.studentId && handleReassign(res.studentId._id, res.studentId.name)}
-                        disabled={!res.studentId}
+                        disabled={!res.studentId || reassigningId === res.studentId?._id}
                       >
-                        Reassign
+                        {reassigningId === res.studentId?._id ? '...' : 'Reassign'}
                       </button>
                     </div>
                   </td>
@@ -219,7 +255,7 @@ const TaskResults = () => {
               ))}
               {(!results || results.length === 0) && (
                 <tr>
-                  <td colSpan="5" className="empty-table-cell">
+                  <td colSpan="6" className="empty-table-cell">
                     No intelligence data available.
                   </td>
                 </tr>
@@ -228,6 +264,83 @@ const TaskResults = () => {
           </table>
         </div>
       </div>
+
+      {/* IN-PROGRESS / PAUSED STUDENTS */}
+      {inProgressResults && inProgressResults.length > 0 && (
+        <div className="results-section mt-8">
+          <div className="section-header">
+            <h3>Active Missions &#40;Paused&#41;</h3>
+            <div className="line"></div>
+          </div>
+          <div className="results-table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Student Intelligence</th>
+                  <th>Progress</th>
+                  <th>Breach Count</th>
+                  <th>Pauses Used</th>
+                  <th>Time Elapsed</th>
+                  <th>Operation</th>
+                </tr>
+              </thead>
+              <tbody>
+                {inProgressResults.map((res) => (
+                  <tr key={res._id} className="in-progress-row">
+                    <td className="student-info-cell" data-label="Student">
+                      <div className="student-info">
+                        <div className="avatar">
+                          {res.studentId?.profilePic ? (
+                            <img src={res.studentId.profilePic} alt="" />
+                          ) : (
+                            res.studentId?.name?.charAt(0) || '?'
+                          )}
+                        </div>
+                        <div className="details">
+                          <div className="name">{res.studentId?.name || 'Unknown Agent'}</div>
+                          <div className="username">@{res.studentId?.username || 'unknown'}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td data-label="Progress">
+                      <span className="paused-badge">
+                        <Clock size={11} />
+                        Paused &mdash; Q{(res.currentQuestionIndex || 0) + 1} / {test.totalQuestions}
+                      </span>
+                    </td>
+                    <td data-label="Breaches">
+                      <span className={`breach-pill ${(res.breachCount || 0) > 3 ? 'high' : (res.breachCount || 0) > 0 ? 'mid' : 'low'}`}>
+                        {res.breachCount || 0}
+                      </span>
+                    </td>
+                    <td data-label="Pauses">
+                      <span className="efficiency-val">
+                        {res.pausesUsed || 0} / {test.pauseLimit || '∞'}
+                      </span>
+                    </td>
+                    <td data-label="Time">
+                      <span className="efficiency-val">
+                        {Math.floor((res.timeTaken || 0) / 60)}m {(res.timeTaken || 0) % 60}s
+                      </span>
+                    </td>
+                    <td data-label="Action">
+                      <div className="action-row">
+                        <button
+                          className="btn-sec reassign-btn"
+                          onClick={() => res.studentId && handleReassign(res.studentId._id, res.studentId.name)}
+                          disabled={!res.studentId || reassigningId === res.studentId?._id}
+                        >
+                          {reassigningId === res.studentId?._id ? '...' : 'Reassign'}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {pendingStudents && pendingStudents.length > 0 && (
         <div className="results-section mt-8">

@@ -72,6 +72,7 @@ const MCQTest = () => {
         setAnswers(test.progress.answers || new Array(test.questions.length).fill(-1));
         setCurrentIdx(test.progress.currentQuestionIndex || 0);
         setPausesUsed(test.progress.pausesUsed || 0);
+        setViolations(test.progress.breachCount || 0);
         if (test.hasTimer) {
           setTimeLeft(test.progress.timeLeft !== undefined ? test.progress.timeLeft : (test.duration * 60));
         }
@@ -120,7 +121,6 @@ const MCQTest = () => {
   const handleSubmit = useCallback(async (autoSubmit = false) => {
     if (submitting || result || !testRef.current) return;
 
-    // Check for unanswered questions
     const currentAnswers = autoSubmit ? answersRef.current : answers;
 
     try {
@@ -133,7 +133,8 @@ const MCQTest = () => {
 
       const res = await submitTest(id, {
         answers: currentAnswers,
-        timeTaken: Math.max(1, timeTaken)
+        timeTaken: Math.max(1, timeTaken),
+        breachCount: violations
       });
       setResult(res.data);
       setShowResultModal(true);
@@ -141,7 +142,6 @@ const MCQTest = () => {
       await fetchTestById(id);
     } catch (err) {
       setSecurityWarning(`Uplink Error: ${err.message || 'Submission failed. Please check your connection and try again.'}`);
-      // If auto-submit failed, we want to stay on the page but show a clear failure state
       if (autoSubmit) {
         setSubmitting(false);
       }
@@ -163,12 +163,12 @@ const MCQTest = () => {
         answers,
         timeTaken: Math.max(1, timeTaken),
         currentQuestionIndex: currentIdx,
-        timeLeft: timeLeft
+        timeLeft: timeLeft,
+        breachCount: violations
       });
 
       alert('Strategic Pause Engaged. Progress synchronized with Central Command.');
       
-      // Exit full screen if active
       if (document.fullscreenElement) {
         await document.exitFullscreen();
       }
@@ -191,21 +191,23 @@ const MCQTest = () => {
   };
 
   useEffect(() => {
-    if (!timeLeft || timeLeft <= 0 || result || test?.isSubmitted || !test?.hasTimer || !isReady) return;
+    if (!isReady || result || test?.isSubmitted || !test?.hasTimer) return;
+    if (!timeLeftRef.current || timeLeftRef.current <= 0) return;
 
     const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          handleSubmit(true);
-          return 0;
-        }
-        return prev - 1;
-      });
+      const next = timeLeftRef.current - 1;
+      if (next <= 0) {
+        clearInterval(timer);
+        setTimeLeft(0);
+        handleSubmit(true);
+      } else {
+        setTimeLeft(next);
+      }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft, result, test?.isSubmitted, test?.hasTimer, handleSubmit, isReady]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isReady, result, test?.isSubmitted, test?.hasTimer, handleSubmit]);
 
   useEffect(() => {
     if (showResultModal && result) {
@@ -213,10 +215,8 @@ const MCQTest = () => {
       let soundPath = '';
 
       if (accuracy > 65) {
-        // Randomize between faah and Congo
         soundPath = Math.random() > 0.5 ? '/faahhhhhhhh.mp3' : '/Congo.mp3';
       } else {
-        // Low score, play laugh
         soundPath = '/Laugh.mp3';
       }
 
@@ -236,7 +236,6 @@ const MCQTest = () => {
     return () => clearInterval(ticker);
   }, [test?.hasTimer, result, test?.isSubmitted, isLoading, test, isReady]);
 
-  // FULL SECURITY MODE EFFECTS
   useEffect(() => {
     if (!isReady || result || test?.isSubmitted) return;
 
@@ -264,7 +263,6 @@ const MCQTest = () => {
     };
 
     const handleKeyDown = (e) => {
-      // Block F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, Ctrl+U, Ctrl+C, Ctrl+V, Ctrl+S, Ctrl+P, Alt+Tab
       const blockedKeys = ['F12', 'PrintScreen'];
       const ctrlKeys = ['i', 'j', 'c', 'u', 'v', 's', 'p'];
 

@@ -18,6 +18,7 @@ router.post('/:id/assign', authorize('TEACHER'), mcqController.assign);
 router.post('/:id/submit', validate(submitTestSchema), mcqController.submit);
 router.post('/:id/pause', mcqController.pause);
 router.post('/:id/reassign/:studentId', authorize('TEACHER'), mcqController.reassign);
+router.patch('/:id/results/:resultId/score', authorize('TEACHER'), mcqController.updateScore);
 router.delete('/:id', authorize('TEACHER'), mcqController.remove);
 
 export default router;

@@ -56,6 +56,10 @@ const mcqService = {
   reassign: async (testId, studentId) => {
     const { data } = await api.post(`/mcq/${testId}/reassign/${studentId}`);
     return data;
+  },
+  updateResultScore: async (testId, resultId, newScore) => {
+    const { data } = await api.patch(`/mcq/${testId}/results/${resultId}/score`, { newScore });
+    return data;
   }
 };
 
