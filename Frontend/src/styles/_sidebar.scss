@@ -16,7 +16,7 @@
     visibility: visible;
   }
 
-  @media (min-width: 769px) {
+  @media (min-width: 1025px) {
     display: none;
   }
 }
@@ -45,7 +45,7 @@
     cursor: pointer;
     margin-bottom: 1rem;
     
-    @media (max-width: 768px) {
+    @media (max-width: 1024px) {
       display: block;
       align-self: flex-end;
     }
@@ -156,7 +156,7 @@
   }
 
   // Mobile Drawer State
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     transform: translateX(-100%);
     z-index: 1100;
     background: rgba(#0a0f1e, 0.98) !important;

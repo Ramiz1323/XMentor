@@ -26,7 +26,7 @@ const Sidebar = ({ isOpen, onClose }) => {
   };
 
   const handleLinkClick = () => {
-    if (window.innerWidth <= 768) {
+    if (window.innerWidth <= 1024) {
       onClose();
     }
   };

@@ -51,7 +51,7 @@ body {
       min-width: 0; // Essential for flex-shrink
       max-width: 100%;
 
-      @media (max-width: 768px) {
+      @media (max-width: 1024px) {
         margin-left: 0;
         width: 100%;
         min-width: 0;
