@@ -95,6 +95,7 @@ export const getTestForStudent = async (testId, studentId) => {
 };
 
 export const submitTest = async (testId, studentId, studentAnswers, timeTaken, breachCount = 0) => {
+  const sanitizedBreachCount = Number.isInteger(breachCount) && breachCount >= 0 ? breachCount : 0;
   const test = await MCQTest.findById(testId);
   if (!test) throw new ErrorResponse('Test not found', 404);
 
@@ -132,7 +133,7 @@ export const submitTest = async (testId, studentId, studentAnswers, timeTaken, b
       result.answers = unShuffledAnswers;
       result.status = 'COMPLETED';
       result.shuffleSeed = seed;
-      result.breachCount = breachCount;
+      result.breachCount = sanitizedBreachCount;
       await result.save();
     } else {
       result = await MCQResult.create({
@@ -144,7 +145,7 @@ export const submitTest = async (testId, studentId, studentAnswers, timeTaken, b
         answers: unShuffledAnswers,
         status: 'COMPLETED',
         shuffleSeed: seed,
-        breachCount
+        breachCount: sanitizedBreachCount
       });
     }
 
@@ -159,6 +160,7 @@ export const submitTest = async (testId, studentId, studentAnswers, timeTaken, b
 
 export const pauseTest = async (testId, studentId, pauseData) => {
   const { answers, timeTaken, currentQuestionIndex, timeLeft, breachCount = 0 } = pauseData;
+  const sanitizedBreachCount = Number.isInteger(breachCount) && breachCount >= 0 ? breachCount : 0;
   const test = await MCQTest.findById(testId);
   if (!test) throw new ErrorResponse('Test not found', 404);
 
@@ -188,7 +190,7 @@ export const pauseTest = async (testId, studentId, pauseData) => {
     result.pausesUsed += 1;
     result.status = 'IN_PROGRESS';
     result.shuffleSeed = seed;
-    result.breachCount = breachCount;
+    result.breachCount = sanitizedBreachCount;
     await result.save();
   } else {
     if (test.pauseLimit === 0) {
@@ -207,7 +209,7 @@ export const pauseTest = async (testId, studentId, pauseData) => {
       pausesUsed: 1,
       status: 'IN_PROGRESS',
       shuffleSeed: seed,
-      breachCount
+      breachCount: sanitizedBreachCount
     });
   }
 
@@ -355,8 +357,12 @@ export const getTestAnalytics = async (testId, teacherId) => {
     .filter(r => r.status === 'IN_PROGRESS')
     .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
 
-  const completedStudentIds = new Set(completedResults.map(r => r.studentId._id.toString()));
-  const inProgressStudentIds = new Set(inProgressResults.map(r => r.studentId._id.toString()));
+  const completedStudentIds = new Set(
+    completedResults.filter(r => r.studentId?._id).map(r => r.studentId._id.toString())
+  );
+  const inProgressStudentIds = new Set(
+    inProgressResults.filter(r => r.studentId?._id).map(r => r.studentId._id.toString())
+  );
 
   const pendingStudents = test.assignedStudents.filter(student => {
     const sid = student._id.toString();

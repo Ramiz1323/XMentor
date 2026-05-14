@@ -199,7 +199,7 @@ const useMCQStore = create((set) => ({
       const analyticsData = await mcqService.getAnalytics(testId);
       set({ analytics: analyticsData.data });
     } catch (err) {
-      set({ error: err.message });
+      set({ error: err.message || 'Failed to reassign student' });
       throw err;
     }
   },

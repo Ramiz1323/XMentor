@@ -36,3 +36,13 @@ export const submitTestSchema = z.object({
     breachCount: z.number().int().min(0).optional().default(0),
   }),
 });
+
+export const updateScoreSchema = z.object({
+  params: z.object({
+    id: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid Test ID'),
+    resultId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid Result ID'),
+  }),
+  body: z.object({
+    newScore: z.number({ required_error: 'newScore is required' }).int().min(0, 'Score cannot be negative'),
+  }),
+});

@@ -822,7 +822,7 @@
           @include glow-text;
           filter: none;
           background: linear-gradient(to right, white, alpha(white, 0.4));
-          -webkit-background-clip: text;
+          background-clip: text;
           
           .accent { color: $accent-primary; }
           .divider { opacity: 0.2; margin: 0 0.5rem; font-weight: 300; }
@@ -1153,14 +1153,8 @@
       }
 
       .score-pill {
-        padding: 6px 14px;
-        border-radius: 4px;
-        font-weight: 900;
-        font-size: 0.85rem;
-        font-family: $font-family-display;
-        background: alpha(white, 0.05);
-        border: 1px solid rgba(white, 0.05);
-        
+        display: inline-flex;
+        align-items: center;
         padding: 4px 10px;
         border-radius: 4px;
         font-weight: 900;
@@ -3370,7 +3364,7 @@
         margin-bottom: 0.25rem;
         font-family: $font-family-display;
         background: $gradient-primary;
-        -webkit-background-clip: text;
+        background-clip: text;
         -webkit-text-fill-color: transparent;
 
         @media (max-width: 640px) {

@@ -18,7 +18,7 @@ const TaskResults = () => {
   const handleAdjustScore = async (resultId, studentName, currentScore, total) => {
     const newScore = window.prompt(`Adjust score for ${studentName}. Current Score: ${currentScore}/${total}`, currentScore);
     if (newScore !== null) {
-      const parsedScore = parseInt(newScore);
+      const parsedScore = parseInt(newScore, 10);
       if (isNaN(parsedScore) || parsedScore < 0 || parsedScore > total) {
         alert(`Invalid score. Please enter a number between 0 and ${total}.`);
         return;

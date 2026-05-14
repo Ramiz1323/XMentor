@@ -33,4 +33,6 @@ dev-dist
 
 # Documentation
 Docs
+
+# Windows reserved device name - Git reports it as untracked on Windows
 NUL

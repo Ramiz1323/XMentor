@@ -33,10 +33,15 @@ const MCQTest = () => {
   const answersRef = useRef([]);
   const timeLeftRef = useRef(null);
   const testRef = useRef(null);
+  const violationsRef = useRef(0);
 
   useEffect(() => {
     answersRef.current = answers;
   }, [answers]);
+
+  useEffect(() => {
+    violationsRef.current = violations;
+  }, [violations]);
 
   useEffect(() => {
     timeLeftRef.current = timeLeft;
@@ -134,7 +139,7 @@ const MCQTest = () => {
       const res = await submitTest(id, {
         answers: currentAnswers,
         timeTaken: Math.max(1, timeTaken),
-        breachCount: violations
+        breachCount: violationsRef.current
       });
       setResult(res.data);
       setShowResultModal(true);

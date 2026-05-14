@@ -2,7 +2,7 @@ import express from 'express';
 import * as mcqController from './mcq.controller.js';
 import { protect, authorize } from '../../middleware/auth.middleware.js';
 import { validate } from '../../middleware/community.middleware.js';
-import { createTestSchema, submitTestSchema } from './mcq.validation.js';
+import { createTestSchema, submitTestSchema, updateScoreSchema } from './mcq.validation.js';
 
 const router = express.Router();
 
@@ -18,7 +18,7 @@ router.post('/:id/assign', authorize('TEACHER'), mcqController.assign);
 router.post('/:id/submit', validate(submitTestSchema), mcqController.submit);
 router.post('/:id/pause', mcqController.pause);
 router.post('/:id/reassign/:studentId', authorize('TEACHER'), mcqController.reassign);
-router.patch('/:id/results/:resultId/score', authorize('TEACHER'), mcqController.updateScore);
+router.patch('/:id/results/:resultId/score', authorize('TEACHER'), validate(updateScoreSchema), mcqController.updateScore);
 router.delete('/:id', authorize('TEACHER'), mcqController.remove);
 
 export default router;
