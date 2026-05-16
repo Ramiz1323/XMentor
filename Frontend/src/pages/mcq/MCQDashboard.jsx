@@ -434,6 +434,11 @@ const MCQDashboard = () => {
                             <div className="title">{task.title}</div>
                             <div className="subject">{task.subject}</div>
                           </div>
+                          <div className="action-group">
+                             <Link to={`/mcq/${task._id}`} className="review-btn-small pending" title="View Mission Details">
+                               <Eye size={14} />
+                             </Link>
+                          </div>
                         </div>
                       ))}
                       {pendingTasks.length === 0 && <div className="empty-msg">All assigned tasks completed!</div>}
