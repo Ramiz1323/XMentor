@@ -326,8 +326,8 @@
     .grid-overlay {
       position: absolute;
       inset: 0;
-      background-image: linear-gradient(rgba($accent-primary, 0.05) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba($accent-primary, 0.05) 1px, transparent 1px);
+      background-image: linear-gradient(alpha($accent-primary, 0.05) 1px, transparent 1px),
+                        linear-gradient(90deg, alpha($accent-primary, 0.05) 1px, transparent 1px);
       background-size: 50px 50px;
       mask-image: radial-gradient(circle at center, black, transparent 80%);
     }
@@ -413,8 +413,8 @@
     }
 
     .whatsapp-btn {
-      background: rgba(#25d366, 0.1);
-      border: 1px solid rgba(#25d366, 0.2);
+      background: alpha(#25d366, 0.1);
+      border: 1px solid alpha(#25d366, 0.2);
       color: #25d366;
       @include flex-center;
       gap: 0.75rem;
@@ -424,7 +424,7 @@
       transition: all 0.3s ease;
 
       &:hover {
-        background: rgba(#25d366, 0.2);
+        background: alpha(#25d366, 0.2);
         transform: translateY(-2px);
       }
     }

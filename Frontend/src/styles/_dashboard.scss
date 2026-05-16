@@ -309,7 +309,7 @@
           background: $accent-secondary;
           color: $bg-primary;
           transform: rotate(-45deg);
-          box-shadow: 0 0 20px rgba($accent-secondary, 0.5);
+          box-shadow: 0 0 20px alpha($accent-secondary, 0.5);
         }
       }
 
@@ -329,7 +329,7 @@
           background: $accent-secondary;
           color: $bg-primary;
           transform: rotate(-45deg);
-          box-shadow: 0 0 20px rgba($accent-secondary, 0.5);
+          box-shadow: 0 0 20px alpha($accent-secondary, 0.5);
         }
       }
 
@@ -563,7 +563,7 @@
         color: #25d366;
         border-radius: 0.6rem;
         transition: all 0.3s ease;
-        &:hover { background: rgba(#25d366, 0.2); }
+        &:hover { background: alpha(#25d366, 0.2); }
       }
     }
   }

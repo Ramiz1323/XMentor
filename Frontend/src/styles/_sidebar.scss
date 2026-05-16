@@ -193,7 +193,7 @@
       &:hover {
         background: alpha($accent-secondary, 0.2);
         transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba($accent-secondary, 0.3);
+        box-shadow: 0 4px 15px alpha($accent-secondary, 0.3);
       }
 
       svg { flex-shrink: 0; }

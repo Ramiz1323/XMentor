@@ -8,7 +8,7 @@
     @return rgba($color, $opacity);
   } @else {
     // For CSS Variables, use color-mix to provide proper transparency in the browser
-    @return color-mix(in srgb, #{$color} #{$opacity * 100}%, transparent);
+    @return color-mix(in srgb, #{$color} #{$opacity * 100%}, transparent);
   }
 }
 
@@ -752,8 +752,8 @@
 }
 
 .tactical-objective-panel {
-    background: rgba($accent-primary, 0.04);
-    border: 1px solid rgba($accent-primary, 0.1);
+    background: alpha($accent-primary, 0.04);
+    border: 1px solid alpha($accent-primary, 0.1);
     border-left: 4px solid $accent-primary;
     border-radius: 8px;
     padding: 1.25rem 1.5rem;
@@ -772,13 +772,13 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(90deg, rgba($accent-primary, 0.05) 0%, transparent 100%);
+        background: linear-gradient(90deg, alpha($accent-primary, 0.05) 0%, transparent 100%);
         pointer-events: none;
     }
 
     .panel-icon {
         color: $accent-primary;
-        filter: drop-shadow(0 0 8px rgba($accent-primary, 0.5));
+        filter: drop-shadow(0 0 8px alpha($accent-primary, 0.5));
         flex-shrink: 0;
     }
 

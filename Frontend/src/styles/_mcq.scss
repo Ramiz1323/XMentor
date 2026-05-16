@@ -187,7 +187,7 @@
 
       &:focus-within {
         border-color: $accent-primary;
-        box-shadow: 0 0 15px rgba($accent-primary, 0.2);
+        box-shadow: 0 0 15px alpha($accent-primary, 0.2);
       }
 
       .search-icon {
@@ -233,7 +233,7 @@
 
         &:hover, &.active {
           border-color: $accent-primary;
-          background: rgba($accent-primary, 0.05);
+          background: alpha($accent-primary, 0.05);
         }
 
         .trigger-icon {
@@ -283,12 +283,12 @@
           transition: all 0.2s ease;
 
           &:hover {
-            background: rgba($accent-primary, 0.1);
+            background: alpha($accent-primary, 0.1);
             color: white;
           }
 
           &.selected {
-            background: rgba($accent-primary, 0.2);
+            background: alpha($accent-primary, 0.2);
             color: $accent-primary;
             font-weight: 600;
           }
@@ -306,8 +306,8 @@
     gap: 2rem;
 
     .btn-load-more {
-      background: rgba($accent-primary, 0.1);
-      border: 1px solid rgba($accent-primary, 0.2);
+      background: alpha($accent-primary, 0.1);
+      border: 1px solid alpha($accent-primary, 0.2);
       color: $accent-primary;
       padding: 0.75rem 2rem;
       border-radius: 30px;
@@ -322,9 +322,9 @@
       font-size: 0.85rem;
 
       &:hover {
-        background: rgba($accent-primary, 0.2);
+        background: alpha($accent-primary, 0.2);
         transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba($accent-primary, 0.2);
+        box-shadow: 0 5px 15px alpha($accent-primary, 0.2);
       }
 
       svg {
@@ -755,7 +755,7 @@
 
         &:hover {
             background: rgba(white, 0.07);
-            border-color: rgba($accent-secondary, 0.3);
+            border-color: alpha($accent-secondary, 0.3);
             transform: translateY(-3px);
         }
 
@@ -765,7 +765,7 @@
             font-size: 1.1rem;
             font-family: $font-family-display;
             display: block;
-            text-shadow: 0 0 15px rgba($accent-secondary, 0.3);
+            text-shadow: 0 0 15px alpha($accent-secondary, 0.3);
         }
 
         .label {
@@ -3880,7 +3880,7 @@
 
   &:hover {
     background: rgba(255, 255, 255, 0.04);
-    border-color: rgba($accent-primary, 0.3);
+    border-color: alpha($accent-primary, 0.3);
     transform: translateY(-2px);
   }
 
@@ -3907,7 +3907,7 @@
     margin-left: auto;
     font-size: 0.7rem;
     color: $color-warning;
-    background: rgba($color-warning, 0.1);
+    background: alpha($color-warning, 0.1);
     padding: 0.25rem 0.6rem;
     border-radius: 20px;
     display: flex;
@@ -3938,8 +3938,8 @@
     
     &.active {
       border-color: $accent-primary;
-      background: rgba($accent-primary, 0.1);
-      box-shadow: 0 0 15px rgba($accent-primary, 0.1);
+      background: alpha($accent-primary, 0.1);
+      box-shadow: 0 0 15px alpha($accent-primary, 0.1);
     }
 
     .avatar {
@@ -4115,8 +4115,8 @@
           text-transform: uppercase;
           letter-spacing: 0.5px;
 
-          &.correct { background: rgba($color-success, 0.1); color: $color-success; }
-          &.incorrect { background: rgba($color-danger, 0.1); color: $color-danger; }
+          &.correct { background: alpha($color-success, 0.1); color: $color-success; }
+          &.incorrect { background: alpha($color-danger, 0.1); color: $color-danger; }
         }
       }
 
@@ -4160,17 +4160,17 @@
           }
           .text { flex: 1; font-size: 1rem; }
 
-          &.correct-selected { background: rgba($color-success, 0.1); border-color: $color-success; .label { background: $color-success; color: white; } }
-          &.incorrect-selected { background: rgba($color-danger, 0.1); border-color: $color-danger; .label { background: $color-danger; color: white; } }
-          &.should-have-selected { border-color: rgba($color-success, 0.5); border-style: dashed; }
+          &.correct-selected { background: alpha($color-success, 0.1); border-color: $color-success; .label { background: $color-success; color: white; } }
+          &.incorrect-selected { background: alpha($color-danger, 0.1); border-color: $color-danger; .label { background: $color-danger; color: white; } }
+          &.should-have-selected { border-color: alpha($color-success, 0.5); border-style: dashed; }
           
           svg { margin-left: auto; }
         }
       }
 
       .explanation-box {
-        background: rgba($accent-primary, 0.05);
-        border: 1px solid rgba($accent-primary, 0.1);
+        background: alpha($accent-primary, 0.05);
+        border: 1px solid alpha($accent-primary, 0.1);
         border-radius: 14px;
         padding: 1.25rem;
 
@@ -4200,10 +4200,10 @@
             width: 40px;
             height: 40px;
             border-radius: 10px;
-            background: rgba($accent-primary, 0.1);
+            background: alpha($accent-primary, 0.1);
             @include flex-center;
             color: $accent-primary;
-            border: 1px solid rgba($accent-primary, 0.2);
+            border: 1px solid alpha($accent-primary, 0.2);
             flex-shrink: 0;
         }
         
@@ -4238,7 +4238,7 @@
         .fill {
             height: 100%;
             background: linear-gradient(to right, $accent-primary, $accent-secondary);
-            box-shadow: 0 0 10px rgba($accent-secondary, 0.3);
+            box-shadow: 0 0 10px alpha($accent-secondary, 0.3);
             border-radius: 10px;
         }
     }
@@ -4247,8 +4247,8 @@
 
 .btn-review-exam {
   cursor: pointer;
-  background: rgba($accent-secondary, 0.15);
-  border: 1px solid rgba($accent-secondary, 0.3);
+  background: alpha($accent-secondary, 0.15);
+  border: 1px solid alpha($accent-secondary, 0.3);
   color: $accent-secondary;
   font-weight: 800;
   padding: 0.5rem 1.25rem;
@@ -4272,7 +4272,7 @@
       color: #000;
       border-color: $accent-secondary;
       transform: translateY(-2px) scale(1.05);
-      box-shadow: 0 8px 25px rgba($accent-secondary, 0.4);
+      box-shadow: 0 8px 25px alpha($accent-secondary, 0.4);
       
       svg { 
           color: #000; 
@@ -4329,15 +4329,15 @@
     }
 
     &.reassign-btn {
-      background: rgba($accent-primary, 0.05);
-      border: 1px solid rgba($accent-primary, 0.2);
+      background: alpha($accent-primary, 0.05);
+      border: 1px solid alpha($accent-primary, 0.2);
       color: $accent-primary;
       
       &:hover {
-        background: rgba($accent-primary, 0.12);
+        background: alpha($accent-primary, 0.12);
         border-color: $accent-primary;
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba($accent-primary, 0.15);
+        box-shadow: 0 4px 12px alpha($accent-primary, 0.15);
       }
 
       &:active { transform: translateY(0) scale(0.98); }
@@ -4364,18 +4364,18 @@
   font-weight: 800;
   font-size: 0.9rem;
   color: $color-success;
-  background: rgba($color-success, 0.1);
+  background: alpha($color-success, 0.1);
   padding: 0.2rem 0.6rem;
   border-radius: 6px;
-  border: 1px solid rgba($color-success, 0.2);
+  border: 1px solid alpha($color-success, 0.2);
 }
 
 .review-btn-small {
   @include flex-center;
   width: 32px;
   height: 32px;
-  background: rgba($color-success, 0.1);
-  border: 1px solid rgba($color-success, 0.3);
+  background: alpha($color-success, 0.1);
+  border: 1px solid alpha($color-success, 0.3);
   border-radius: 8px;
   color: $color-success;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -4385,7 +4385,7 @@
     color: white;
     border-color: $color-success;
     transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 4px 12px rgba($color-success, 0.3);
+    box-shadow: 0 4px 12px alpha($color-success, 0.3);
     
     svg { transform: scale(1.1); }
   }

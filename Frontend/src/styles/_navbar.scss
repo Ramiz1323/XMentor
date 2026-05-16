@@ -2,7 +2,7 @@
 @use 'utilities' as *;
 
 .glass-navbar {
-  background: rgba($bg-primary, 0.7);
+  background: alpha($bg-primary, 0.7);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid $glass-border;
   position: sticky;
@@ -125,7 +125,7 @@
       }
 
       &:focus-within {
-        border-color: rgba($accent-primary, 0.5);
+        border-color: alpha($accent-primary, 0.5);
         background: rgba(255, 255, 255, 0.08);
       }
 
@@ -172,8 +172,8 @@
   }
 
   .logout-btn.header-logout {
-    background: rgba($color-danger, 0.1);
-    border: 1px solid rgba($color-danger, 0.2);
+    background: alpha($color-danger, 0.1);
+    border: 1px solid alpha($color-danger, 0.2);
     color: $color-danger;
     padding: 0.5rem 1rem;
     border-radius: 6px;
@@ -193,10 +193,10 @@
     }
 
     &:hover, &:focus-visible {
-      background: rgba($color-danger, 0.2);
+      background: alpha($color-danger, 0.2);
       transform: scale(0.98);
       outline: none;
-      box-shadow: 0 0 0 2px rgba($color-danger, 0.4);
+      box-shadow: 0 0 0 2px alpha($color-danger, 0.4);
     }
   }
 }
