@@ -198,7 +198,9 @@
 
       svg { flex-shrink: 0; }
     }
-
+    
+    // ── Perk Inventory Banner (used in MCQ Hub & Shop, not sidebar) ──
+    // Styles kept here since _sidebar.scss is imported globally
     .watermark {
       margin-top: 1.5rem;
       text-align: center;

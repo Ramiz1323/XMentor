@@ -1,6 +1,121 @@
 @use 'variables' as *;
 @use 'utilities' as *;
 
+// ── Perk Inventory Banner (MCQ Hub + Tactical Shop) ──
+.perk-inventory-banner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.6rem 1rem;
+  background: rgba(255, 215, 0, 0.04);
+  border: 1px solid rgba(255, 215, 0, 0.14);
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    padding: 0.75rem 1rem;
+    gap: 0.75rem;
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.85rem;
+    gap: 0.75rem;
+    border-radius: 12px;
+  }
+
+  .perk-banner__label {
+    font-size: 0.7rem;
+    font-family: $font-family-display;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: rgba(255, 215, 0, 0.7);
+    white-space: nowrap;
+
+    @media (max-width: 480px) {
+      text-align: center;
+      margin-bottom: 0.2rem;
+      font-size: 0.75rem;
+    }
+  }
+
+  .perk-banner__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    flex: 1;
+
+    @media (max-width: 480px) {
+      justify-content: center;
+      width: 100%;
+    }
+  }
+
+  .perk-banner__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 4px 10px 4px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(var(--perk-color, #3b82f6), 0.3);
+    background: rgba(var(--perk-color, #3b82f6), 0.08);
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.85);
+    cursor: default;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+
+    @media (max-width: 480px) {
+      padding: 6px 12px;
+      font-size: 0.78rem;
+    }
+
+    svg { color: var(--perk-color, #3b82f6); flex-shrink: 0; }
+
+    &:hover {
+      border-color: var(--perk-color, #3b82f6);
+      box-shadow: 0 0 10px var(--perk-glow, rgba(59,130,246,0.3));
+    }
+
+    .perk-banner__count {
+      font-weight: 800;
+      font-family: $font-family-display;
+      color: var(--perk-color, #3b82f6);
+      font-size: 0.7rem;
+      margin-left: 2px;
+    }
+  }
+
+  .perk-banner__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.65rem;
+    color: rgba(255, 215, 0, 0.5);
+    text-decoration: none;
+    font-family: $font-family-display;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    transition: color 0.2s ease;
+    margin-left: auto;
+
+    @media (max-width: 480px) {
+      margin-left: 0;
+      margin-top: 0.4rem;
+      justify-content: center;
+      padding: 0.6rem;
+      background: rgba(255, 215, 0, 0.1);
+      border-radius: 8px;
+      font-size: 0.75rem;
+      width: 100%;
+      text-align: center;
+    }
+
+    &:hover { color: #ffd700; }
+  }
+}
+
 // MCQ HUB / DASHBOARD
 .mcq-dashboard-container,
 .task-results-container,
@@ -455,6 +570,9 @@
 
         .primary-row {
           width: 100%;
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
 
           .btn-primary, .review-btn {
             width: 100%;
@@ -2137,7 +2255,7 @@
     margin: 0 auto 2rem;
     @media (max-width: 1024px) { 
       flex-direction: column; 
-      align-items: flex-start; 
+      align-items: stretch; 
       gap: 1.25rem;
       padding: 0 1.25rem;
       margin-bottom: 1.5rem;
@@ -2157,6 +2275,13 @@
       color: $accent-secondary;
       border: 1px solid alpha($accent-secondary, 0.3);
 
+      @media (max-width: 1024px) {
+        width: 100%;
+        justify-content: center;
+        padding: 0.85rem;
+        font-size: 1rem;
+      }
+
       &.critical { color: $color-danger; border-color: alpha($color-danger, 0.3); }
       &.fluid { background: alpha(white, 0.1); color: alpha(white, 0.6); border-color: alpha(white, 0.1); }
     }
@@ -2164,6 +2289,7 @@
     .pause-btn-tactical {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 0.6rem;
       padding: 0.75rem 1.25rem;
       @include glass-card;
@@ -2177,6 +2303,12 @@
       cursor: pointer;
       transition: $transition-smooth;
 
+      @media (max-width: 1024px) {
+        width: 100%;
+        padding: 0.85rem;
+        font-size: 0.95rem;
+      }
+
       &:hover {
         background: alpha($accent-primary, 0.2);
         border-color: $accent-primary;
@@ -2187,8 +2319,30 @@
       svg {
         filter: drop-shadow(0 0 5px alpha($accent-primary, 0.5));
       }
+
+      // Perk variant — gold glow instead of blue
+      &.perk-pause-btn {
+        background: rgba(255, 215, 0, 0.08);
+        border-color: rgba(255, 215, 0, 0.3);
+        color: #ffd700;
+
+        &:hover {
+          background: rgba(255, 215, 0, 0.15);
+          border-color: #ffd700;
+          box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+          transform: none;
+        }
+      }
     }
   }
+
+
+
 
   .success-pulse {
     background: linear-gradient(135deg, $color-success, #10b981) !important;
@@ -2555,6 +2709,47 @@
         &:disabled { opacity: 0.3; cursor: not-allowed; }
       }
     }
+  }
+}
+
+// ── Extend Deadline perk button (MCQ Hub task cards) ──
+.btn-extend-deadline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  height: 40px;
+  padding: 0.5rem 0.85rem;
+  background: rgba(255, 215, 0, 0.08);
+  border: 1px solid rgba(255, 215, 0, 0.25);
+  border-radius: 10px;
+  color: #ffd700;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-family: $font-family-display;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+
+  @media (max-width: 480px) {
+    height: 44px;
+    font-size: 0.8rem;
+    border-radius: 10px;
+  }
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 215, 0, 0.15);
+    border-color: #ffd700;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.2);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 

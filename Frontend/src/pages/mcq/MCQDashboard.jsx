@@ -3,10 +3,13 @@ import { Link } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
 import useMCQStore from '../../store/useMCQStore';
 import useUserStore from '../../store/useUserStore';
-import { Plus, BookOpen, Clock, Target, Users, TrendingUp, Star, CheckCircle, Trash2, UserPlus, X, Eye, Play, RefreshCw, Search, Filter, ChevronDown } from 'lucide-react';
+import useShopStore from '../../store/useShopStore';
+import { Plus, BookOpen, Clock, Target, Users, TrendingUp, Star, CheckCircle, Trash2, UserPlus, X, Eye, Play, RefreshCw, Search, Filter, ChevronDown, CalendarClock } from 'lucide-react';
 import TaskSkeleton from '../../components/skeletons/TaskSkeleton';
 import LoadingOverlay from '../../components/ui/LoadingOverlay';
 import SEO from '../../components/common/SEO';
+import toast from 'react-hot-toast';
+import PerkInventory from '../../components/ui/PerkInventory';
 
 const TacticalSelect = ({ value, onChange, options, icon: Icon, placeholder }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -59,6 +62,8 @@ const MCQDashboard = () => {
   const { user } = useAuthStore();
   const { tests, hasMore, fetchMyTests, fetchTeacherOverview, assignToStudents, deleteTest, isLoading, isLoadingMore, error, filters, setFilters, total } = useMCQStore();
   const { profile, fetchProfile } = useUserStore();
+  const { useDeadlineExtend } = useShopStore();
+  const [extendingDeadline, setExtendingDeadline] = useState(null); // testId being extended
   
   const [viewMode, setViewMode] = useState('TASK_WISE');
   const [overviewData, setOverviewData] = useState(null);
@@ -200,6 +205,24 @@ const MCQDashboard = () => {
 
   const TaskCard = ({ test }) => {
     const isCompleted = test.isSubmitted;
+    const isExpired = test.deadline && new Date(test.deadline) < new Date();
+    const hasDeadlinePerk = user?.role === 'STUDENT' &&
+      (user?.inventory || []).some(i => i.itemId === 'perk_deadline_extend');
+
+    const handleExtendDeadline = async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setExtendingDeadline(test._id);
+      try {
+        const res = await useDeadlineExtend(test._id);
+        toast.success(res.message, { icon: '📅' });
+        fetchMyTests(); // Refresh cards with new deadline
+      } catch (err) {
+        toast.error(err.message || 'Failed to extend deadline');
+      } finally {
+        setExtendingDeadline(null);
+      }
+    };
 
     return (
       <div className={`glass-card task-card ${test.createdBy?._id === user?._id ? 'owned' : ''} ${isCompleted ? 'completed-task' : ''}`}>
@@ -298,22 +321,40 @@ const MCQDashboard = () => {
                    <BookOpen size={16} /> Review Mission
                 </Link>
               ) : (
-                <Link 
-                  to={`/mcq/${test._id}`} 
-                  className={`btn-primary ${test.isPaused ? 'btn-resume' : 'btn-attend'}`} 
-                >
-                  {test.isPaused ? (
-                    <>
-                      <RefreshCw size={18} className="btn-loader" />
-                      Resume Training Session
-                    </>
-                  ) : (
-                    <>
-                      <Play size={18} fill="currentColor" className="btn-loader" />
-                      {user?.role === 'TEACHER' ? 'Participate In Training' : 'Attend Training Session'}
-                    </>
+                <>
+                  <Link 
+                    to={`/mcq/${test._id}`} 
+                    className={`btn-primary ${test.isPaused ? 'btn-resume' : 'btn-attend'}`} 
+                  >
+                    {test.isPaused ? (
+                      <>
+                        <RefreshCw size={18} className="btn-loader" />
+                        Resume Training Session
+                      </>
+                    ) : (
+                      <>
+                        <Play size={18} fill="currentColor" className="btn-loader" />
+                        {user?.role === 'TEACHER' ? 'Participate In Training' : 'Attend Training Session'}
+                      </>
+                    )}
+                  </Link>
+
+                  {/* Deadline Extend perk button — students only, when deadline is expired */}
+                  {isExpired && hasDeadlinePerk && (
+                    <button
+                      className="btn-extend-deadline"
+                      onClick={handleExtendDeadline}
+                      disabled={extendingDeadline === test._id}
+                      title="Use Deadline Extension token (+1 Day)"
+                    >
+                      {extendingDeadline === test._id ? (
+                        <span className="btn-spinner" />
+                      ) : (
+                        <><CalendarClock size={14} /> Extend +1D</>
+                      )}
+                    </button>
                   )}
-                </Link>
+                </>
               )}
             </div>
           </div>
@@ -564,6 +605,9 @@ const MCQDashboard = () => {
           )}
         </div>
       </header>
+
+      {/* Perk inventory banner — students only, shows when they own perks */}
+      <PerkInventory />
 
       <div className="dashboard-sections">
         {user?.role === 'TEACHER' && viewMode === 'STUDENT_WISE' && (

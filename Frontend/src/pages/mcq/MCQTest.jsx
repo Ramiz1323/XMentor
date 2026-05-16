@@ -1,16 +1,21 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import useMCQStore from '../../store/useMCQStore';
-import { Timer, ArrowRight, ArrowLeft, CheckCircle, XCircle, HelpCircle, AlertCircle, RefreshCw, Trophy, Target, Clock, Star, Pause } from 'lucide-react';
+import useAuthStore from '../../store/useAuthStore';
+import useShopStore from '../../store/useShopStore';
+import { Timer, ArrowRight, ArrowLeft, CheckCircle, XCircle, HelpCircle, AlertCircle, RefreshCw, Trophy, Target, Clock, Star, Pause, Zap } from 'lucide-react';
 import Skeleton from '../../components/ui/Skeleton';
 import MathRenderer from '../../components/ui/MathRenderer';
 import confetti from 'canvas-confetti';
+import toast from 'react-hot-toast';
 
 
 const MCQTest = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { currentTest: test, fetchTestById, submitTest, pauseTest, isLoading, error } = useMCQStore();
+  const { user } = useAuthStore();
+  const { usePauseToken } = useShopStore();
 
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answers, setAnswers] = useState([]);
@@ -28,6 +33,7 @@ const MCQTest = () => {
   const [showNextConfirm, setShowNextConfirm] = useState(false);
   const [visited, setVisited] = useState([]);
   const [pausesUsed, setPausesUsed] = useState(0);
+  const [usingPausePerk, setUsingPausePerk] = useState(false);
 
 
   const answersRef = useRef([]);
@@ -183,6 +189,22 @@ const MCQTest = () => {
       setSecurityWarning(`Strategic Failure: ${err.message || 'Pause failed. Operations must continue.'}`);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // ── Use Pause Token perk, then immediately execute pause ──
+  const handleUsePauseTokenThenPause = async () => {
+    if (usingPausePerk || submitting || result || !test) return;
+    setUsingPausePerk(true);
+    try {
+      const res = await usePauseToken(id);
+      toast.success(res.message, { icon: '⏸️' });
+      // After token activation, backend bumped pauseLimit so handlePause will succeed
+      await handlePause();
+    } catch (err) {
+      toast.error(err.message || 'Pause Token activation failed');
+    } finally {
+      setUsingPausePerk(false);
     }
   };
 
@@ -644,6 +666,7 @@ const MCQTest = () => {
                 </div>
               )
             )}
+            {/* Regular pause button (when test has built-in pause slots) */}
             {!result && test.pauseLimit > 0 && pausesUsed < test.pauseLimit && (
               <button 
                 onClick={handlePause} 
@@ -652,6 +675,20 @@ const MCQTest = () => {
               >
                 <Pause size={18} />
                 <span>Pause ({pausesUsed}/{test.pauseLimit})</span>
+              </button>
+            )}
+            {!result && test.pauseLimit > 0 && pausesUsed >= test.pauseLimit && (user?.inventory || []).some(i => i.itemId === 'perk_extra_pause' || i.itemId === 'perk_pause_token') && (
+              <button
+                onClick={handleUsePauseTokenThenPause}
+                className="pause-btn-tactical perk-pause-btn"
+                disabled={usingPausePerk || submitting}
+                title="Activate Pause Token from your inventory"
+              >
+                {usingPausePerk ? (
+                  <span className="btn-spinner" />
+                ) : (
+                  <><Zap size={16} /> Use Pause Token</>
+                )}
               </button>
             )}
           </header>
