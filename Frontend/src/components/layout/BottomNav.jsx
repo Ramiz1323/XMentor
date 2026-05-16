@@ -13,7 +13,8 @@ import {
   ShieldCheck, 
   Settings, 
   Download, 
-  LogOut 
+  LogOut,
+  ChevronRight
 } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
 
@@ -71,22 +72,22 @@ const BottomNav = () => {
           </NavLink>
 
           <NavLink
-            to="/communities"
-            className={({ isActive }) => `downbar-item ${isActive ? 'active' : ''}`}
-            aria-label="Communities"
-          >
-            <Users size={22} />
-            <span>Chats</span>
-          </NavLink>
-
-          <NavLink
             to="/mcq"
             end
             className={({ isActive }) => `downbar-item ${isActive ? 'active' : ''}`}
             aria-label="MCQ Hub"
           >
             <Target size={22} />
-            <span>MCQ</span>
+            <span>Mcq</span>
+          </NavLink>
+
+          <NavLink
+            to="/leaderboard"
+            className={({ isActive }) => `downbar-item ${isActive ? 'active' : ''}`}
+            aria-label="Leaderboard"
+          >
+            <Trophy size={22} />
+            <span>Leaderboard</span>
           </NavLink>
 
           <NavLink
@@ -110,7 +111,7 @@ const BottomNav = () => {
         </div>
       </nav>
 
-      {/* ── Slide-up Menu Bottom Sheet ── */}
+      {/* ── Slide-up Menu Bottom Sheet (Line by Line Rows) ── */}
       <div 
         className={`menu-sheet-overlay ${isMenuOpen ? 'show' : ''}`}
         onClick={() => setIsMenuOpen(false)}
@@ -141,38 +142,53 @@ const BottomNav = () => {
         </div>
 
         <div className="sheet-body">
-          <div className="sheet-nav-grid">
-            <NavLink to="/leaderboard" className="sheet-nav-item">
-              <div className="item-icon-box"><Trophy size={20} /></div>
-              <span>Leaderboard</span>
+          <div className="sheet-nav-list">
+            <NavLink to="/communities" className="sheet-nav-row" style={{ '--row-idx': 1 }}>
+              <div className="row-left">
+                <div className="item-icon-box"><Users size={20} /></div>
+                <span>Chats</span>
+              </div>
+              <ChevronRight size={18} className="row-chevron" />
             </NavLink>
 
-            <NavLink to="/doubts" className="sheet-nav-item">
-              <div className="item-icon-box"><HelpCircle size={20} /></div>
-              <span>Doubt Section</span>
+            <NavLink to="/doubts" className="sheet-nav-row" style={{ '--row-idx': 2 }}>
+              <div className="row-left">
+                <div className="item-icon-box"><HelpCircle size={20} /></div>
+                <span>Doubt Section</span>
+              </div>
+              <ChevronRight size={18} className="row-chevron" />
             </NavLink>
 
             {user?.role === 'TEACHER' && (
-              <NavLink to="/subjective/review" className="sheet-nav-item">
-                <div className="item-icon-box"><CheckCircle2 size={20} /></div>
-                <span>Review Center</span>
+              <NavLink to="/subjective/review" className="sheet-nav-row" style={{ '--row-idx': 3 }}>
+                <div className="row-left">
+                  <div className="item-icon-box"><CheckCircle2 size={20} /></div>
+                  <span>Review Center</span>
+                </div>
+                <ChevronRight size={18} className="row-chevron" />
               </NavLink>
             )}
 
             {user?.isAdmin && (
-              <NavLink to="/admin" className="sheet-nav-item admin-link">
-                <div className="item-icon-box"><ShieldCheck size={20} /></div>
-                <span>Admin Operations</span>
+              <NavLink to="/admin" className="sheet-nav-row admin-link" style={{ '--row-idx': 4 }}>
+                <div className="row-left">
+                  <div className="item-icon-box"><ShieldCheck size={20} /></div>
+                  <span>Admin Operations</span>
+                </div>
+                <ChevronRight size={18} className="row-chevron" />
               </NavLink>
             )}
 
-            <NavLink to="/profile" className="sheet-nav-item">
-              <div className="item-icon-box"><Settings size={20} /></div>
-              <span>Profile Settings</span>
+            <NavLink to="/profile" className="sheet-nav-row" style={{ '--row-idx': 5 }}>
+              <div className="row-left">
+                <div className="item-icon-box"><Settings size={20} /></div>
+                <span>Profile Settings</span>
+              </div>
+              <ChevronRight size={18} className="row-chevron" />
             </NavLink>
           </div>
 
-          <div className="sheet-footer-actions">
+          <div className="sheet-footer-actions" style={{ '--row-idx': 6 }}>
             {deferredPrompt && (
               <button className="sheet-action-btn install-btn" onClick={handleInstall}>
                 <Download size={18} />

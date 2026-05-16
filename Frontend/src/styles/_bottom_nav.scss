@@ -95,13 +95,13 @@
   left: 0;
   width: 100%;
   max-height: 85vh;
-  background: rgba(#0d1427, 0.95);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
+  background: rgba(#0a0f1e, 0.88);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
   border-top: 1px solid rgba(255, 255, 255, 0.15);
   border-top-left-radius: 28px;
   border-top-right-radius: 28px;
-  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 -10px 50px rgba(0, 0, 0, 0.8);
   z-index: 1100;
   transform: translateY(100%);
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -115,6 +115,12 @@
 
   &.open {
     transform: translateY(0);
+
+    // Trigger staggered animation on children
+    .sheet-nav-row, .sheet-footer-actions {
+      animation: slideUpRow 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation-delay: calc(var(--row-idx) * 0.05s);
+    }
   }
 
   .sheet-header {
@@ -204,42 +210,51 @@
     gap: 1.5rem;
     max-height: calc(85vh - 80px);
 
-    .sheet-nav-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.85rem;
+    .sheet-nav-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
 
-      @media (max-width: 380px) {
-        grid-template-columns: 1fr;
-      }
-
-      .sheet-nav-item {
+      .sheet-nav-row {
         display: flex;
         align-items: center;
-        gap: 0.85rem;
-        padding: 1rem;
-        background: rgba(255, 255, 255, 0.05);
+        justify-content: space-between;
+        padding: 0.85rem 1.15rem;
+        background: rgba(255, 255, 255, 0.04);
         border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 16px;
+        border-radius: 18px;
         color: rgba(255, 255, 255, 0.85);
         text-decoration: none;
         font-family: $font-family-display;
-        font-size: 0.88rem;
+        font-size: 0.92rem;
         font-weight: 600;
+        opacity: 0;
+        transform: translateY(20px);
         transition: all 0.2s ease;
 
-        .item-icon-box {
-          width: 36px;
-          height: 36px;
-          border-radius: 10px;
-          background: rgba(255, 255, 255, 0.08);
-          @include flex-center;
-          color: $accent-secondary;
-          transition: all 0.2s ease;
+        .row-left {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+
+          .item-icon-box {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            @include flex-center;
+            color: $accent-secondary;
+            transition: all 0.2s ease;
+          }
+        }
+
+        .row-chevron {
+          color: rgba(255, 255, 255, 0.3);
+          transition: transform 0.2s ease, color 0.2s ease;
         }
 
         &:hover, &:focus-visible {
-          background: rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.08);
           border-color: rgba($accent-secondary, 0.4);
           color: white;
           transform: translateY(-2px);
@@ -247,6 +262,11 @@
           .item-icon-box {
             background: rgba($accent-secondary, 0.2);
             color: $accent-secondary;
+          }
+
+          .row-chevron {
+            color: $accent-secondary;
+            transform: translateX(3px);
           }
         }
 
@@ -262,15 +282,17 @@
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
+      opacity: 0;
+      transform: translateY(20px);
 
       .sheet-action-btn {
         width: 100%;
-        padding: 0.9rem;
-        border-radius: 16px;
+        padding: 0.95rem;
+        border-radius: 18px;
         @include flex-center;
         gap: 0.75rem;
         font-family: $font-family-display;
-        font-size: 0.88rem;
+        font-size: 0.9rem;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s ease;
@@ -310,5 +332,16 @@
         letter-spacing: 0.05em;
       }
     }
+  }
+}
+
+@keyframes slideUpRow {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
