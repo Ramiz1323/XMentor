@@ -106,7 +106,15 @@ npm run dev
 
 ## 📋 Recent Changes
 
-### v1.x — MCQ Stability & Hardening (May 2026)
+### v1.1.0 — Virtual Economy & Perk System (May 2026)
+- **Tactical Shop & Currency (`TacticalShop.jsx`)**: Implemented a fully gamified virtual economy where students earn `Pts` via Daily Login Bonuses (`+10 Pts`) and MCQ question completions (`+0.5 Pts` per correct answer).
+- **Economy Rebalancing**: Adjusted default starting balance to `50 Pts` (down from 150 Pts) to maintain a challenging and rewarding gamification loop, with seamless database migration for existing users.
+- **⚡ Emergency Pause Token**: Allows students to purchase and activate an extra exam pause. Includes strict consumption cooldown (`24h` between uses) and instructor override protection (cannot be used on exams configured with `pauseLimit === 0`).
+- **📅 Deadline Extension Token**: Allows students to extend an expired assignment by 24 hours. Features isolated student deadline tracking via `extendedDeadlines` array (ensuring only the purchasing student's deadline is extended) and strict consumption cooldown (`48h` between uses).
+- **Zustand Store Synchronization**: Real-time, zero-reload state synchronization between `useShopStore` and `useAuthStore` for instant UI updates across the navigation pill, shop inventory, and MCQ HUD banners.
+- **Responsive Tactical HUD**: Comprehensive mobile (`480px`) and tablet (`768px`/`1024px`) viewport optimizations for perk banners, action buttons, and inventory chips.
+
+### v1.0.1 — MCQ Stability & Hardening (May 2026)
 - Fixed timer resetting to full duration after pause/resume (timer now reads from `timeLeftRef` instead of state deps).
 - Fixed breach count resetting to 0 after resume (violations restored from `test.progress.breachCount` on mount).
 - Fixed paused students incorrectly shown as `0/total` in completed results table.

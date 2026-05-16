@@ -1,14 +1,17 @@
-import { precacheAndRoute } from 'workbox-precaching';
+import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { StaleWhileRevalidate, NetworkFirst } from 'workbox-strategies';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { ExpirationPlugin } from 'workbox-expiration';
 
+const APP_VERSION = 'v1_1_0';
+
+cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
 registerRoute(
   ({ url }) => url.pathname.startsWith('/api/') && !url.pathname.includes('/auth/'),
   new StaleWhileRevalidate({
-    cacheName: 'xmentor-api-cache',
+    cacheName: `xmentor-api-cache-${APP_VERSION}`,
     plugins: [
       new CacheableResponsePlugin({
         statuses: [0, 200],
@@ -24,7 +27,7 @@ registerRoute(
 registerRoute(
   ({ url }) => url.pathname.includes('/api/user/profile'),
   new NetworkFirst({
-    cacheName: 'xmentor-profile-cache',
+    cacheName: `xmentor-profile-cache-${APP_VERSION}`,
     plugins: [
       new CacheableResponsePlugin({
         statuses: [0, 200],
@@ -32,6 +35,26 @@ registerRoute(
     ],
   })
 );
+
+// Clean up old versioned caches from previous releases on activate
+self.addEventListener('activate', (event) => {
+  const currentCaches = [
+    `xmentor-api-cache-${APP_VERSION}`,
+    `xmentor-profile-cache-${APP_VERSION}`,
+  ];
+  event.waitUntil(
+    caches.keys().then((cacheNames) =>
+      Promise.all(
+        cacheNames
+          .filter(name => name.startsWith('xmentor-') && !currentCaches.includes(name))
+          .map(name => {
+            console.log('[SW] Deleting stale cache:', name);
+            return caches.delete(name);
+          })
+      )
+    )
+  );
+});
 
 self.addEventListener('push', (event) => {
   if (!event.data) return;
