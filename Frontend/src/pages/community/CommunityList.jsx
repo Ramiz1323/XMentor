@@ -177,7 +177,7 @@ const CommunityList = () => {
                 <p className="card-description">{community.description}</p>
 
                 <div className="card-footer">
-                  <div className="btn-group">
+                  <div className="btn-group-primary">
                     {isMember ? (
                       <button 
                         onClick={() => navigate(`/communities/${community._id}/chat`)}
@@ -194,39 +194,46 @@ const CommunityList = () => {
                         <LogIn size={18} /> Join Anonymously
                       </button>
                     )}
-
-                    {isCreator && (
-                      <button 
-                        onClick={() => setShowInviteModal(community)} 
-                        className="leave-btn-icon invite-btn"
-                        title="Recruit Students to Hub"
-                      >
-                        <UserPlus size={18} />
-                      </button>
-                    )}
-
-                    {isCreator && (
-                      <button 
-                        onClick={() => handleLeave(community._id, true)} 
-                        disabled={isLoadingAction}
-                        className={`leave-btn-icon delete-btn ${isLoadingAction ? 'loading' : ''}`}
-                        title="Terminate Community"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    )}
-
-                    {isMember && (
-                      <button 
-                        onClick={() => handleLeave(community._id)} 
-                        disabled={isLoadingAction}
-                        className="leave-btn-icon"
-                        title="Leave Community"
-                      >
-                        <LogOut size={18} />
-                      </button>
-                    )}
                   </div>
+
+                  {(isCreator || isMember) && (
+                    <div className="btn-group-secondary">
+                      {isCreator && (
+                        <button 
+                          onClick={() => setShowInviteModal(community)} 
+                          className="leave-btn-icon invite-btn"
+                          title="Recruit Students to Hub"
+                        >
+                          <UserPlus size={18} />
+                          <span>Recruit</span>
+                        </button>
+                      )}
+
+                      {isCreator && (
+                        <button 
+                          onClick={() => handleLeave(community._id, true)} 
+                          disabled={isLoadingAction}
+                          className={`leave-btn-icon delete-btn ${isLoadingAction ? 'loading' : ''}`}
+                          title="Terminate Community"
+                        >
+                          <Trash2 size={18} />
+                          <span>Delete</span>
+                        </button>
+                      )}
+
+                      {isMember && (
+                        <button 
+                          onClick={() => handleLeave(community._id)} 
+                          disabled={isLoadingAction}
+                          className="leave-btn-icon"
+                          title="Leave Community"
+                        >
+                          <LogOut size={18} />
+                          <span>Leave</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             );
