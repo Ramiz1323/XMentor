@@ -27,6 +27,9 @@ const SubmissionDetail = ({ test, submission, onClose }) => {
             </div>
           </div>
           
+        </header>
+
+        <div className="questions-review-list">
           <div className="task-summary-banner">
              <div className="summary-item">
                 <Target size={18} />
@@ -44,9 +47,7 @@ const SubmissionDetail = ({ test, submission, onClose }) => {
                 <div className="lab">Deployed At</div>
              </div>
           </div>
-        </header>
 
-        <div className="questions-review-list">
           {test.questions.map((q, idx) => {
             const studentAns = submission.answers[idx];
             const isCorrect = studentAns === q.correct;

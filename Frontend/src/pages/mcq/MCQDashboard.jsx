@@ -435,7 +435,8 @@ const MCQDashboard = () => {
                             <div className="subject">{task.subject}</div>
                           </div>
                           <div className="action-group">
-                             <Link to={`/mcq/${task._id}`} className="review-btn-small pending" title="View Mission Details">
+                             <div className="pending-badge">Pending</div>
+                             <Link to={`/mcq/${task._id}/results`} className="review-btn-small pending" title="View Mission Details">
                                <Eye size={14} />
                              </Link>
                           </div>

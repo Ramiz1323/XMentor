@@ -32,6 +32,9 @@ const ExamReviewModal = ({ test, results, onClose }) => {
             </div>
           </div>
           
+        </header>
+
+        <div className="questions-review-list">
           <div className="task-summary-banner">
              <div className="summary-item">
                 <Users size={18} />
@@ -49,9 +52,7 @@ const ExamReviewModal = ({ test, results, onClose }) => {
                 <div className="lab">Avg Tactical Score</div>
              </div>
           </div>
-        </header>
 
-        <div className="questions-review-list">
           {safeQuestions.map((q, idx) => {
             const stats = questionStats[idx];
             
