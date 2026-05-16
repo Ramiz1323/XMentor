@@ -34,6 +34,22 @@
   --accent-secondary: #ff9de2;
 }
 
+// ── PREMIUM (Tactical Shop unlock required) ──
+.theme-cyberpunk {
+  --accent-primary: #00ff88;
+  --accent-secondary: #00e5ff;
+}
+
+.theme-gold {
+  --accent-primary: #ffd700;
+  --accent-secondary: #ffaa00;
+}
+
+.theme-neon-pink {
+  --accent-primary: #ff00cc;
+  --accent-secondary: #ff66ff;
+}
+
 // Colors
 $bg-primary: var(--bg-primary);
 $bg-secondary: var(--bg-secondary);

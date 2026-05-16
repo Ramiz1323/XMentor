@@ -1,0 +1,682 @@
+@use 'variables' as *;
+@use 'utilities' as *;
+
+// ══════════════════════════════════════════════════════
+// TACTICAL SHOP — Premium Gamified UI
+// ══════════════════════════════════════════════════════
+
+.shop-page {
+  padding: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  animation: fadeInShop 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+  @media (max-width: 768px) { padding: 1rem; }
+}
+
+@keyframes fadeInShop {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ─── HEADER ───────────────────────────────────────────
+.shop-header {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+
+  @media (max-width: 640px) { gap: 0.75rem; }
+
+  .shop-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: rgba(white, 0.5);
+    text-decoration: none;
+    font-size: 0.75rem;
+    font-family: $font-family-display;
+    letter-spacing: 0.05rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    transition: $transition-smooth;
+    border: 1px solid rgba(white, 0.08);
+    flex-shrink: 0;
+
+    &:hover {
+      color: white;
+      background: rgba(white, 0.05);
+      border-color: rgba(white, 0.15);
+    }
+  }
+
+  .shop-title-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+
+    .shop-title-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, $accent-primary, $accent-secondary);
+      @include flex-center;
+      color: white;
+      box-shadow: 0 8px 24px color-mix(in srgb, #{$accent-primary} 40%, transparent);
+      flex-shrink: 0;
+    }
+
+    .shop-title {
+      font-size: 1.6rem;
+      line-height: 1.1;
+      @media (max-width: 480px) { font-size: 1.25rem; }
+    }
+    .shop-subtitle {
+      font-size: 0.8rem;
+      opacity: 0.5;
+      margin-top: 0.2rem;
+      font-family: $font-family-base;
+    }
+  }
+
+  // ── POINTS BALANCE PILL ──
+  .shop-balance {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 215, 0, 0.08);
+    border: 1px solid rgba(255, 215, 0, 0.25);
+    border-radius: 40px;
+    padding: 0.5rem 1.25rem;
+    position: relative;
+    overflow: hidden;
+    animation: balancePulse 3s ease-in-out infinite;
+    flex-shrink: 0;
+
+    .balance-orb {
+      position: absolute;
+      top: -50%;
+      left: -10%;
+      width: 80px;
+      height: 80px;
+      background: radial-gradient(circle, rgba(255, 215, 0, 0.15), transparent 70%);
+      animation: orbFloat 4s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .balance-icon {
+      color: #ffd700;
+      filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.6));
+    }
+
+    .balance-value {
+      font-family: $font-family-display;
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: #ffd700;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+      letter-spacing: 0.05rem;
+      animation: countGlow 2s ease-in-out infinite;
+    }
+
+    .balance-label {
+      font-family: $font-family-display;
+      font-size: 0.65rem;
+      color: rgba(255, 215, 0, 0.6);
+      letter-spacing: 0.1rem;
+    }
+  }
+}
+
+@keyframes balancePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+  50%       { box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.08); }
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%       { transform: translateY(5px) scale(1.1); }
+}
+
+@keyframes countGlow {
+  0%, 100% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
+  50%       { text-shadow: 0 0 25px rgba(255, 215, 0, 0.7); }
+}
+
+
+// ─── DAILY BONUS CARD ─────────────────────────────────
+.daily-bonus-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  background: rgba(255, 215, 0, 0.04);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  transition: $transition-smooth;
+
+  &.claimable {
+    border-color: rgba(255, 215, 0, 0.4);
+    animation: cardPulseGold 2.5s ease-in-out infinite;
+
+    .daily-bonus-glow {
+      background: radial-gradient(ellipse at 20% 50%, rgba(255, 215, 0, 0.12), transparent 60%);
+    }
+  }
+
+  &.claimed {
+    border-color: rgba(white, 0.1);
+    background: rgba(white, 0.02);
+    .daily-bonus-glow { display: none; }
+    .daily-claim-btn { opacity: 0.5; }
+  }
+
+  .daily-bonus-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    transition: $transition-smooth;
+  }
+
+  .daily-bonus-content {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    position: relative;
+    z-index: 1;
+
+    @media (max-width: 640px) { flex-wrap: wrap; gap: 1rem; }
+
+    .daily-icon-wrapper {
+      width: 56px;
+      height: 56px;
+      flex-shrink: 0;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,165,0,0.15));
+      border: 1px solid rgba(255,215,0,0.3);
+      @include flex-center;
+      color: #ffd700;
+      animation: iconSpin 6s linear infinite;
+    }
+
+    .daily-text {
+      flex: 1;
+
+      h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #ffd700;
+        margin-bottom: 0.25rem;
+      }
+
+      p {
+        font-size: 0.8rem;
+        opacity: 0.65;
+        font-family: $font-family-base;
+        line-height: 1.4;
+      }
+    }
+
+    .daily-claim-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1.25rem;
+      border-radius: 10px;
+      border: none;
+      font-family: $font-family-display;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05rem;
+      cursor: pointer;
+      transition: $transition-smooth;
+      white-space: nowrap;
+      background: linear-gradient(135deg, #ffd700, #ffa500);
+      color: #0f172a;
+      box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+      flex-shrink: 0;
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(255, 215, 0, 0.5);
+      }
+
+      &:disabled { cursor: not-allowed; }
+
+      &.already-claimed {
+        background: rgba(white, 0.08);
+        color: rgba(white, 0.5);
+        box-shadow: none;
+      }
+    }
+  }
+
+  .daily-hint {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.85rem;
+    font-size: 0.7rem;
+    opacity: 0.45;
+    font-family: $font-family-base;
+    position: relative;
+    z-index: 1;
+
+    svg { color: $accent-secondary; flex-shrink: 0; }
+  }
+}
+
+@keyframes cardPulseGold {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+  50%       { box-shadow: 0 0 20px rgba(255, 215, 0, 0.15), 0 0 0 3px rgba(255, 215, 0, 0.06); }
+}
+
+@keyframes iconSpin {
+  0%   { transform: rotate(0deg);   }
+  25%  { transform: rotate(5deg);   }
+  75%  { transform: rotate(-5deg);  }
+  100% { transform: rotate(0deg);   }
+}
+
+
+// ─── TAB FILTER ───────────────────────────────────────
+.shop-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.75rem;
+  border-bottom: 1px solid rgba(white, 0.08);
+  padding-bottom: 1rem;
+
+  .shop-tab {
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    border: 1px solid rgba(white, 0.08);
+    background: transparent;
+    color: rgba(white, 0.5);
+    font-family: $font-family-display;
+    font-size: 0.72rem;
+    letter-spacing: 0.05rem;
+    cursor: pointer;
+    transition: $transition-smooth;
+
+    &:hover {
+      background: rgba(white, 0.05);
+      color: white;
+    }
+
+    &.active {
+      background: color-mix(in srgb, #{$accent-primary} 15%, transparent);
+      border-color: color-mix(in srgb, #{$accent-primary} 40%, transparent);
+      color: $accent-secondary;
+      box-shadow: 0 0 20px color-mix(in srgb, #{$accent-primary} 10%, transparent);
+    }
+  }
+}
+
+
+// ─── ITEMS GRID ───────────────────────────────────────
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 3rem;
+
+  @media (max-width: 640px) { grid-template-columns: 1fr; }
+}
+
+.shop-item-card {
+  @include glass-card;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: cardPopIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  
+  // Dynamic color from item data via CSS var
+  --item-color: #{$accent-primary};
+  --item-glow: rgba(59, 130, 246, 0.4);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 70% 10%, color-mix(in srgb, var(--item-color) 8%, transparent), transparent 60%);
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    opacity: 0;
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    border-color: color-mix(in srgb, var(--item-color) 40%, transparent);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px color-mix(in srgb, var(--item-color) 20%, transparent);
+
+    &::before { opacity: 1; }
+
+    .item-swatch .swatch-icon {
+      transform: scale(1.15) rotate(-5deg);
+      filter: drop-shadow(0 0 16px var(--item-glow));
+    }
+  }
+
+  &.owned {
+    border-color: color-mix(in srgb, #{$color-success} 30%, transparent);
+    background: color-mix(in srgb, #{$color-success} 4%, rgba(white, 0.08));
+
+    &::before {
+      background: radial-gradient(circle at 70% 10%, color-mix(in srgb, #{$color-success} 6%, transparent), transparent 60%);
+      opacity: 1;
+    }
+  }
+
+  &.unaffordable {
+    opacity: 0.65;
+    filter: grayscale(0.25);
+  }
+
+  &.purchase-flash {
+    animation: purchaseFlash 0.6s ease-out;
+  }
+
+  // Skeleton state
+  &.skeleton-card {
+    min-height: 280px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+
+    .skeleton-swatch {
+      width: 100%;
+      height: 100px;
+      border-radius: 12px;
+    }
+  }
+
+  // Skeleton text/button placeholder sizes (replace inline styles)
+  .shop-skeleton-title {
+    width: 60%;
+    height: 18px;
+    margin-top: 1rem;
+  }
+
+  .shop-skeleton-desc {
+    width: 90%;
+    height: 14px;
+    margin-top: 0.5rem;
+  }
+
+  .shop-skeleton-btn {
+    width: 40%;
+    height: 36px;
+    margin-top: 1.5rem;
+  }
+
+  // Swatch dot middle colour (the white semi-transparent one)
+  .swatch-dot--mid {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: block;
+    background: #fff;
+    opacity: 0.4;
+    box-shadow: 0 0 6px currentColor;
+  }
+
+  // ── Owned Badge ──
+  .owned-badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: color-mix(in srgb, #{$color-success} 15%, transparent);
+    border: 1px solid color-mix(in srgb, #{$color-success} 30%, transparent);
+    color: $color-success;
+    font-family: $font-family-display;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.08rem;
+    padding: 3px 8px;
+    border-radius: 20px;
+  }
+
+  // ── Swatch Preview ──
+  .item-swatch {
+    width: 100%;
+    height: 90px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--item-color) 10%, rgba(white, 0.04));
+    border: 1px solid color-mix(in srgb, var(--item-color) 20%, rgba(white, 0.1));
+    @include flex-center;
+    position: relative;
+    overflow: hidden;
+
+    .swatch-bg {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 100%, color-mix(in srgb, var(--item-color) 20%, transparent), transparent 60%);
+    }
+
+    .swatch-icon {
+      color: var(--item-color);
+      filter: drop-shadow(0 0 10px var(--item-glow));
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      z-index: 1;
+    }
+
+    .swatch-dots {
+      position: absolute;
+      bottom: 10px;
+      display: flex;
+      gap: 5px;
+      z-index: 1;
+
+      span {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: block;
+        box-shadow: 0 0 6px currentColor;
+      }
+    }
+  }
+
+  // ── Item Meta ──
+  .item-meta {
+    flex: 1;
+
+    .item-type-badge {
+      font-size: 0.6rem;
+      font-family: $font-family-display;
+      letter-spacing: 0.08rem;
+      color: rgba(white, 0.45);
+      margin-bottom: 0.4rem;
+      text-transform: uppercase;
+    }
+
+    .item-name {
+      font-family: $font-family-display;
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+      color: var(--item-color);
+      text-shadow: 0 0 20px color-mix(in srgb, var(--item-color) 30%, transparent);
+    }
+
+    .item-desc {
+      font-family: $font-family-base;
+      font-size: 0.78rem;
+      line-height: 1.5;
+      opacity: 0.6;
+    }
+  }
+
+  // ── Footer ──
+  .item-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border-top: 1px solid rgba(white, 0.06);
+    padding-top: 1rem;
+    flex-wrap: wrap;
+
+    .item-price {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+
+      .price-icon { color: #ffd700; filter: drop-shadow(0 0 4px rgba(255,215,0,0.5)); }
+
+      span {
+        font-family: $font-family-display;
+        font-weight: 800;
+        font-size: 1.05rem;
+        color: #ffd700;
+      }
+
+      .pts-label {
+        font-size: 0.6rem;
+        opacity: 0.5;
+        letter-spacing: 0.08rem;
+        font-weight: 500;
+      }
+    }
+
+    .item-buy-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      border: none;
+      font-family: $font-family-display;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.04rem;
+      cursor: pointer;
+      transition: $transition-smooth;
+      white-space: nowrap;
+      background: linear-gradient(135deg, $accent-primary, $accent-secondary);
+      color: white;
+      box-shadow: 0 4px 14px color-mix(in srgb, #{$accent-primary} 30%, transparent);
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px color-mix(in srgb, #{$accent-primary} 45%, transparent);
+      }
+
+      &:disabled { cursor: not-allowed; transform: none; }
+
+      &.owned-btn {
+        background: color-mix(in srgb, #{$color-success} 15%, transparent);
+        border: 1px solid color-mix(in srgb, #{$color-success} 25%, transparent);
+        color: $color-success;
+        box-shadow: none;
+      }
+
+      &.locked-btn {
+        background: rgba(white, 0.07);
+        border: 1px solid rgba(white, 0.1);
+        color: rgba(white, 0.4);
+        box-shadow: none;
+        font-size: 0.65rem;
+      }
+    }
+  }
+}
+
+@keyframes cardPopIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes purchaseFlash {
+  0%   { box-shadow: 0 0 0 0 rgba(255,215,0,0); }
+  30%  { box-shadow: 0 0 40px 10px rgba(255,215,0,0.4); }
+  100% { box-shadow: 0 0 0 0 rgba(255,215,0,0); }
+}
+
+
+// ─── HOW TO EARN GUIDE ────────────────────────────────
+.earn-guide {
+  border-top: 1px solid rgba(white, 0.08);
+  padding-top: 2rem;
+
+  .earn-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: $font-family-display;
+    font-size: 0.85rem;
+    letter-spacing: 0.08rem;
+    color: rgba(white, 0.5);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+
+    svg { color: #ffd700; }
+  }
+
+  .earn-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .earn-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    background: rgba(white, 0.03);
+    border: 1px solid rgba(white, 0.07);
+    transition: $transition-smooth;
+
+    &:hover {
+      background: rgba(white, 0.05);
+      border-color: rgba(white, 0.12);
+      transform: translateX(4px);
+    }
+
+    .earn-emoji { font-size: 1.4rem; flex-shrink: 0; }
+
+    .earn-info {
+      flex: 1;
+      .earn-action { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.1rem; }
+      .earn-detail { font-size: 0.72rem; opacity: 0.5; font-family: $font-family-base; }
+    }
+
+    .earn-pts {
+      font-family: $font-family-display;
+      font-weight: 800;
+      color: #ffd700;
+      font-size: 0.85rem;
+      text-shadow: 0 0 12px rgba(255,215,0,0.4);
+      white-space: nowrap;
+    }
+  }
+}
+
+
+// ─── SHARED SPINNER ───────────────────────────────────
+.btn-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(white, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spinBtn 0.6s linear infinite;
+}
+
+@keyframes spinBtn {
+  to { transform: rotate(360deg); }
+}
