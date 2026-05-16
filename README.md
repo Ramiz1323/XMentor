@@ -106,6 +106,13 @@ npm run dev
 
 ## 📋 Recent Changes
 
+### v1.2.0 — PWA Navigation & Glassmorphism Architecture (May 2026)
+- **Instagram-Style PWA Downbar (`BottomNav.jsx`)**: Replaced the legacy mobile sidebar with a sleek, modern bottom navigation bar featuring persistent active state tracking across core tactical views (Home, MCQ, Leaderboard, Tasks).
+- **Animated Menu Bottom Sheet**: Implemented an elegant, blur-backdrop slide-up menu sheet for mobile and tablet viewports (`<= 1024px`) with staggered, line-by-line row animations and premium active state highlighting.
+- **Glassmorphism Architecture Standardization (`_utilities.scss`)**: Refactored the core `alpha()` helper function to utilize modern, percentage-based `color-mix(in srgb, var(...), opacity%)` syntax. Completely eliminated legacy `rgba()` variable parsing errors across all SCSS modules (`_bottom_nav.scss`, `_navbar.scss`, `_notifications.scss`, `_sidebar.scss`, `_dashboard.scss`, `_error.scss`, `_mcq.scss`).
+- **Admin Command Center Fix (`AdminPanel.jsx`)**: Resolved a permanent white border UI bug on the search wrapper by eliminating conflicting utility classes, restoring custom glassmorphic interaction states.
+- **Community Card Restructuring (`CommunityList.jsx`)**: Redesigned the anonymous hub cards into an elegant 2-row action layout, isolating primary chat entry from secondary management controls (`Recruit`, `Delete`, `Leave`) with equal flex distribution and micro-animations.
+
 ### v1.1.0 — Virtual Economy & Perk System (May 2026)
 - **Tactical Shop & Currency (`TacticalShop.jsx`)**: Implemented a fully gamified virtual economy where students earn `Pts` via Daily Login Bonuses (`+10 Pts`) and MCQ question completions (`+0.5 Pts` per correct answer).
 - **Economy Rebalancing**: Adjusted default starting balance to `50 Pts` (down from 150 Pts) to maintain a challenging and rewarding gamification loop, with seamless database migration for existing users.
