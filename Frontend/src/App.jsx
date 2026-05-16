@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavig
 import useAuthStore from './store/useAuthStore';
 import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
+import BottomNav from './components/layout/BottomNav';
 import useHUDNotifications from './hooks/useHUDNotifications';
 import { Toaster } from 'react-hot-toast';
 import LoadingOverlay from './components/ui/LoadingOverlay';
@@ -96,7 +97,10 @@ function AppContent({ isAuthenticated }) {
     <div className={`app-container ${isAuthenticated && !isPendingVerification ? 'with-sidebar' : isLandingPage ? 'landing-mode' : 'auth-mode'} ${isSidebarOpen ? 'sidebar-open' : ''} ${isMCQTestPage || isPendingVerification ? 'tactical-mode' : ''} theme-${user?.theme || 'blue'}`}>
       {isLoading && <LoadingOverlay message="Terminating Strategic Session..." />}
       {isAuthenticated && !isMCQTestPage && !isPendingVerification && (
-        <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+        <>
+          <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+          <BottomNav />
+        </>
       )}
 
       <div className="main-layout">
