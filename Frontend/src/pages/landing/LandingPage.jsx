@@ -299,7 +299,7 @@ const LandingPage = () => {
           <Link to="/register">Register</Link>
           <a href="https://xmentor.skramizraza.tech" target="_blank" rel="noreferrer">Live Demo</a>
         </div>
-        <p className="footer-copy">© 2026 Ramiz. · v1.1.0 · All Rights Reserved. Built with ❤️ for real classrooms.</p>
+        <p className="footer-copy">© 2026 Ramiz. · v1.2.0 · All Rights Reserved. Built with ❤️ for real classrooms.</p>
       </footer>
 
     </div>
