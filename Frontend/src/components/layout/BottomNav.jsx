@@ -57,6 +57,11 @@ const BottomNav = () => {
     setIsMenuOpen(false);
   }, [location.pathname]);
 
+  // Check if any menu sheet route is currently active
+  const isMenuRouteActive = ['/communities', '/doubts', '/subjective/review', '/admin', '/profile'].some(route => 
+    location.pathname === route || location.pathname.startsWith(`${route}/`)
+  );
+
   return (
     <>
       {/* ── Fixed Bottom Navigation Bar (Mobile / Tablet <= 1024px) ── */}
@@ -102,7 +107,7 @@ const BottomNav = () => {
 
           <button
             onClick={() => setIsMenuOpen(prev => !prev)}
-            className={`downbar-item menu-tab-btn ${isMenuOpen ? 'active' : ''}`}
+            className={`downbar-item menu-tab-btn ${(isMenuOpen || isMenuRouteActive) ? 'active' : ''}`}
             aria-label="More Menu"
           >
             <Menu size={22} />
@@ -143,7 +148,7 @@ const BottomNav = () => {
 
         <div className="sheet-body">
           <div className="sheet-nav-list">
-            <NavLink to="/communities" className="sheet-nav-row" style={{ '--row-idx': 1 }}>
+            <NavLink to="/communities" className={({ isActive }) => `sheet-nav-row ${isActive ? 'active' : ''}`} style={{ '--row-idx': 1 }}>
               <div className="row-left">
                 <div className="item-icon-box"><Users size={20} /></div>
                 <span>Chats</span>
@@ -151,7 +156,7 @@ const BottomNav = () => {
               <ChevronRight size={18} className="row-chevron" />
             </NavLink>
 
-            <NavLink to="/doubts" className="sheet-nav-row" style={{ '--row-idx': 2 }}>
+            <NavLink to="/doubts" className={({ isActive }) => `sheet-nav-row ${isActive ? 'active' : ''}`} style={{ '--row-idx': 2 }}>
               <div className="row-left">
                 <div className="item-icon-box"><HelpCircle size={20} /></div>
                 <span>Doubt Section</span>
@@ -160,7 +165,7 @@ const BottomNav = () => {
             </NavLink>
 
             {user?.role === 'TEACHER' && (
-              <NavLink to="/subjective/review" className="sheet-nav-row" style={{ '--row-idx': 3 }}>
+              <NavLink to="/subjective/review" className={({ isActive }) => `sheet-nav-row ${isActive ? 'active' : ''}`} style={{ '--row-idx': 3 }}>
                 <div className="row-left">
                   <div className="item-icon-box"><CheckCircle2 size={20} /></div>
                   <span>Review Center</span>
@@ -170,7 +175,7 @@ const BottomNav = () => {
             )}
 
             {user?.isAdmin && (
-              <NavLink to="/admin" className="sheet-nav-row admin-link" style={{ '--row-idx': 4 }}>
+              <NavLink to="/admin" className={({ isActive }) => `sheet-nav-row admin-link ${isActive ? 'active' : ''}`} style={{ '--row-idx': 4 }}>
                 <div className="row-left">
                   <div className="item-icon-box"><ShieldCheck size={20} /></div>
                   <span>Admin Operations</span>
@@ -179,7 +184,7 @@ const BottomNav = () => {
               </NavLink>
             )}
 
-            <NavLink to="/profile" className="sheet-nav-row" style={{ '--row-idx': 5 }}>
+            <NavLink to="/profile" className={({ isActive }) => `sheet-nav-row ${isActive ? 'active' : ''}`} style={{ '--row-idx': 5 }}>
               <div className="row-left">
                 <div className="item-icon-box"><Settings size={20} /></div>
                 <span>Profile Settings</span>

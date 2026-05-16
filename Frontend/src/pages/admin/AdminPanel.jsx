@@ -65,7 +65,7 @@ const AdminPanel = () => {
       </div>
 
       <div className="data-controls">
-        <div className="search-wrapper glass-input">
+        <div className="search-wrapper">
           <Search size={18} />
           <input 
             type="text" 

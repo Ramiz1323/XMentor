@@ -61,7 +61,7 @@
       
       svg {
         transform: scale(1.15);
-        filter: drop-shadow(0 0 6px rgba($accent-secondary, 0.5));
+        filter: drop-shadow(0 0 6px alpha($accent-secondary, 0.5));
       }
     }
   }
@@ -255,12 +255,12 @@
 
         &:hover, &:focus-visible {
           background: rgba(255, 255, 255, 0.08);
-          border-color: rgba($accent-secondary, 0.4);
+          border-color: alpha($accent-secondary, 0.4);
           color: white;
           transform: translateY(-2px);
 
           .item-icon-box {
-            background: rgba($accent-secondary, 0.2);
+            background: alpha($accent-secondary, 0.2);
             color: $accent-secondary;
           }
 
@@ -271,9 +271,39 @@
         }
 
         &.admin-link {
-          border-color: rgba($color-danger, 0.3);
-          .item-icon-box { color: $color-danger; background: rgba($color-danger, 0.15); }
+          border-color: alpha($color-danger, 0.3);
+          .item-icon-box { color: $color-danger; background: alpha($color-danger, 0.15); }
           &:hover { border-color: $color-danger; }
+        }
+
+        &.active {
+          background: alpha($accent-secondary, 0.15);
+          border-color: $accent-secondary;
+          color: white;
+
+          .item-icon-box {
+            background: $accent-secondary;
+            color: #0a0f1e;
+            box-shadow: 0 0 12px alpha($accent-secondary, 0.6);
+          }
+
+          .row-chevron {
+            color: $accent-secondary;
+            transform: translateX(3px);
+          }
+
+          &.admin-link {
+            background: alpha($color-danger, 0.15);
+            border-color: $color-danger;
+            .item-icon-box {
+              background: $color-danger;
+              color: white;
+              box-shadow: 0 0 12px alpha($color-danger, 0.6);
+            }
+            .row-chevron {
+              color: $color-danger;
+            }
+          }
         }
       }
     }
@@ -309,12 +339,12 @@
         }
 
         &.logout-btn {
-          background: rgba($color-danger, 0.15);
-          border: 1px solid rgba($color-danger, 0.3);
+          background: alpha($color-danger, 0.15);
+          border: 1px solid alpha($color-danger, 0.3);
           color: $color-danger;
 
           &:hover {
-            background: rgba($color-danger, 0.25);
+            background: alpha($color-danger, 0.25);
             transform: translateY(-2px);
           }
         }
