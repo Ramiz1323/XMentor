@@ -46,9 +46,32 @@ const userSchema = new mongoose.Schema(
     },
     theme: {
       type: String,
-      enum: ['blue', 'red', 'emerald', 'purple', 'amber', 'bts'],
+      enum: ['blue', 'red', 'emerald', 'purple', 'amber', 'bts', 'cyberpunk', 'gold', 'neon-pink'],
       default: 'blue',
     },
+    points: {
+      type: Number,
+      default: 50,
+      min: 0,
+    },
+    lastDailyLogin: {
+      type: Date,
+      default: null,
+    },
+    lastPauseUse: {
+      type: Date,
+      default: null,
+    },
+    lastDeadlineExtendUse: {
+      type: Date,
+      default: null,
+    },
+    inventory: [{
+      itemId: { type: String, required: true },
+      itemType: { type: String, enum: ['THEME', 'PERK'], required: true },
+      name: { type: String, required: true },
+      purchasedAt: { type: Date, default: Date.now },
+    }],
     boardInfo: {
       board: {
         type: String,

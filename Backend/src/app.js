@@ -13,8 +13,12 @@ import communityRoutes from './modules/community/community.routes.js';
 import mcqRoutes from './modules/mcq/mcq.routes.js';
 import doubtRoutes from './modules/doubt/doubt.routes.js';
 import subjectiveRoutes from './modules/subjective/subjective.routes.js';
+import shopRoutes from './modules/shop/shop.routes.js';
+import { seedShopItems } from './modules/shop/shop.model.js';
 
 const app = express();
+
+seedShopItems().catch(err => console.error('[Shop Seed Error]', err.message));
 
 app.set('trust proxy', 1);
 
@@ -55,6 +59,7 @@ app.use('/api/community', communityRoutes);
 app.use('/api/mcq', mcqRoutes);
 app.use('/api/doubt', doubtRoutes);
 app.use('/api/subjective', subjectiveRoutes);
+app.use('/api/shop', shopRoutes);
 
 app.get('/api/health', (req, res) => {
   const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';

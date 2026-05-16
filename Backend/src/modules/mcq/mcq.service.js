@@ -1,6 +1,7 @@
 import { MCQTest, MCQResult } from './mcq.model.js';
 import ErrorResponse from '../../utils/errorResponse.js';
 import { deterministicShuffle } from '../../utils/shuffle.js';
+import { awardMCQPoints } from '../shop/shop.service.js';
 
 export const createTest = async (testData, teacherId) => {
   const {
@@ -39,6 +40,14 @@ export const createTest = async (testData, teacherId) => {
 export const getTestForStudent = async (testId, studentId) => {
   const test = await MCQTest.findById(testId).lean();
   if (!test) throw new ErrorResponse('Test not found', 404);
+
+  // Check if student has an extended deadline
+  if (test.extendedDeadlines && Array.isArray(test.extendedDeadlines)) {
+    const ext = test.extendedDeadlines.find(e => e.studentId?.toString() === studentId.toString());
+    if (ext && ext.deadline) {
+      test.deadline = ext.deadline;
+    }
+  }
 
   const result = await MCQResult.findOne({ testId, studentId }).lean();
 
@@ -148,6 +157,11 @@ export const submitTest = async (testId, studentId, studentAnswers, timeTaken, b
         breachCount: sanitizedBreachCount
       });
     }
+
+    // 🎖 Award 0.5 Pts per correct answer (fire-and-forget — never blocks submission)
+    awardMCQPoints(studentId, score).catch(err =>
+      console.error('[Shop] MCQ point award failed silently:', err.message)
+    );
 
     return result;
   } catch (error) {
@@ -282,11 +296,25 @@ export const getAssignedTests = async (userId, query = {}) => {
     },
     {
       $addFields: {
-        result: { $arrayElemAt: ['$userResult', 0] }
+        result: { $arrayElemAt: ['$userResult', 0] },
+        extendedEntry: {
+          $filter: {
+            input: { $ifNull: ['$extendedDeadlines', []] },
+            as: 'ext',
+            cond: { $eq: ['$$ext.studentId', userId] }
+          }
+        }
       }
     },
     {
       $addFields: {
+        deadline: {
+          $cond: {
+            if: { $gt: [{ $size: '$extendedEntry' }, 0] },
+            then: { $let: { vars: { firstExt: { $arrayElemAt: ['$extendedEntry', 0] } }, in: '$$firstExt.deadline' } },
+            else: '$deadline'
+          }
+        },
         isSubmitted: {
           $cond: {
             if: { $and: ['$result', { $or: [{ $eq: ['$result.status', 'COMPLETED'] }, { $not: ['$result.status'] }] }] },

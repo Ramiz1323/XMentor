@@ -82,7 +82,16 @@ const mcqTestSchema = new mongoose.Schema(
     pauseLimit: {
       type: Number,
       default: 0,
-    }
+    },
+    extendedDeadlines: [{
+      studentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+      deadline: {
+        type: Date,
+      }
+    }]
   },
   {
     timestamps: true,

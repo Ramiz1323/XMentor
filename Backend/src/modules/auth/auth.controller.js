@@ -30,6 +30,10 @@ const sendTokenResponse = (user, statusCode, res) => {
         boardInfo: user.boardInfo,
         teachers: user.teachers || [],
         students: user.students || [],
+        points: user.points ?? 150,
+        lastDailyLogin: user.lastDailyLogin ?? null,
+        inventory: user.inventory ?? [],
+        theme: user.theme || 'blue',
       },
     });
 };
