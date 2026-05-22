@@ -561,10 +561,10 @@ Return ONLY the raw JSON array. DO NOT WRAP IN MARKDOWN.`;
 
                 <div className="ai-helper-zone">
                     <button className="btn-generate-prompt full-width active mb-2" onClick={handleAIGenerate} disabled={isGenerating}>
-                        {isGenerating ? <><Loader2 className="animate-spin" style={{display:'inline', marginRight:'8px'}} size={16} /> Generating AI Intelligence...</> : 'Generate JSON via AI Co-Pilot'}
+                        {isGenerating ? <><Loader2 className="animate-spin" style={{display:'inline', marginRight:'8px'}} size={16} /> Generating AI Intelligence...</> : 'Generate JSON via AI'}
                     </button>
                     <button className="btn-generate-prompt full-width" onClick={copyPrompt}>
-                        Generate Prompt for AI (Manual)
+                        Copy Prompt for AI (Manual)
                     </button>
                     <p className="prompt-help-text mt-2">Metadata synced. Automate or copy strategic prompt.</p>
                 </div>

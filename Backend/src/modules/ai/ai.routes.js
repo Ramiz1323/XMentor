@@ -1,6 +1,6 @@
 import express from 'express';
 import { protect, authorize } from '../../middleware/auth.middleware.js';
-import { validate } from '../../middleware/validate.middleware.js';
+import { validate } from '../../middleware/community.middleware.js';
 import { generateQaSchema } from './ai.validation.js';
 import { generateQa } from './ai.controller.js';
 
