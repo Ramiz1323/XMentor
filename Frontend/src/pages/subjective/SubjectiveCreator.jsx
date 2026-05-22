@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useSubjectiveStore from '../../store/useSubjectiveStore';
 import useUserStore from '../../store/useUserStore';
-import { Plus, Trash2, ChevronRight, GraduationCap, BookOpen, Users, Target, X, RefreshCw, AlertCircle, Clock, Zap, Globe, Landmark } from 'lucide-react';
+import { Plus, Trash2, ChevronRight, GraduationCap, BookOpen, Users, Target, X, RefreshCw, AlertCircle, Clock, Zap, Globe, Landmark, Loader2 } from 'lucide-react';
 import GlassDropdown from '../../components/ui/GlassDropdown';
 import Skeleton from '../../components/ui/Skeleton';
 import MathRenderer from '../../components/ui/MathRenderer';
+import { generateQA } from '../../services/ai.service';
 
 
 const SubjectiveCreator = () => {
@@ -15,6 +16,7 @@ const SubjectiveCreator = () => {
   
   const [creationMode, setCreationMode] = useState(null); // null, 'MANUAL', 'JSON'
   const [step, setStep] = useState(1); 
+  const [isGenerating, setIsGenerating] = useState(false);
   const [testData, setTestData] = useState({
     title: '',
     description: '',
@@ -114,6 +116,31 @@ const SubjectiveCreator = () => {
         ? prev.assignedStudents.filter(sId => sId !== id)
         : [...prev.assignedStudents, id]
     }));
+  };
+
+  const handleAIGenerate = async () => {
+    if (!importData.topic) return alert('Enter a Topic Name for the task.');
+    setIsGenerating(true);
+    try {
+      const response = await generateQA({
+        subject: importData.subject,
+        topic: importData.topic,
+        difficulty: importData.difficulty,
+        count: parseInt(importData.count) || 5,
+        language: importData.language,
+        classLevel: importData.class,
+        board: importData.board,
+        marksPerQ: parseInt(importData.defaultMarks) || 2,
+        type: 'SUBJECTIVE'
+      });
+      if (response.success && response.data) {
+        setImportData({ ...importData, jsonText: response.data });
+      }
+    } catch (err) {
+      alert('AI Generation Failed: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleImport = () => {
@@ -424,8 +451,11 @@ CRITICAL FORMATTING & ACCURACY RULES:
                 </div>
 
                 <div className="ai-helper-zone">
-                    <button className="btn-generate-prompt full-width active" onClick={copyPrompt}>
-                        Generate AI Prompt
+                    <button className="btn-generate-prompt full-width active mb-2" onClick={handleAIGenerate} disabled={isGenerating}>
+                        {isGenerating ? <><Loader2 className="animate-spin" style={{display:'inline', marginRight:'8px'}} size={16} /> Generating AI Intelligence...</> : 'Generate JSON via AI Co-Pilot'}
+                    </button>
+                    <button className="btn-generate-prompt full-width" onClick={copyPrompt}>
+                        Generate AI Prompt (Manual)
                     </button>
                 </div>
               </div>
