@@ -110,7 +110,11 @@ const userSchema = new mongoose.Schema(
         p256dh: { type: String, required: true },
         auth: { type: String, required: true }
       }
-    }]
+    }],
+    defaultMonthlyFee: {
+      type: Number,
+      default: 0
+    }
   },
   {
     timestamps: true,
