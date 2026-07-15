@@ -14,6 +14,7 @@ import mcqRoutes from './modules/mcq/mcq.routes.js';
 import doubtRoutes from './modules/doubt/doubt.routes.js';
 import subjectiveRoutes from './modules/subjective/subjective.routes.js';
 import shopRoutes from './modules/shop/shop.routes.js';
+import feeRoutes from './modules/fee/fee.routes.js';
 import { seedShopItems } from './modules/shop/shop.model.js';
 
 const app = express();
@@ -60,6 +61,7 @@ app.use('/api/mcq', mcqRoutes);
 app.use('/api/doubt', doubtRoutes);
 app.use('/api/subjective', subjectiveRoutes);
 app.use('/api/shop', shopRoutes);
+app.use('/api/fee', feeRoutes);
 
 app.get('/api/health', (req, res) => {
   const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
