@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Users, BookOpen, Settings, LayoutDashboard, X, Target, HelpCircle, Trophy, Download, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Users, BookOpen, Settings, LayoutDashboard, X, Target, HelpCircle, Trophy, Download, CheckCircle2, ShieldCheck, Calendar } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
 
 const Sidebar = ({ isOpen, onClose }) => {
@@ -108,6 +108,15 @@ const Sidebar = ({ isOpen, onClose }) => {
           >
             <Trophy size={20} aria-hidden="true" />
             <span>Leaderboard</span>
+          </NavLink>
+
+          <NavLink
+            to="/fees"
+            onClick={handleLinkClick}
+            className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
+          >
+            <Calendar size={20} aria-hidden="true" />
+            <span>Fee Calendar</span>
           </NavLink>
 
           <div className="sidebar-divider" role="presentation">Subjective</div>
