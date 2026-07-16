@@ -30,6 +30,7 @@ const MaintenancePage = lazy(() => import('./pages/error/MaintenancePage'));
 const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
 const PendingVerificationPage = lazy(() => import('./pages/error/PendingVerificationPage'));
 const TacticalShop = lazy(() => import('./pages/shop/TacticalShop'));
+const FeeDashboard = lazy(() => import('./pages/fee/FeeDashboard'));
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, authChecked } = useAuthStore();
@@ -146,6 +147,7 @@ function AppContent({ isAuthenticated }) {
               } />
 
               <Route path="/shop" element={<ProtectedRoute><TacticalShop /></ProtectedRoute>} />
+              <Route path="/fees" element={<ProtectedRoute><FeeDashboard /></ProtectedRoute>} />
 
               {/* Catch-all route for 404 */}
               <Route path="*" element={<NotFoundPage />} />
