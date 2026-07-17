@@ -14,7 +14,8 @@ import {
   Settings, 
   Download, 
   LogOut,
-  ChevronRight
+  ChevronRight,
+  Calendar
 } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
 
@@ -164,8 +165,16 @@ const BottomNav = () => {
               <ChevronRight size={18} className="row-chevron" />
             </NavLink>
 
+            <NavLink to="/fees" className={({ isActive }) => `sheet-nav-row ${isActive ? 'active' : ''}`} style={{ '--row-idx': 3 }}>
+              <div className="row-left">
+                <div className="item-icon-box"><Calendar size={20} /></div>
+                <span>Fee Calendar</span>
+              </div>
+              <ChevronRight size={18} className="row-chevron" />
+            </NavLink>
+
             {user?.role === 'TEACHER' && (
-              <NavLink to="/subjective/review" className={({ isActive }) => `sheet-nav-row ${isActive ? 'active' : ''}`} style={{ '--row-idx': 3 }}>
+              <NavLink to="/subjective/review" className={({ isActive }) => `sheet-nav-row ${isActive ? 'active' : ''}`} style={{ '--row-idx': 4 }}>
                 <div className="row-left">
                   <div className="item-icon-box"><CheckCircle2 size={20} /></div>
                   <span>Review Center</span>
@@ -175,7 +184,7 @@ const BottomNav = () => {
             )}
 
             {user?.isAdmin && (
-              <NavLink to="/admin" className={({ isActive }) => `sheet-nav-row admin-link ${isActive ? 'active' : ''}`} style={{ '--row-idx': 4 }}>
+              <NavLink to="/admin" className={({ isActive }) => `sheet-nav-row admin-link ${isActive ? 'active' : ''}`} style={{ '--row-idx': 5 }}>
                 <div className="row-left">
                   <div className="item-icon-box"><ShieldCheck size={20} /></div>
                   <span>Admin Operations</span>
@@ -184,7 +193,7 @@ const BottomNav = () => {
               </NavLink>
             )}
 
-            <NavLink to="/profile" className={({ isActive }) => `sheet-nav-row ${isActive ? 'active' : ''}`} style={{ '--row-idx': 5 }}>
+            <NavLink to="/profile" className={({ isActive }) => `sheet-nav-row ${isActive ? 'active' : ''}`} style={{ '--row-idx': 6 }}>
               <div className="row-left">
                 <div className="item-icon-box"><Settings size={20} /></div>
                 <span>Profile Settings</span>
@@ -193,7 +202,7 @@ const BottomNav = () => {
             </NavLink>
           </div>
 
-          <div className="sheet-footer-actions" style={{ '--row-idx': 6 }}>
+          <div className="sheet-footer-actions" style={{ '--row-idx': 7 }}>
             {deferredPrompt && (
               <button className="sheet-action-btn install-btn" onClick={handleInstall}>
                 <Download size={18} />
