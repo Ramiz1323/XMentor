@@ -120,6 +120,13 @@ const MCQCreator = () => {
       }
 
       // PRE-PARSE NORMALIZATION:
+      // Fix LLM unescaped double quotes like ""number"" -> "\"number\""
+      cleanJson = cleanJson.replace(/""([^"]+)""/g, '"\\"$1\\""');
+      
+      // Fix multi-line strings by replacing literal newlines with spaces.
+      // (Valid JSON does not allow physical newlines inside string values)
+      cleanJson = cleanJson.replace(/[\r\n]+/g, ' ');
+
       // ChatGPT often sends raw backslashes (e.g. \theta) which JSON.parse interprets as 
       // control characters (like \t for tab) instead of LaTeX commands.
       // We double the backslashes for any LaTeX-like command to ensure integrity.
@@ -233,7 +240,7 @@ LANGUAGE RULES:
     } else if (sub === 'COMPUTER' || sub === 'CODING') {
       subjectSpecificRules = `
 COMPUTING RULES:
-- Use LaTeX \\texttt{...} or clear spacing for code snippets.
+- Use markdown backticks (\`...\`) for inline code and clear spacing for code snippets. DO NOT use LaTeX \\texttt{}.
 - Ensure syntax correctness for all provided algorithms or code logic.`;
     }
 
@@ -247,9 +254,9 @@ Instruction: ${complexityTxt}
 ${subjectSpecificRules}
 
 CRITICAL FORMATTING & ACCURACY RULES:
-1. Output MUST be a valid JSON array of objects ONLY.
-2. NO conversational text, NO intro, NO outro, NO markdown code blocks (NO \`\`\`json).
-3. ALL mathematical expressions MUST be wrapped in LaTeX delimiters ($...$ for inline, $$...$$ for block).
+1. Output MUST be a strictly valid JSON array of objects ONLY. Use SINGLE QUOTES for inner string quotes (e.g., "'example'"). NEVER use unescaped double quotes inside strings.
+2. NO conversational text, NO intro, NO outro. DO NOT use physical newlines inside strings. If a newline is needed, use the escaped literal '\\n'.
+3. ALL mathematical expressions MUST be wrapped in LaTeX delimiters ($...$ for inline, $$...$$ for block). Write block math on the same single line, NO physical line breaks.
 4. **JSON ESCAPING**: Use DOUBLE backslashes for all LaTeX commands in the JSON string (e.g., "\\\\frac{a}{b}", "\\\\sin", "\\\\theta").
 5. **ELIMINATE POSITION BIAS**: Randomly distribute the correct answer across indices 0, 1, 2, and 3. DO NOT always make the first or second option correct.
 6. **DOUBLE-VERIFICATION MANDATE**: You MUST double-check every question and its corresponding answer for 100% accuracy. Perform a secondary mental "Chain of Thought" audit to ensure the "answer" index precisely matches the correct mathematical/scientific solution among the options. 
