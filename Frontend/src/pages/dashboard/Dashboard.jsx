@@ -2,8 +2,9 @@ import { useEffect } from 'react';
 import useAuthStore from '../../store/useAuthStore';
 import useUserStore from '../../store/useUserStore';
 import useMCQStore from '../../store/useMCQStore';
-import { BookOpen, Users, Trophy, MessageSquare, Target, CheckCircle, Clock, ArrowRight, AlertCircle } from 'lucide-react';
+import { BookOpen, Users, Trophy, MessageSquare, Target, CheckCircle, Clock, ArrowRight, AlertCircle, Shield, User, Activity } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import Skeleton from '../../components/ui/Skeleton';
 import LoadingOverlay from '../../components/ui/LoadingOverlay';
 import SEO from '../../components/common/SEO';
@@ -12,6 +13,7 @@ const Dashboard = () => {
   const { user } = useAuthStore();
   const { stats, fetchStats, isLoading } = useUserStore();
   const { tests, fetchMyTests, isLoading: testsLoading } = useMCQStore();
+  const [viewMode, setViewMode] = useState('STUDENT');
 
   useEffect(() => {
     fetchStats();
@@ -21,6 +23,7 @@ const Dashboard = () => {
   }, [fetchStats, fetchMyTests, user?.role]);
 
   const pendingTests = (Array.isArray(tests) ? tests : []).filter(t => !t.isSubmitted).slice(0, 3);
+  const completedTests = (Array.isArray(tests) ? tests : []).filter(t => t.isSubmitted).slice(0, 5);
 
   if (isLoading && !stats?.mcq) return <LoadingOverlay />;
 
@@ -32,16 +35,44 @@ const Dashboard = () => {
       />
       <header className="dashboard-header">
         <div className="welcome-text">
-          <h1 className="glow-text">Strategic Overview, {user?.name}</h1>
-          <p>Analyzing your tactical progress across the XMentor network.</p>
+          {viewMode === 'STUDENT' ? (
+            <>
+              <h1 className="glow-text">Strategic Overview, {user?.name}</h1>
+              <p>Analyzing your tactical progress across the XMentor network.</p>
+            </>
+          ) : (
+            <>
+              <h1 className="glow-text parent-glow">Parental Monitoring System</h1>
+              <p>Oversight activated for cadet: <span className="highlight-name">{user?.name}</span></p>
+            </>
+          )}
         </div>
-        <Link to="/leaderboard" className="user-badge glass-card clickable-badge">
-          <Trophy size={20} className="gold-icon" />
-          <span>Leaderboard</span>
-        </Link>
+        
+        <div className="header-actions">
+          {user?.role === 'STUDENT' && (
+            <div className="view-mode-toggle glass-card">
+              <button 
+                className={`toggle-btn ${viewMode === 'STUDENT' ? 'active' : ''}`}
+                onClick={() => setViewMode('STUDENT')}
+              >
+                <User size={16} /> Cadet
+              </button>
+              <button 
+                className={`toggle-btn parent-btn ${viewMode === 'PARENT' ? 'active' : ''}`}
+                onClick={() => setViewMode('PARENT')}
+              >
+                <Shield size={16} /> Parent
+              </button>
+            </div>
+          )}
+          <Link to="/leaderboard" className="user-badge glass-card clickable-badge">
+            <Trophy size={20} className="gold-icon" />
+            <span>Leaderboard</span>
+          </Link>
+        </div>
       </header>
 
-      {user?.role === 'STUDENT' && (pendingTests.length > 0 || testsLoading) && (
+      {user?.role === 'STUDENT' && viewMode === 'STUDENT' && (pendingTests.length > 0 || testsLoading) && (
         <section className="pending-tasks-section top-priority">
           <h2 className="section-title">
             <Clock size={18} />
@@ -80,6 +111,7 @@ const Dashboard = () => {
         </section>
       )}
 
+      {viewMode === 'STUDENT' && (
       <div className="stats-grid">
         {/* Community Stats */}
         <div className="stat-card glass-card">
@@ -128,8 +160,10 @@ const Dashboard = () => {
           <p className="stat-desc">Doubts Resolved / {stats?.doubts?.totalDoubts || 0} Total</p>
         </div>
       </div>
+      )}
 
-      <div className="dashboard-main-content">
+      {viewMode === 'STUDENT' && (
+        <div className="dashboard-main-content">
         <section className="quick-access">
           <h2 className="section-title">Tactical Operations</h2>
           <div className="actions-grid">
@@ -168,6 +202,96 @@ const Dashboard = () => {
           </div>
         </section>
       </div>
+      )}
+
+      {viewMode === 'PARENT' && (
+        <div className="parent-monitoring-content">
+          <div className="parent-stats-grid">
+            <div className="p-stat-card glass-card">
+              <span className="p-stat-label">Cognitive Accuracy</span>
+              <div className="p-stat-value">{isLoading ? <Skeleton width="50px" height="32px" /> : `${stats?.mcq?.avgScore || 0}%`}</div>
+            </div>
+            <div className="p-stat-card glass-card">
+              <span className="p-stat-label">Assessments Completed</span>
+              <div className="p-stat-value">{isLoading ? <Skeleton width="50px" height="32px" /> : stats?.mcq?.totalTests || 0}</div>
+            </div>
+            <div className="p-stat-card glass-card">
+              <span className="p-stat-label">Questions Solved</span>
+              <div className="p-stat-value">{isLoading ? <Skeleton width="50px" height="32px" /> : stats?.mcq?.totalQuestionsSolved || 0}</div>
+            </div>
+            <div className="p-stat-card glass-card alert-card">
+              <span className="p-stat-label">Late Submissions</span>
+              <div className={`p-stat-value ${(stats?.mcq?.lateSubmissions || 0) > 0 ? 'text-danger' : 'text-success'}`}>
+                {isLoading ? <Skeleton width="50px" height="32px" /> : stats?.mcq?.lateSubmissions || 0}
+              </div>
+            </div>
+          </div>
+
+          <section className="pending-assessments mt-4">
+            <h2 className="section-title">
+              <Clock size={18} />
+              <span>Pending Assessments</span>
+            </h2>
+            <div className="assessments-list glass-card">
+              {testsLoading ? (
+                 <div className="p-4"><Skeleton width="100%" height="40px" /></div>
+              ) : pendingTests.length > 0 ? (
+                pendingTests.map(test => (
+                  <div key={test._id} className="assessment-row pending-row">
+                    <div className="assessment-details">
+                      <span className="subject-tag">{test.subject}</span>
+                      <h4>{test.title}</h4>
+                      <span className="date-taken alert-text">
+                        Ends: {test.deadline ? new Date(test.deadline).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'No deadline'}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="no-data-alert">
+                  <CheckCircle size={24} className="text-success mb-2" />
+                  <p>All assessments completed! No pending tasks.</p>
+                </div>
+              )}
+            </div>
+          </section>
+
+          <section className="recent-assessments mt-4">
+            <h2 className="section-title">
+              <Activity size={18} />
+              <span>Recent Assessment Logs</span>
+            </h2>
+            <div className="assessments-list glass-card">
+              {testsLoading ? (
+                 <div className="p-4"><Skeleton width="100%" height="40px" /></div>
+              ) : completedTests.length > 0 ? (
+                completedTests.map(test => (
+                  <div key={test._id} className="assessment-row">
+                    <div className="assessment-details">
+                      <span className="subject-tag">{test.subject}</span>
+                      <h4>{test.title}</h4>
+                      <span className="date-taken">
+                        {test.submittedAt ? new Date(test.submittedAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Completed'}
+                      </span>
+                    </div>
+                    <div className="assessment-score">
+                      <div className="score-ring">
+                        <span className="score-value">{Math.round((test.score / test.totalScore) * 100) || 0}%</span>
+                      </div>
+                      <div className="score-fraction">{test.score} / {test.totalScore}</div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="no-data-alert">
+                  <CheckCircle size={24} className="text-muted mb-2" />
+                  <p>No completed assessments recorded yet.</p>
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 };
