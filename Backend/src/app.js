@@ -15,6 +15,7 @@ import doubtRoutes from './modules/doubt/doubt.routes.js';
 import subjectiveRoutes from './modules/subjective/subjective.routes.js';
 import shopRoutes from './modules/shop/shop.routes.js';
 import feeRoutes from './modules/fee/fee.routes.js';
+import pdfRoutes from './modules/pdf/pdf.routes.js';
 import { seedShopItems } from './modules/shop/shop.model.js';
 
 const app = express();
@@ -62,13 +63,14 @@ app.use('/api/doubt', doubtRoutes);
 app.use('/api/subjective', subjectiveRoutes);
 app.use('/api/shop', shopRoutes);
 app.use('/api/fee', feeRoutes);
+app.use('/api/pdf', pdfRoutes);
 
 app.get('/api/health', (req, res) => {
   const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
   res.status(200).json({
     status: 'success',
     message: 'Server running',
-    version: '1.0.1',
+    version: '1.4.0',
     database: dbStatus,
     timestamp: new Date().toISOString(),
   });
