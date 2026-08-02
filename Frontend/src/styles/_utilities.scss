@@ -93,6 +93,31 @@
   &.with-icon {
     padding-left: 44px !important;
   }
+
+  // Native option styling for dark popover fallback
+  color-scheme: dark;
+  option {
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+    padding: 10px 14px;
+  }
+  optgroup {
+    background-color: #0f172a !important;
+    color: rgba(white, 0.7) !important;
+  }
+}
+
+// Global select dark mode fallback
+select {
+  color-scheme: dark;
+  option {
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+  }
+  optgroup {
+    background-color: #0f172a !important;
+    color: rgba(white, 0.7) !important;
+  }
 }
 
 @mixin glass-card {
