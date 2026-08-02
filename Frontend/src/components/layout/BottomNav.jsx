@@ -15,7 +15,8 @@ import {
   Download, 
   LogOut,
   ChevronRight,
-  Calendar
+  Calendar,
+  FileText
 } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
 
@@ -59,7 +60,7 @@ const BottomNav = () => {
   }, [location.pathname]);
 
   // Check if any menu sheet route is currently active
-  const isMenuRouteActive = ['/communities', '/doubts', '/subjective/review', '/admin', '/profile'].some(route => 
+  const isMenuRouteActive = ['/communities', '/doubts', '/subjective/review', '/admin', '/profile', '/resources'].some(route => 
     location.pathname === route || location.pathname.startsWith(`${route}/`)
   );
 
@@ -173,8 +174,16 @@ const BottomNav = () => {
               <ChevronRight size={18} className="row-chevron" />
             </NavLink>
 
+            <NavLink to="/resources" className={({ isActive }) => `sheet-nav-row ${isActive ? 'active' : ''}`} style={{ '--row-idx': 4 }}>
+              <div className="row-left">
+                <div className="item-icon-box"><FileText size={20} /></div>
+                <span>{user?.role === 'TEACHER' ? 'PDF Resources' : 'Study Resources'}</span>
+              </div>
+              <ChevronRight size={18} className="row-chevron" />
+            </NavLink>
+
             {user?.role === 'TEACHER' && (
-              <NavLink to="/subjective/review" className={({ isActive }) => `sheet-nav-row ${isActive ? 'active' : ''}`} style={{ '--row-idx': 4 }}>
+              <NavLink to="/subjective/review" className={({ isActive }) => `sheet-nav-row ${isActive ? 'active' : ''}`} style={{ '--row-idx': 5 }}>
                 <div className="row-left">
                   <div className="item-icon-box"><CheckCircle2 size={20} /></div>
                   <span>Review Center</span>
@@ -193,7 +202,7 @@ const BottomNav = () => {
               </NavLink>
             )}
 
-            <NavLink to="/profile" className={({ isActive }) => `sheet-nav-row ${isActive ? 'active' : ''}`} style={{ '--row-idx': 6 }}>
+            <NavLink to="/profile" className={({ isActive }) => `sheet-nav-row ${isActive ? 'active' : ''}`} style={{ '--row-idx': 8 }}>
               <div className="row-left">
                 <div className="item-icon-box"><Settings size={20} /></div>
                 <span>Profile Settings</span>
@@ -217,7 +226,7 @@ const BottomNav = () => {
           </div>
 
           <div className="sheet-watermark">
-            <span>© {new Date().getFullYear()} Ramiz. · v1.3.0</span>
+            <span>© {new Date().getFullYear()} Ramiz. · v1.4.0</span>
           </div>
         </div>
       </div>

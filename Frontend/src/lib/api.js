@@ -20,11 +20,10 @@ api.interceptors.response.use(
     enrichedError.code = error.code;
     enrichedError.originalError = error;
 
-    // Detect server down or critical errors
+    // Detect server down (only when server is completely unreachable via network)
     const isNetworkError = error.code === 'ERR_NETWORK' || error.message === 'Network Error';
-    const isCriticalServerError = error.response?.status >= 500;
 
-    if (isNetworkError || isCriticalServerError) {
+    if (isNetworkError) {
       useAuthStore.getState().setServerDown(true);
     }
 

@@ -31,6 +31,7 @@ const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
 const PendingVerificationPage = lazy(() => import('./pages/error/PendingVerificationPage'));
 const TacticalShop = lazy(() => import('./pages/shop/TacticalShop'));
 const FeeDashboard = lazy(() => import('./pages/fee/FeeDashboard'));
+const ResourcesPage = lazy(() => import('./pages/resources/ResourcesPage'));
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, authChecked } = useAuthStore();
@@ -59,11 +60,6 @@ function AppContent({ isAuthenticated }) {
   // Initialize Global HUD Notifications
   useHUDNotifications();
 
-  // If server is down, override everything with Maintenance Page
-  if (isServerDown) {
-    return <MaintenancePage />;
-  }
-
   // Close sidebar on route change for mobile
   useEffect(() => {
     setIsSidebarOpen(false);
@@ -79,6 +75,11 @@ function AppContent({ isAuthenticated }) {
       navigate('/');
     }
   }, [isAuthenticated, user, location.pathname, navigate]);
+
+  // If server is down, override everything with Maintenance Page
+  if (isServerDown) {
+    return <MaintenancePage />;
+  }
 
   const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
 
@@ -148,6 +149,7 @@ function AppContent({ isAuthenticated }) {
 
               <Route path="/shop" element={<ProtectedRoute><TacticalShop /></ProtectedRoute>} />
               <Route path="/fees" element={<ProtectedRoute><FeeDashboard /></ProtectedRoute>} />
+              <Route path="/resources" element={<ProtectedRoute><ResourcesPage /></ProtectedRoute>} />
 
               {/* Catch-all route for 404 */}
               <Route path="*" element={<NotFoundPage />} />

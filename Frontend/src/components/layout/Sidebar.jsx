@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Users, BookOpen, Settings, LayoutDashboard, X, Target, HelpCircle, Trophy, Download, CheckCircle2, ShieldCheck, Calendar } from 'lucide-react';
+import { Users, BookOpen, Settings, LayoutDashboard, X, Target, HelpCircle, Trophy, Download, CheckCircle2, ShieldCheck, Calendar, FileText } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
 
 const Sidebar = ({ isOpen, onClose }) => {
@@ -142,6 +142,17 @@ const Sidebar = ({ isOpen, onClose }) => {
             <span>{user?.role === 'TEACHER' ? 'Architect Task' : 'Subjective Hub'}</span>
           </NavLink>
 
+          <div className="sidebar-divider" role="presentation">Resources</div>
+
+          <NavLink
+            to="/resources"
+            onClick={handleLinkClick}
+            className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
+          >
+            <FileText size={20} aria-hidden="true" />
+            <span>{user?.role === 'TEACHER' ? 'PDF Resources' : 'Study Resources'}</span>
+          </NavLink>
+
           <div className="sidebar-divider" role="presentation">Settings</div>
 
           {user?.isAdmin && (
@@ -173,7 +184,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             </button>
           )}
           <div className="watermark">
-            <span>© {new Date().getFullYear()} Ramiz. · v1.3.0</span>
+            <span>© {new Date().getFullYear()} Ramiz. · v1.4.0</span>
             <span>All Rights Reserved.</span>
           </div>
         </div>
