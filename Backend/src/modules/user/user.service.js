@@ -132,12 +132,46 @@ export const getDashboardStats = async (userId, role) => {
     // MCQ Stats
     (async () => {
       const { MCQResult } = await import('../mcq/mcq.model.js');
-      const results = await MCQResult.find({ studentId: userId });
+      const results = await MCQResult.find({ studentId: userId }).populate('testId', 'deadline totalQuestions');
+      
       const totalTests = results.length;
-      const avgScore = totalTests > 0
-        ? (results.reduce((acc, r) => acc + (r.score / r.total), 0) / totalTests) * 100
-        : 0;
-      return { totalTests, avgScore: Math.round(avgScore) };
+      let totalQuestionsSolved = 0;
+      let lateSubmissions = 0;
+      let totalScoreAcc = 0;
+      let countScore = 0;
+
+      results.forEach(r => {
+         if (r.status === 'COMPLETED') {
+            countScore++;
+            totalScoreAcc += (r.score / r.total);
+            
+            // Calculate questions solved
+            if (r.answers && Array.isArray(r.answers) && r.answers.length > 0) {
+               // Count non-null, non-negative answers
+               totalQuestionsSolved += r.answers.filter(a => a !== null && a !== -1).length;
+            } else if (r.testId && r.testId.totalQuestions) {
+               // Fallback
+               totalQuestionsSolved += r.testId.totalQuestions;
+            }
+
+            // Calculate late submissions
+            if (r.testId && r.testId.deadline) {
+               // If result createdAt is past the deadline
+               if (new Date(r.createdAt) > new Date(r.testId.deadline)) {
+                  lateSubmissions++;
+               }
+            }
+         }
+      });
+
+      const avgScore = countScore > 0 ? (totalScoreAcc / countScore) * 100 : 0;
+
+      return { 
+        totalTests, 
+        avgScore: Math.round(avgScore),
+        totalQuestionsSolved,
+        lateSubmissions
+      };
     })(),
 
     // Doubt Stats
