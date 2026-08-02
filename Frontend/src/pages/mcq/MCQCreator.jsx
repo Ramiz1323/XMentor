@@ -131,9 +131,10 @@ const MCQCreator = () => {
       // control characters (like \t for tab) instead of LaTeX commands.
       // We double the backslashes for any LaTeX-like command to ensure integrity.
       let normalizedJson = cleanJson.replace(/\\([a-zA-Z])/g, (match, p1) => {
-        // If it's a known non-LaTeX escape that might be intentional (like \n), we could skip it,
-        // but for MCQ content, almost all \letter patterns are LaTeX (like \sin, \theta).
-        // Therefore, we double them to ensure they reach the LaTeX renderer intact.
+        // Do not double escape standard JSON control characters
+        if (p1 === 'n' || p1 === 'r' || p1 === 't' || p1 === 'b' || p1 === 'f') {
+          return match;
+        }
         return '\\\\' + p1;
       });
 
@@ -237,10 +238,12 @@ HUMANITIES RULES:
 LANGUAGE RULES:
 - Focus on complex grammar, sophisticated vocabulary, and literary devices.
 - For comprehension, ensure the "answer" is strictly derivable from the provided context.`;
-    } else if (sub === 'COMPUTER' || sub === 'CODING') {
+    } else if (sub === 'COMPUTER' || sub === 'CODING' || sub === 'IT') {
       subjectSpecificRules = `
 COMPUTING RULES:
-- Use markdown backticks (\`...\`) for inline code and clear spacing for code snippets. DO NOT use LaTeX \\texttt{}.
+- You MUST wrap ALL code snippets (even single-line ones) in TRIPLE markdown backticks with the language specified (e.g., \\n\\n\`\`\`javascript\\nconsole.log(1);\\n\`\`\`\\n\\n).
+- NEVER use single backticks for code blocks.
+- CRITICAL: You MUST use the escaped literal '\\n' for ALL line breaks inside the code block. DO NOT use physical newlines.
 - Ensure syntax correctness for all provided algorithms or code logic.`;
     }
 
