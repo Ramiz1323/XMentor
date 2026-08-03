@@ -1,13 +1,24 @@
 import winston from 'winston';
 
-// Custom format to match the "SENIOR" screenshot JSON format precisely
+const colorizer = winston.format.colorize();
+
+// Custom format to match the "SENIOR" screenshot JSON format precisely, WITH colors!
 const seniorFormat = winston.format.printf(({ level, message, timestamp, ...meta }) => {
-  return JSON.stringify({
+  const logObj = {
     timestamp,
     level: level.toUpperCase(),
     msg: message,
     ...meta,
-  });
+  };
+
+  // Convert to JSON string
+  let jsonString = JSON.stringify(logObj);
+
+  // Inject ANSI color into the "level" value for beautiful PM2/terminal output
+  const coloredLevel = colorizer.colorize(level, `"${level.toUpperCase()}"`);
+  jsonString = jsonString.replace(`"${level.toUpperCase()}"`, coloredLevel);
+
+  return jsonString;
 });
 
 const logger = winston.createLogger({
