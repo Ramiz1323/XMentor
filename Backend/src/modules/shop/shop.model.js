@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import logger from '../../utils/logger.js';
 
 const shopItemSchema = new mongoose.Schema({
   itemId: { type: String, required: true, unique: true },
@@ -74,7 +75,7 @@ export const seedShopItems = async () => {
     },
   ]);
 
-  console.log('[Shop] Seeded 5 tactical shop items.');
+  logger.info('shop_seeded', { itemsSeeded: 5 });
 };
 
 export default ShopItem;

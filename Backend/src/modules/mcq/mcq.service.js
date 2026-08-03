@@ -2,6 +2,7 @@ import { MCQTest, MCQResult } from './mcq.model.js';
 import ErrorResponse from '../../utils/errorResponse.js';
 import { deterministicShuffle } from '../../utils/shuffle.js';
 import { awardMCQPoints } from '../shop/shop.service.js';
+import logger from '../../utils/logger.js';
 
 export const createTest = async (testData, teacherId) => {
   const {
@@ -160,7 +161,7 @@ export const submitTest = async (testId, studentId, studentAnswers, timeTaken, b
 
     // 🎖 Award 0.5 Pts per correct answer (fire-and-forget — never blocks submission)
     awardMCQPoints(studentId, score).catch(err =>
-      console.error('[Shop] MCQ point award failed silently:', err.message)
+      logger.error('mcq_point_award_failed', { error: err.message })
     );
 
     return result;

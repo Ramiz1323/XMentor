@@ -2,6 +2,7 @@ import asyncHandler from '../../utils/asyncHandler.js';
 import * as mcqService from './mcq.service.js';
 import { notifyUser } from '../../utils/push.utils.js';
 import User from '../auth/auth.model.js';
+import logger from '../../utils/logger.js';
 
 export const create = asyncHandler(async (req, res) => {
   const test = await mcqService.createTest(req.body, req.user._id);
@@ -52,7 +53,7 @@ export const create = asyncHandler(async (req, res) => {
       });
     });
   } catch (pushErr) {
-    console.error('[Notification] Push broadcast failed:', pushErr.message);
+    logger.error('mcq_push_notification_failed', { error: pushErr.message });
   }
 
   res.status(201).json({
@@ -164,7 +165,7 @@ export const assign = asyncHandler(async (req, res) => {
         });
       });
     } catch (pushErr) {
-      console.error('[Notification] Push broadcast failed:', pushErr.message);
+      logger.error('mcq_assign_push_failed', { error: pushErr.message });
     }
   }
 
@@ -202,7 +203,7 @@ export const reassign = asyncHandler(async (req, res) => {
       });
     }
   } catch (err) {
-    console.error('Reassign notification failed:', err.message);
+    logger.error('mcq_reassign_notification_failed', { error: err.message });
   }
 
   res.status(200).json({

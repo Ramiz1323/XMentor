@@ -2,6 +2,7 @@ import axios from 'axios';
 import PdfResource from './pdf.model.js';
 import imagekit from '../../config/imagekit.js';
 import ErrorResponse from '../../utils/errorResponse.js';
+import logger from '../../utils/logger.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // UPLOAD PDF — Teacher uploads a PDF, stored in ImageKit /xmentor/pdfs/
@@ -115,7 +116,7 @@ export const deletePdf = async (pdfId, teacherId) => {
   try {
     await imagekit.files.delete(resource.pdfFileId);
   } catch (err) {
-    console.error('[PDF] Failed to delete from ImageKit:', err.message);
+    logger.error('pdf_imagekit_delete_failed', { error: err.message, fileId: resource.pdfFileId });
     // Continue deletion from DB even if ImageKit fails
   }
 

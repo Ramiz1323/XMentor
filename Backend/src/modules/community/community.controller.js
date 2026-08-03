@@ -1,6 +1,7 @@
 import asyncHandler from '../../utils/asyncHandler.js';
 import * as communityService from './community.service.js';
 import ErrorResponse from '../../utils/errorResponse.js';
+import logger from '../../utils/logger.js';
 
 export const create = asyncHandler(async (req, res) => {
   const result = await communityService.createCommunity(req.body, req.user._id);
@@ -72,7 +73,7 @@ export const remove = asyncHandler(async (req, res) => {
   if (io && typeof io.to === 'function') {
     io.to(req.params.id).emit('community_terminated', { communityId: req.params.id });
   } else {
-    console.warn('[Community] Socket.IO not available for termination broadcast');
+    logger.warn('community_socket_emission_aborted', { reason: 'socket.io_not_available', communityId: req.params.id });
   }
 
   res.status(200).json({ success: true, message: 'Community terminated successfully' });

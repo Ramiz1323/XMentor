@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import logger from '../utils/logger.js';
 
 const connectDB = async (retries = 5, delay = 2000) => {
   for (let i = 0; i < retries; i++) {
@@ -7,20 +8,20 @@ const connectDB = async (retries = 5, delay = 2000) => {
         serverSelectionTimeoutMS: 5000,
         connectTimeoutMS: 10000,
       });
-      console.log(`MongoDB Connected: ${conn.connection.host}`);
+      logger.info('db_connected', { host: conn.connection.host });
       return;
     } catch (error) {
-      console.error(`MongoDB Connection Error (Attempt ${i + 1}/${retries}): ${error.message}`);
+      logger.error('db_connection_error', { attempt: i + 1, maxRetries: retries, error: error.message });
       
       if (i === retries - 1) {
-        console.error(`URI used: ${process.env.MONGO_URI ? 'Defined' : 'UNDEFINED'}`);
+        logger.error('db_connection_failed', { uri_defined: !!process.env.MONGO_URI });
         if (error.name === 'MongoNetworkTimeoutError' || error.message.includes('ETIMEDOUT')) {
-          console.error('Tip: Check if your local MongoDB service is running (mongod) or if your Atlas IP whitelist is correct.');
+          logger.error('db_connection_tip', { msg: 'Check if local MongoDB service is running (mongod) or Atlas IP whitelist.' });
         }
         process.exit(1);
       } else {
         const waitTime = delay * Math.pow(2, i);
-        console.log(`Retrying in ${waitTime / 1000} seconds...`);
+        logger.warn('db_connection_retry', { retryInSeconds: waitTime / 1000 });
         await new Promise(res => setTimeout(res, waitTime));
       }
     }

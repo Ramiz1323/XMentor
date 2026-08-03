@@ -1,5 +1,6 @@
 import webpush from 'web-push';
 import dotenv from 'dotenv';
+import logger from './logger.js';
 dotenv.config();
 
 // Configure VAPID
@@ -9,9 +10,9 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
     process.env.VAPID_PUBLIC_KEY,
     process.env.VAPID_PRIVATE_KEY
   );
-  console.log('[WebPush] Tactical Uplink Configured.');
+  logger.info('webpush_configured', { msg: 'Tactical Uplink Configured' });
 } else {
-  console.warn('[WebPush] WARNING: VAPID keys missing in .env. Mobile push notifications will not work.');
+  logger.warn('webpush_vapid_missing', { msg: 'VAPID keys missing in .env. Mobile push notifications will not work.' });
 }
 
 export const sendPushNotification = async (subscription, payload) => {
@@ -19,7 +20,7 @@ export const sendPushNotification = async (subscription, payload) => {
     await webpush.sendNotification(subscription, JSON.stringify(payload));
     return { success: true };
   } catch (error) {
-    console.error('[WebPush] Error sending notification:', error.message);
+    logger.error('webpush_send_failed', { error: error.message });
     if (error.statusCode === 410 || error.statusCode === 404) {
       // Subscription has expired or is no longer valid
       return { success: false, expired: true };

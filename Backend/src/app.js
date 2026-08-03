@@ -5,7 +5,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
-import morgan from 'morgan';
+import logger from './utils/logger.js';
 import rateLimit from 'express-rate-limit';
 import authRoutes from './modules/auth/auth.routes.js';
 import userRoutes from './modules/user/user.routes.js';
@@ -20,16 +20,25 @@ import { seedShopItems } from './modules/shop/shop.model.js';
 
 const app = express();
 
-seedShopItems().catch(err => console.error('[Shop Seed Error]', err.message));
+seedShopItems().catch(err => logger.error('shop_seed_error', { error: err.message }));
 
 app.set('trust proxy', 1);
 
-// Request logging
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
-} else {
-  app.use(morgan('combined'));
-}
+// JSON Structured Request logging (SENIOR Format)
+app.use((req, res, next) => {
+  const start = Date.now();
+  logger.info('request_received', { method: req.method, route: req.originalUrl, ip: req.ip });
+  
+  res.on('finish', () => {
+    const responseTimeMs = Date.now() - start;
+    if (res.statusCode >= 400) {
+      logger.error('request_failed', { method: req.method, route: req.originalUrl, status: res.statusCode, responseTimeMs, ip: req.ip });
+    } else {
+      logger.info('request_completed', { method: req.method, route: req.originalUrl, status: res.statusCode, responseTimeMs, ip: req.ip });
+    }
+  });
+  next();
+});
 
 // Security: Rate Limiting
 const limiter = rateLimit({

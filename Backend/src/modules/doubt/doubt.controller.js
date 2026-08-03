@@ -1,5 +1,6 @@
 import asyncHandler from '../../utils/asyncHandler.js';
 import * as doubtService from './doubt.service.js';
+import logger from '../../utils/logger.js';
 
 export const ask = asyncHandler(async (req, res) => {
   let attachments = [];
@@ -49,7 +50,7 @@ export const resolve = asyncHandler(async (req, res) => {
         teacherName: req.user.name
       });
     } else {
-      console.warn('[Doubt] Socket emission aborted: result.student or ID missing', result._id);
+      logger.warn('doubt_socket_emission_aborted', { reason: 'student_or_id_missing', doubtId: result._id });
     }
   }
 

@@ -1,6 +1,7 @@
 import { Server } from 'socket.io';
 import * as communityService from '../modules/community/community.service.js';
 import jwt from 'jsonwebtoken';
+import logger from '../utils/logger.js';
 
 const setupCommunitySocket = (server) => {
   const io = new Server(server, {
@@ -15,7 +16,7 @@ const setupCommunitySocket = (server) => {
     }
   });
 
-  console.log('[Socket] Server Initialized with CORS:', io.opts.cors.origin);
+  logger.info('socket_server_initialized', { corsOrigin: io.opts.cors.origin });
 
   // Authentication Middleware for Sockets
   io.use((socket, next) => {
@@ -38,7 +39,7 @@ const setupCommunitySocket = (server) => {
       }
 
       if (!token) {
-        console.error('[Socket Auth] No token found in handshake');
+        logger.warn('socket_auth_missing', { event: 'handshake' });
         return next(new Error('Authentication error: No token provided'));
       }
 
@@ -46,13 +47,13 @@ const setupCommunitySocket = (server) => {
       socket.user = { id: decoded.userId, role: decoded.role };
       next();
     } catch (err) {
-      console.error('[Socket Auth] JWT Verification Failed:', err.message);
+      logger.error('socket_auth_failed', { error: err.message });
       next(new Error('Authentication error: Invalid token'));
     }
   });
 
   io.on('connection', (socket) => {
-    console.log(`[Socket] User Connected: ${socket.user.id} (${socket.user.role})`);
+    logger.info('socket_user_connected', { userId: socket.user.id, role: socket.user.role });
 
     // Join personal room for system notifications
     socket.join(socket.user.id);
@@ -66,7 +67,7 @@ const setupCommunitySocket = (server) => {
         }
 
         socket.join(communityId);
-        console.log(`[Socket] User ${socket.user.id} joined room: ${communityId}`);
+        logger.info('socket_room_joined', { userId: socket.user.id, communityId });
       } catch (err) {
         socket.emit('error', { message: 'Failed to join room: ' + err.message });
       }
@@ -74,7 +75,7 @@ const setupCommunitySocket = (server) => {
 
     socket.on('send_message', async (data) => {
       const { communityId, content, clientId } = data;
-      console.log(`[Socket] Message from ${socket.user.id} to ${communityId} (clientId: ${clientId})`);
+      logger.info('socket_message_received', { userId: socket.user.id, communityId, clientId });
       
       if (!communityId) return socket.emit('error', { message: 'Community ID is required' });
       if (!content || content.trim().length === 0) return socket.emit('error', { message: 'Message content cannot be empty' });
@@ -90,7 +91,7 @@ const setupCommunitySocket = (server) => {
         const savedMsg = await communityService.saveMessage(communityId, socket.user.id, content.trim());
         
         if (savedMsg) {
-          console.log(`[Socket] Broadcasting message: ${savedMsg._id}`);
+          logger.info('socket_message_broadcast', { messageId: savedMsg._id });
           io.to(communityId).emit('new_message', {
             _id: savedMsg._id,
             clientId, // Echo back for optimistic UI tracking
@@ -102,13 +103,13 @@ const setupCommunitySocket = (server) => {
           });
         }
       } catch (err) {
-        console.error('[Socket] Message Save/Broadcast Error:', err.message);
+        logger.error('socket_message_error', { error: err.message });
         socket.emit('error', { message: 'Failed to send message: ' + err.message, clientId });
       }
     });
 
     socket.on('disconnect', () => {
-      console.log(`[Socket] User Disconnected: ${socket.user.id}`);
+      logger.info('socket_user_disconnected', { userId: socket.user.id });
     });
   });
 
