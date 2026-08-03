@@ -1,17 +1,26 @@
-import { useEffect, useRef, useState } from 'react';
-import { X, Lock, AlertTriangle, Loader2, FileWarning } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { X, Lock, FileWarning, Loader2 } from 'lucide-react';
+import { Document, Page, pdfjs } from 'react-pdf';
 import pdfService from '../../services/pdf.service';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
+
+// Initialize PDF.js worker
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url,
+).toString();
 
 /**
  * PDFViewer — View-only PDF modal.
- * Authenticated blob streaming + Chrome PDF params (#toolbar=0&navpanes=0)
+ * Uses react-pdf for native rendering across all devices, bypassing iframe/object limitations on mobile.
  * Blocks Ctrl+S, Ctrl+P, and context menu.
  */
 const PDFViewer = ({ pdf, onClose }) => {
-  const overlayRef = useRef(null);
   const [blobUrl, setBlobUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [numPages, setNumPages] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -27,7 +36,7 @@ const PDFViewer = ({ pdf, onClose }) => {
         // Ensure standard PDF mime type
         const pdfBlob = new Blob([blob], { type: 'application/pdf' });
         createdUrl = URL.createObjectURL(pdfBlob);
-        setBlobUrl(`${createdUrl}#toolbar=0&navpanes=0&scrollbar=1`);
+        setBlobUrl(createdUrl);
       } catch (err) {
         if (!isMounted) return;
         console.error('Failed to load PDF blob:', err);
@@ -61,6 +70,10 @@ const PDFViewer = ({ pdf, onClose }) => {
 
   const blockContextMenu = (e) => e.preventDefault();
 
+  function onDocumentLoadSuccess({ numPages }) {
+    setNumPages(numPages);
+  }
+
   return (
     <div className="pdf-modal-backdrop" role="dialog" aria-modal="true" aria-label={`Viewing: ${pdf.title}`}>
       <div className="pdf-modal">
@@ -86,37 +99,47 @@ const PDFViewer = ({ pdf, onClose }) => {
         <div
           className="pdf-viewer-wrap"
           onContextMenu={blockContextMenu}
-          ref={overlayRef}
         >
-          <div
-            className="pdf-click-guard"
-            onContextMenu={blockContextMenu}
-            aria-hidden="true"
-          />
-
-          {loading ? (
-            <div className="pdf-loading">
+          {loading && !blobUrl ? (
+            <div className="pdf-loading" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
               <Loader2 size={40} className="spin" />
               <p>Establishing secure stream...</p>
             </div>
           ) : error ? (
-            <div className="pdf-loading danger-text">
+            <div className="pdf-loading danger-text" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
               <FileWarning size={48} />
               <p>{error}</p>
               <button className="pdf-btn mt-4" onClick={onClose}>Close Viewer</button>
             </div>
-          ) : (
-            <object
-              data={blobUrl}
-              type="application/pdf"
-              className="pdf-iframe"
-            >
-              <iframe
-                src={blobUrl}
-                title={pdf.title}
-                className="pdf-iframe"
-              />
-            </object>
+          ) : blobUrl && (
+            <div className="pdf-document-container" style={{ height: '100%', overflowY: 'auto', padding: '2rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#2c2e33' }}>
+              <Document
+                file={blobUrl}
+                onLoadSuccess={onDocumentLoadSuccess}
+                loading={
+                  <div className="pdf-loading">
+                    <Loader2 size={40} className="spin" />
+                    <p>Rendering document...</p>
+                  </div>
+                }
+                error={
+                  <div className="pdf-loading danger-text">
+                    <FileWarning size={48} />
+                    <p>Failed to render PDF.</p>
+                  </div>
+                }
+              >
+                {Array.from(new Array(numPages), (el, index) => (
+                  <Page
+                    key={`page_${index + 1}`}
+                    pageNumber={index + 1}
+                    className="pdf-page-wrapper"
+                    renderTextLayer={false}
+                    renderAnnotationLayer={false}
+                  />
+                ))}
+              </Document>
+            </div>
           )}
         </div>
       </div>

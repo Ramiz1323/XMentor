@@ -523,6 +523,37 @@
   z-index: 1;
 }
 
+// ─── react-pdf Styles ─────────────────────────────────────────────────────────
+.pdf-document-container {
+  /* Added for react-pdf */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(white, 0.2) transparent;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(white, 0.2);
+    border-radius: 20px;
+  }
+}
+
+.pdf-page-wrapper {
+  margin-bottom: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  overflow: hidden;
+
+  canvas {
+    max-width: 100%;
+    height: auto !important;
+    display: block;
+  }
+}
+
 // ─── Spin animation ───────────────────────────────────────────────────────────
 @keyframes fadeIn {
   from { opacity: 0; }
