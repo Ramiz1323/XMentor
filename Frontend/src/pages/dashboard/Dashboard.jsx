@@ -271,14 +271,14 @@ const Dashboard = () => {
                       <span className="subject-tag">{test.subject}</span>
                       <h4>{test.title}</h4>
                       <span className="date-taken">
-                        {test.submittedAt ? new Date(test.submittedAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Completed'}
+                        {test.result?.updatedAt ? new Date(test.result.updatedAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Completed'}
                       </span>
                     </div>
                     <div className="assessment-score">
                       <div className="score-ring">
-                        <span className="score-value">{Math.round((test.score / test.totalScore) * 100) || 0}%</span>
+                        <span className="score-value">{Math.round(((test.result?.score || 0) / (test.result?.total || 1)) * 100)}%</span>
                       </div>
-                      <div className="score-fraction">{test.score} / {test.totalScore}</div>
+                      <div className="score-fraction">{test.result?.score || 0} / {test.result?.total || 0}</div>
                     </div>
                   </div>
                 ))
