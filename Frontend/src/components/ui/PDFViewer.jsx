@@ -137,7 +137,7 @@ const PDFViewer = ({ pdf, onClose }) => {
                     className="pdf-page-wrapper"
                     renderTextLayer={false}
                     renderAnnotationLayer={false}
-                    scale={1.5}
+                    scale={2.0}
                   />
                 ))}
               </Document>
