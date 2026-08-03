@@ -4,7 +4,7 @@ import { StaleWhileRevalidate, NetworkFirst } from 'workbox-strategies';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { ExpirationPlugin } from 'workbox-expiration';
 
-const APP_VERSION = 'v1_5_2';
+const APP_VERSION = 'v1_5_3';
 
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
