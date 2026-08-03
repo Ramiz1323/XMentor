@@ -5,8 +5,12 @@ import pdfService from '../../services/pdf.service';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
-// Initialize PDF.js worker from CDN to avoid MIME type issues with .mjs on some hosting platforms
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+// Use Vite's worker import with inline query to completely bypass server MIME type issues for .mjs files
+import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?worker&inline';
+
+if (typeof window !== 'undefined' && 'Worker' in window) {
+  pdfjs.GlobalWorkerOptions.workerPort = new pdfWorker();
+}
 
 /**
  * PDFViewer — View-only PDF modal.
