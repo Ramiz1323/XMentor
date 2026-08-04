@@ -185,6 +185,8 @@ const MonacoCodeEditor = ({ language, value, onChange, theme = 'vs-dark' }) => {
     });
   };
 
+  const isMobileScreen = typeof window !== 'undefined' && window.innerWidth < 640;
+
   return (
     <div className="monaco-editor-wrapper">
       <Editor
@@ -195,19 +197,23 @@ const MonacoCodeEditor = ({ language, value, onChange, theme = 'vs-dark' }) => {
         onChange={onChange}
         beforeMount={handleEditorWillMount}
         options={{
-          fontSize: 14,
+          fontSize: isMobileScreen ? 13 : 14,
           fontFamily: "'Fira Code', 'Cascadia Code', Consolas, Monaco, monospace",
           fontLigatures: true,
           minimap: { enabled: false },
           automaticLayout: true,
           scrollBeyondLastLine: false,
           smoothScrolling: true,
-          padding: { top: 12, bottom: 12 },
-          lineNumbersMinChars: 3,
+          padding: { top: isMobileScreen ? 8 : 12, bottom: isMobileScreen ? 8 : 12 },
+          lineNumbersMinChars: isMobileScreen ? 2 : 3,
+          glyphMargin: !isMobileScreen,
+          folding: !isMobileScreen,
           cursorBlinking: 'smooth',
           cursorSmoothCaretAnimation: 'on',
           tabSize: 2,
           wordWrap: 'on',
+          wrappingStrategy: 'advanced',
+          wrappingIndent: 'indent',
           formatOnPaste: true,
           formatOnType: true,
 

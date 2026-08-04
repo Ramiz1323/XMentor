@@ -43,6 +43,9 @@ const CodeSpacePage = () => {
   const [isExecutingJava, setIsExecutingJava] = useState(false);
   const [javaResult, setJavaResult] = useState(null);
 
+  // Mobile View Switcher State: 'code' | 'output' | 'split'
+  const [mobileTab, setMobileTab] = useState('code');
+
   // Rehydrate state from localStorage + Backend sync on mount
   useEffect(() => {
     try {
@@ -142,6 +145,10 @@ const CodeSpacePage = () => {
   // Execute Java Code
   const handleRunJava = async () => {
     setIsExecutingJava(true);
+    // Switch to output tab automatically on mobile screens
+    if (window.innerWidth < 768) {
+      setMobileTab('output');
+    }
     try {
       const res = await codespaceService.executeJava(codes.java);
       if (res.success) {
@@ -180,14 +187,20 @@ const CodeSpacePage = () => {
             <button 
               className={`lang-btn ${language === 'WEB' ? 'active' : ''}`}
               onClick={() => setLanguage('WEB')}
+              title="Web IDE (HTML/CSS/JS)"
             >
-              <Sparkles size={14} /> Web (HTML/CSS/JS)
+              <Sparkles size={14} /> 
+              <span className="lang-name">Web</span>
+              <span className="lang-detail"> (HTML/CSS/JS)</span>
             </button>
             <button 
               className={`lang-btn ${language === 'JAVA' ? 'active' : ''}`}
               onClick={() => setLanguage('JAVA')}
+              title="Java IDE (JDK 15)"
             >
-              <Coffee size={14} /> Java (JDK 15)
+              <Coffee size={14} /> 
+              <span className="lang-name">Java</span>
+              <span className="lang-detail"> (JDK 15)</span>
             </button>
           </div>
         </div>
@@ -199,12 +212,12 @@ const CodeSpacePage = () => {
               onClick={handleRunJava}
               disabled={isExecutingJava}
             >
-              <Play size={15} fill="currentColor" /> {isExecutingJava ? 'Running...' : 'Run Java'}
+              <Play size={15} fill="currentColor" /> <span className="btn-text">{isExecutingJava ? 'Running...' : 'Run Java'}</span>
             </button>
           )}
 
-          <button className="action-btn save-btn" onClick={handleCloudSave} disabled={isSaving}>
-            <Cloud size={15} /> {isSaving ? 'Saving...' : 'Cloud Sync'}
+          <button className="action-btn save-btn" onClick={handleCloudSave} disabled={isSaving} title="Cloud Sync">
+            <Cloud size={15} /> <span className="btn-text">{isSaving ? 'Saving...' : 'Cloud Sync'}</span>
           </button>
 
           <button className="action-btn icon-only-btn" onClick={handleResetTemplate} title="Reset Template">
@@ -221,13 +234,35 @@ const CodeSpacePage = () => {
 
           <div className="status-indicator">
             <Check size={13} className="check-icon" />
-            <span>{savedStatus}</span>
+            <span className="status-text">{savedStatus}</span>
           </div>
         </div>
       </header>
 
+      {/* ── Mobile Pane View Switcher Bar (Visible on mobile screens < 768px) ── */}
+      <nav className="mobile-view-bar" aria-label="Mobile View Switcher">
+        <button 
+          className={`mobile-tab-btn ${mobileTab === 'code' ? 'active' : ''}`}
+          onClick={() => setMobileTab('code')}
+        >
+          <Code2 size={15} /> <span>Code</span>
+        </button>
+        <button 
+          className={`mobile-tab-btn ${mobileTab === 'output' ? 'active' : ''}`}
+          onClick={() => setMobileTab('output')}
+        >
+          <Play size={15} /> <span>{language === 'WEB' ? 'Preview' : 'Terminal'}</span>
+        </button>
+        <button 
+          className={`mobile-tab-btn ${mobileTab === 'split' ? 'active' : ''}`}
+          onClick={() => setMobileTab('split')}
+        >
+          <Maximize2 size={15} /> <span>Split</span>
+        </button>
+      </nav>
+
       {/* ── Main Workspace Body (Split Editor & Output) ── */}
-      <main className="codespace-workspace">
+      <main className={`codespace-workspace mobile-tab-${mobileTab}`}>
         {/* Left Pane: Code Editor */}
         <section className="editor-pane">
           {/* File Tabs for Web Mode */}
