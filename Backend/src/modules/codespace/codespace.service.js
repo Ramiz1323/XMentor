@@ -36,44 +36,38 @@ export const saveUserCodeSpace = async (userId, data) => {
 };
 
 /**
- * Execute Java code securely using Piston API runner
+ * Execute Java code securely using Judge0 Engine API
  */
 export const executeJavaCode = async (code) => {
   try {
     const payload = {
-      language: 'java',
-      version: '15.0.2',
-      files: [
-        {
-          name: 'Main.java',
-          content: code,
-        },
-      ],
+      source_code: code,
+      language_id: 62, // Java (OpenJDK 13.0.1)
     };
 
-    const response = await axios.post('https://emkc.org/api/v2/piston/execute', payload, {
-      timeout: 10000,
+    const response = await axios.post('https://ce.judge0.com/submissions?wait=true', payload, {
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 15000,
     });
 
-    const runResult = response.data.run || {};
-    const compileResult = response.data.compile || {};
-
-    let output = runResult.output || compileResult.output || 'No output produced.';
-    let stderr = runResult.stderr || compileResult.stderr || '';
-    let exitCode = runResult.code !== undefined ? runResult.code : compileResult.code;
+    const data = response.data || {};
+    const stdout = data.stdout || '';
+    const stderr = data.stderr || data.compile_output || data.message || '';
+    const isSuccess = data.status?.id === 3; // Status 3 = Accepted
 
     return {
-      success: exitCode === 0,
-      output: output.trim(),
+      success: isSuccess,
+      output: stdout.trim() || (isSuccess ? 'Program executed successfully with no output.' : ''),
       stderr: stderr.trim(),
-      exitCode,
+      exitCode: isSuccess ? 0 : 1,
+      executionTime: data.time ? `${data.time}s` : undefined,
     };
   } catch (error) {
-    logger.error('Java Execution Error:', error.message);
+    logger.error('Java Execution Engine Error:', error.message);
     return {
       success: false,
       output: '',
-      stderr: error.response?.data?.message || error.message || 'Execution engine unavailable.',
+      stderr: error.response?.data?.message || error.message || 'Execution engine timeout. Please check your code syntax.',
       exitCode: 1,
     };
   }
