@@ -1,5 +1,12 @@
 import React from 'react';
-import Editor from '@monaco-editor/react';
+import Editor, { loader } from '@monaco-editor/react';
+
+// Configure Monaco Loader CDN to ensure full language services (IntelliSense, Autocomplete, HTML/CSS/JS/Java validation)
+loader.config({
+  paths: {
+    vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs',
+  },
+});
 
 const MonacoCodeEditor = ({ language, value, onChange, theme = 'vs-dark' }) => {
   const getMonacoLanguage = (lang) => {
@@ -13,6 +20,21 @@ const MonacoCodeEditor = ({ language, value, onChange, theme = 'vs-dark' }) => {
     }
   };
 
+  const handleEditorWillMount = (monaco) => {
+    // Configure JavaScript / TypeScript compiler options for rich autocompletion
+    monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+      target: monaco.languages.typescript.ScriptTarget.ES2020,
+      allowNonTsExtensions: true,
+      allowJs: true,
+      checkJs: true,
+    });
+    
+    // Enable HTML & CSS suggestion triggers
+    monaco.languages.html?.htmlDefaults?.setOptions({
+      suggest: { html5: true },
+    });
+  };
+
   return (
     <div className="monaco-editor-wrapper">
       <Editor
@@ -21,6 +43,7 @@ const MonacoCodeEditor = ({ language, value, onChange, theme = 'vs-dark' }) => {
         theme={theme}
         value={value}
         onChange={onChange}
+        beforeMount={handleEditorWillMount}
         options={{
           fontSize: 14,
           fontFamily: "'Fira Code', 'Cascadia Code', Consolas, Monaco, monospace",
@@ -37,6 +60,40 @@ const MonacoCodeEditor = ({ language, value, onChange, theme = 'vs-dark' }) => {
           wordWrap: 'on',
           formatOnPaste: true,
           formatOnType: true,
+
+          // ── IntelliSense & Autocomplete Configuration ──
+          quickSuggestions: {
+            other: true,
+            comments: true,
+            strings: true,
+          },
+          suggestOnTriggerCharacters: true,
+          acceptSuggestionOnCommitCharacter: true,
+          acceptSuggestionOnEnter: 'on',
+          tabCompletion: 'on',
+          wordBasedSuggestions: 'allDocuments',
+          snippetSuggestions: 'inline',
+          suggest: {
+            insertMode: 'insert',
+            filterGraceful: true,
+            showKeywords: true,
+            showSnippets: true,
+            showFunctions: true,
+            showVariables: true,
+            showClasses: true,
+            showMethods: true,
+            showProperties: true,
+            showEvents: true,
+            showOperators: true,
+            showUnits: true,
+            showValues: true,
+            showConstants: true,
+            showEnums: true,
+            showEnumMembers: true,
+            showStructs: true,
+            showInterfaces: true,
+            showTypeParameters: true,
+          },
         }}
       />
     </div>
