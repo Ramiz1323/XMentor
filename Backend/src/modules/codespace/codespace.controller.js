@@ -22,7 +22,7 @@ export const executeJava = async (req, res, next) => {
   try {
     const { code, stdin } = req.body;
     if (!code || !code.trim()) {
-      return res.status(400).json({ success: false, message: 'Java code cannot be empty', error: 'Java code cannot be empty' });
+      return res.status(400).json({ success: false, error: 'Java code cannot be empty' });
     }
     const result = await codeSpaceService.executeJavaCode(code, stdin);
     res.status(200).json({ success: true, data: result });

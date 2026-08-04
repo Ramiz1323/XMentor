@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { 
-  Code2, 
-  Play, 
-  Save, 
-  Maximize2, 
-  Minimize2, 
-  FileCode, 
-  Palette, 
-  FileJson, 
-  Coffee, 
-  RotateCcw, 
-  Check, 
+import {
+  Code2,
+  Play,
+  Save,
+  Maximize2,
+  Minimize2,
+  FileCode,
+  Palette,
+  FileJson,
+  Coffee,
+  RotateCcw,
+  Check,
   Cloud,
   Sparkles
 } from 'lucide-react';
@@ -26,13 +26,13 @@ const DEFAULT_CODES = {
   html: `<!-- XMentor Web CodeSpace -->\n<div class="card">\n  <div class="badge">PRO IDE</div>\n  <h1>Welcome to CodeSpace 🚀</h1>\n  <p>Practice HTML, CSS, & JS seamlessly from any device!</p>\n  <button id="btn">Click Me!</button>\n</div>`,
   css: `/* Custom Glassmorphic Styles */\nbody {\n  margin: 0;\n  padding: 0;\n  min-height: 100vh;\n  background: #090d16;\n  color: #e2e8f0;\n  font-family: 'Inter', system-ui, sans-serif;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n}\n\n.card {\n  background: rgba(30, 41, 59, 0.7);\n  border: 1px solid rgba(255, 255, 255, 0.1);\n  backdrop-filter: blur(16px);\n  border-radius: 16px;\n  padding: 2.5rem;\n  text-align: center;\n  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);\n  max-width: 400px;\n}\n\n.badge {\n  background: linear-gradient(135deg, #3b82f6, #8b5cf6);\n  color: white;\n  font-size: 0.75rem;\n  font-weight: 700;\n  padding: 0.25rem 0.75rem;\n  border-radius: 999px;\n  display: inline-block;\n  margin-bottom: 1rem;\n}\n\nh1 {\n  margin: 0 0 0.5rem;\n  font-size: 1.75rem;\n}\n\np {\n  color: #94a3b8;\n  font-size: 0.95rem;\n  line-height: 1.5;\n}\n\nbutton {\n  margin-top: 1.5rem;\n  background: #3b82f6;\n  color: white;\n  border: none;\n  padding: 0.75rem 1.5rem;\n  font-weight: 600;\n  border-radius: 8px;\n  cursor: pointer;\n  transition: all 0.2s;\n}\n\nbutton:hover {\n  background: #2563eb;\n  transform: translateY(-2px);\n}`,
   js: `// Interactive JavaScript\nconst btn = document.getElementById('btn');\n\nbtn.addEventListener('click', () => {\n  alert('🎉 Awesome! JavaScript is running live!');\n});`,
-  java: `public class Main {\n    public static void main(String[] args) {\n        System.out.println("========================================");\n        System.out.println("🚀 Welcome to XMentor Java CodeSpace!");\n        System.out.println("========================================");\n        \n        int a = 15;\n        int b = 25;\n        int sum = a + b;\n        \n        System.out.println("Calculating: " + a + " + " + b + " = " + sum);\n    }\n}`
+  java: `public class Main {\n    public static void main(String[] args) {\n        System.out.println("========================================");\n        System.out.println(" Welcome to XMentor Java CodeSpace!");\n        System.out.println("========================================");\n        \n        int a = 15;\n        int b = 25;\n        int sum = a + b;\n        \n        System.out.println("Calculating: " + a + " + " + b + " = " + sum);\n    }\n}`
 };
 
 const CodeSpacePage = () => {
   const [language, setLanguage] = useState('WEB'); // 'WEB' | 'JAVA'
   const [activeTab, setActiveTab] = useState('html'); // 'html' | 'css' | 'js'
-  
+
   const [codes, setCodes] = useState(DEFAULT_CODES);
   const [title, setTitle] = useState('My Workspace');
   const [isZenMode, setIsZenMode] = useState(false);
@@ -192,12 +192,11 @@ const CodeSpacePage = () => {
         toast.error('Execution failed');
       }
     } catch (err) {
-      const friendlyError = err.data?.message || err.data?.error || err.response?.data?.message || err.response?.data?.error || err.message || 'Runner server error';
-      toast.error(friendlyError);
+      toast.error('Failed to connect to execution engine');
       setJavaResult({
         success: false,
         output: '',
-        stderr: friendlyError,
+        stderr: err.response?.data?.error || err.message || 'Runner server error',
         exitCode: 1,
       });
     } finally {
@@ -233,21 +232,21 @@ const CodeSpacePage = () => {
 
           {/* Language Selector */}
           <div className="language-selector">
-            <button 
+            <button
               className={`lang-btn ${language === 'WEB' ? 'active' : ''}`}
               onClick={() => setLanguage('WEB')}
               title="Web IDE (HTML/CSS/JS)"
             >
-              <Sparkles size={14} /> 
+              <Sparkles size={14} />
               <span className="lang-name">Web</span>
               <span className="lang-detail"> (HTML/CSS/JS)</span>
             </button>
-            <button 
+            <button
               className={`lang-btn ${language === 'JAVA' ? 'active' : ''}`}
               onClick={() => setLanguage('JAVA')}
               title="Java IDE (JDK 15)"
             >
-              <Coffee size={14} /> 
+              <Coffee size={14} />
               <span className="lang-name">Java</span>
               <span className="lang-detail"> (JDK 15)</span>
             </button>
@@ -256,7 +255,7 @@ const CodeSpacePage = () => {
 
         <div className="header-right">
           {language === 'JAVA' && (
-            <button 
+            <button
               className="action-btn run-btn"
               onClick={handleRunJava}
               disabled={isExecutingJava}
@@ -273,7 +272,7 @@ const CodeSpacePage = () => {
             <RotateCcw size={15} />
           </button>
 
-          <button 
+          <button
             className="action-btn icon-only-btn zen-toggle-btn"
             onClick={() => setIsZenMode(prev => !prev)}
             title={isZenMode ? "Exit Zen Mode" : "Zen Fullscreen Mode"}
@@ -290,19 +289,19 @@ const CodeSpacePage = () => {
 
       {/* ── Mobile Pane View Switcher Bar (Visible on mobile screens < 768px) ── */}
       <nav className="mobile-view-bar" aria-label="Mobile View Switcher">
-        <button 
+        <button
           className={`mobile-tab-btn ${mobileTab === 'code' ? 'active' : ''}`}
           onClick={() => setMobileTab('code')}
         >
           <Code2 size={15} /> <span>Code</span>
         </button>
-        <button 
+        <button
           className={`mobile-tab-btn ${mobileTab === 'output' ? 'active' : ''}`}
           onClick={() => setMobileTab('output')}
         >
           <Play size={15} /> <span>{language === 'WEB' ? 'Preview' : 'Terminal'}</span>
         </button>
-        <button 
+        <button
           className={`mobile-tab-btn ${mobileTab === 'split' ? 'active' : ''}`}
           onClick={() => setMobileTab('split')}
         >
@@ -317,19 +316,19 @@ const CodeSpacePage = () => {
           {/* File Tabs for Web Mode */}
           {language === 'WEB' && (
             <div className="file-tabs">
-              <button 
+              <button
                 className={`tab-btn ${activeTab === 'html' ? 'active' : ''}`}
                 onClick={() => setActiveTab('html')}
               >
                 <FileCode size={14} className="tab-icon html-icon" /> index.html
               </button>
-              <button 
+              <button
                 className={`tab-btn ${activeTab === 'css' ? 'active' : ''}`}
                 onClick={() => setActiveTab('css')}
               >
                 <Palette size={14} className="tab-icon css-icon" /> styles.css
               </button>
-              <button 
+              <button
                 className={`tab-btn ${activeTab === 'js' ? 'active' : ''}`}
                 onClick={() => setActiveTab('js')}
               >
