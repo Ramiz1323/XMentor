@@ -49,11 +49,15 @@ const CodeSpacePage = () => {
 
   // Rehydrate state from localStorage + Backend sync on mount
   useEffect(() => {
+    let hasLocalData = false;
     try {
       const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (cached) {
         const parsed = JSON.parse(cached);
-        if (parsed.codes) setCodes(parsed.codes);
+        if (parsed.codes) {
+          setCodes(parsed.codes);
+          hasLocalData = true;
+        }
         if (parsed.language) setLanguage(parsed.language);
         if (parsed.title) setTitle(parsed.title);
       }
@@ -61,19 +65,21 @@ const CodeSpacePage = () => {
       console.error('Failed to load local codespace state:', e);
     }
 
-    // Fetch cloud saved version
+    // Fetch cloud saved version only if local cache is empty
     codespaceService.getCodeSpace()
       .then(res => {
         if (res.success && res.data) {
           const cloudData = res.data;
-          setCodes(prev => ({
-            html: cloudData.html || prev.html,
-            css: cloudData.css || prev.css,
-            js: cloudData.js || prev.js,
-            java: cloudData.java || prev.java,
-          }));
-          if (cloudData.language) setLanguage(cloudData.language);
-          if (cloudData.title) setTitle(cloudData.title);
+          if (!hasLocalData) {
+            setCodes({
+              html: cloudData.html || DEFAULT_CODES.html,
+              css: cloudData.css || DEFAULT_CODES.css,
+              js: cloudData.js || DEFAULT_CODES.js,
+              java: cloudData.java || DEFAULT_CODES.java,
+            });
+            if (cloudData.language) setLanguage(cloudData.language);
+            if (cloudData.title) setTitle(cloudData.title);
+          }
           setSavedStatus('Synced with cloud');
         }
       })
@@ -82,7 +88,7 @@ const CodeSpacePage = () => {
       });
   }, []);
 
-  // Sync to localStorage on every change
+  // Sync to localStorage on every change + Debounced Cloud Auto-Save
   useEffect(() => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({
@@ -94,6 +100,26 @@ const CodeSpacePage = () => {
     } catch (e) {
       console.error('Local storage save error:', e);
     }
+
+    // Debounced Auto-Save to Cloud DB (1.5s delay)
+    const autoSaveTimer = setTimeout(() => {
+      codespaceService.saveCodeSpace({
+        title,
+        language,
+        html: codes.html,
+        css: codes.css,
+        js: codes.js,
+        java: codes.java,
+      })
+        .then(() => {
+          setSavedStatus('Synced with cloud');
+        })
+        .catch(err => {
+          console.warn('Silent cloud auto-save warning:', err.message);
+        });
+    }, 1500);
+
+    return () => clearTimeout(autoSaveTimer);
   }, [codes, language, title]);
 
   // Handle Code Changes
