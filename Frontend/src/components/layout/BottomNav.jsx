@@ -16,7 +16,8 @@ import {
   LogOut,
   ChevronRight,
   Calendar,
-  FileText
+  FileText,
+  Code2
 } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
 
@@ -60,7 +61,7 @@ const BottomNav = () => {
   }, [location.pathname]);
 
   // Check if any menu sheet route is currently active
-  const isMenuRouteActive = ['/communities', '/doubts', '/subjective/review', '/admin', '/profile', '/resources'].some(route => 
+  const isMenuRouteActive = ['/communities', '/doubts', '/subjective/review', '/admin', '/profile', '/resources', '/codespace'].some(route => 
     location.pathname === route || location.pathname.startsWith(`${route}/`)
   );
 
@@ -178,6 +179,14 @@ const BottomNav = () => {
               <div className="row-left">
                 <div className="item-icon-box"><FileText size={20} /></div>
                 <span>{user?.role === 'TEACHER' ? 'PDF Resources' : 'Study Resources'}</span>
+              </div>
+              <ChevronRight size={18} className="row-chevron" />
+            </NavLink>
+
+            <NavLink to="/codespace" className={({ isActive }) => `sheet-nav-row ${isActive ? 'active' : ''}`} style={{ '--row-idx': 5 }}>
+              <div className="row-left">
+                <div className="item-icon-box"><Code2 size={20} /></div>
+                <span>CodeSpace IDE</span>
               </div>
               <ChevronRight size={18} className="row-chevron" />
             </NavLink>
