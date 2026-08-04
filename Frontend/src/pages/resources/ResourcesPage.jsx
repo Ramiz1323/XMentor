@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { FileText, Upload, Trash2, Eye, Users, BookOpen, ChevronDown, ChevronUp, Loader2, X } from 'lucide-react';
+import { FileText, Upload, Trash2, Eye, Users, BookOpen, ChevronDown, ChevronUp, Loader2, X, GraduationCap } from 'lucide-react';
 import toast from 'react-hot-toast';
 import useAuthStore from '../../store/useAuthStore';
 import pdfService from '../../services/pdf.service';
@@ -17,6 +17,12 @@ const SUBJECT_OPTIONS = SUBJECTS.map(s => ({
   label: s.replace('_', ' ')
 }));
 
+const CLASSES = ['ALL', '5', '6', '7', '8', '9', '10', '11', '12', 'DROPPERS', 'OTHERS'];
+const CLASS_OPTIONS = CLASSES.map(c => ({
+  value: c,
+  label: c === 'ALL' ? 'All Classes' : `Class ${c}`
+}));
+
 // ─── Utility: human-readable file size ──────────────────────────────────────
 const formatSize = (bytes) => {
   if (!bytes) return '';
@@ -32,7 +38,7 @@ const subjectLabel = (s) => s.replace('_', ' ');
 // TEACHER — Upload Form
 // ─────────────────────────────────────────────────────────────────────────────
 const UploadForm = ({ students, onUploaded }) => {
-  const [form, setForm] = useState({ title: '', description: '', subject: 'OTHERS' });
+  const [form, setForm] = useState({ title: '', description: '', subject: 'OTHERS', classLevel: 'ALL' });
   const [file, setFile] = useState(null);
   const [selectedStudents, setSelectedStudents] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -68,6 +74,7 @@ const UploadForm = ({ students, onUploaded }) => {
     fd.append('title', form.title.trim());
     fd.append('description', form.description.trim());
     fd.append('subject', form.subject);
+    fd.append('classLevel', form.classLevel);
     fd.append('assignedStudents', JSON.stringify(selectedStudents));
 
     setUploading(true);
@@ -82,7 +89,7 @@ const UploadForm = ({ students, onUploaded }) => {
       clearInterval(progressInterval);
       setUploadProgress(100);
       toast.success('PDF uploaded successfully!');
-      setForm({ title: '', description: '', subject: 'OTHERS' });
+      setForm({ title: '', description: '', subject: 'OTHERS', classLevel: 'ALL' });
       setFile(null);
       setSelectedStudents([]);
       onUploaded();
@@ -110,8 +117,18 @@ const UploadForm = ({ students, onUploaded }) => {
             className="glass-input"
             placeholder="e.g. Chapter 5 — Thermodynamics Notes"
             value={form.title}
-            onChange={e => setForm(f => ({ ...f, subject: f.subject, title: e.target.value }))}
+            onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
             required
+          />
+        </div>
+        <div className="pdf-field">
+          <GlassDropdown
+            label="CLASS LEVEL *"
+            options={CLASS_OPTIONS}
+            value={form.classLevel}
+            onChange={val => setForm(f => ({ ...f, classLevel: val }))}
+            placeholder="Select class"
+            icon={GraduationCap}
           />
         </div>
         <div className="pdf-field">
@@ -270,6 +287,7 @@ const TeacherPdfCard = ({ pdf, students, onDeleted, onReassigned }) => {
           <h3 className="pdf-card-title">{pdf.title}</h3>
           <div className="pdf-card-meta">
             <span className="pdf-subject-tag">{subjectLabel(pdf.subject)}</span>
+            {pdf.classLevel && <span className="pdf-class-tag">Class {pdf.classLevel}</span>}
             {pdf.fileSizeBytes > 0 && <span className="pdf-size">{formatSize(pdf.fileSizeBytes)}</span>}
             <span className="pdf-date">{new Date(pdf.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
           </div>
@@ -345,6 +363,7 @@ const StudentPdfCard = ({ pdf }) => {
           <h3 className="pdf-card-title">{pdf.title}</h3>
           <div className="pdf-card-meta">
             <span className="pdf-subject-tag">{subjectLabel(pdf.subject)}</span>
+            {pdf.classLevel && <span className="pdf-class-tag">Class {pdf.classLevel}</span>}
             {pdf.fileSizeBytes > 0 && <span className="pdf-size">{formatSize(pdf.fileSizeBytes)}</span>}
             <span className="pdf-date">{new Date(pdf.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
           </div>

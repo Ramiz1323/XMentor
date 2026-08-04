@@ -1,4 +1,4 @@
-﻿import * as pdfService from './pdf.service.js';
+import * as pdfService from './pdf.service.js';
 
 // POST /api/pdf/upload — TEACHER only
 export const uploadPdf = async (req, res, next) => {
@@ -23,6 +23,7 @@ export const uploadPdf = async (req, res, next) => {
       title: req.body.title,
       description: req.body.description || '',
       subject: req.body.subject,
+      classLevel: req.body.classLevel,
       assignedStudents,
     };
 

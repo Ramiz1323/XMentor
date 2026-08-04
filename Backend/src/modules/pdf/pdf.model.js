@@ -1,4 +1,4 @@
-﻿import mongoose from 'mongoose';
+import mongoose from 'mongoose';
 
 const pdfResourceSchema = new mongoose.Schema(
   {
@@ -20,6 +20,11 @@ const pdfResourceSchema = new mongoose.Schema(
         'EVS', 'SOCIAL_SCIENCE', 'COMPUTER', 'CODING', 'OTHERS'
       ],
       required: [true, 'Subject is required'],
+    },
+    classLevel: {
+      type: String,
+      required: [true, 'Class level is required'],
+      trim: true,
     },
     pdfUrl: {
       type: String,

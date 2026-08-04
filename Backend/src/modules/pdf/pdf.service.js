@@ -8,7 +8,7 @@ import logger from '../../utils/logger.js';
 // UPLOAD PDF — Teacher uploads a PDF, stored in ImageKit /xmentor/pdfs/
 // ─────────────────────────────────────────────────────────────────────────────
 export const uploadPdf = async (teacherId, fileBuffer, originalName, metadata) => {
-  const { title, description, subject, assignedStudents } = metadata;
+  const { title, description, subject, classLevel, assignedStudents } = metadata;
 
   const safeFileName = `pdf_${teacherId}_${Date.now()}_${originalName.replace(/\s+/g, '_')}`;
 
@@ -22,6 +22,7 @@ export const uploadPdf = async (teacherId, fileBuffer, originalName, metadata) =
     title,
     description: description || '',
     subject,
+    classLevel,
     pdfUrl: uploadResponse.url,
     pdfFileId: uploadResponse.fileId,
     originalName: originalName,
