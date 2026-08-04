@@ -1,0 +1,399 @@
+@use 'variables' as *;
+
+.codespace-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 80px);
+  background: #090d16;
+  color: #f8fafc;
+  font-family: $font-family-body;
+  overflow: hidden;
+  transition: all 0.3s ease;
+
+  &.zen-mode-active {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 99999;
+    height: 100vh !important;
+    width: 100vw !important;
+  }
+}
+
+/* ── Top Header Toolbar ── */
+.codespace-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 1.25rem;
+  background: rgba(15, 23, 42, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  z-index: 20;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+
+    .brand-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      color: #38bdf8;
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: 0.02rem;
+
+      .brand-icon {
+        color: #60a5fa;
+      }
+    }
+
+    .language-selector {
+      display: flex;
+      background: rgba(30, 41, 59, 0.6);
+      padding: 0.2rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+
+      .lang-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.4rem 0.85rem;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #94a3b8;
+        border: none;
+        background: transparent;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          color: #f8fafc;
+          background: rgba(255, 255, 255, 0.04);
+        }
+
+        &.active {
+          color: #ffffff;
+          background: #2563eb;
+          box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+        }
+      }
+    }
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.45rem 0.9rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &.run-btn {
+        background: #16a34a;
+        color: white;
+
+        &:hover {
+          background: #15803d;
+          box-shadow: 0 0 12px rgba(22, 163, 74, 0.4);
+        }
+      }
+
+      &.save-btn {
+        background: rgba(30, 41, 59, 0.8);
+        color: #38bdf8;
+        border: 1px solid rgba(56, 189, 248, 0.3);
+
+        &:hover {
+          background: rgba(56, 189, 248, 0.15);
+        }
+      }
+
+      &.icon-only-btn {
+        padding: 0.45rem;
+        background: rgba(30, 41, 59, 0.6);
+        color: #94a3b8;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+
+        &:hover {
+          color: #f8fafc;
+          background: rgba(255, 255, 255, 0.1);
+        }
+      }
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.75rem;
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.1);
+      padding: 0.3rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+  }
+}
+
+/* ── Split Workspace ── */
+.codespace-workspace {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  flex: 1;
+  overflow: hidden;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+}
+
+/* Left Editor Pane */
+.editor-pane {
+  display: flex;
+  flex-direction: column;
+  background: #1e1e1e;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+
+  .file-tabs {
+    display: flex;
+    background: #252526;
+    border-bottom: 1px solid #1e1e1e;
+    padding-left: 0.5rem;
+
+    .tab-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.55rem 1rem;
+      font-size: 0.8rem;
+      font-family: monospace;
+      color: #969696;
+      background: transparent;
+      border: none;
+      border-right: 1px solid #1e1e1e;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      &:hover {
+        color: #cccccc;
+        background: #2d2d2d;
+      }
+
+      &.active {
+        color: #ffffff;
+        background: #1e1e1e;
+        border-top: 2px solid #007acc;
+      }
+
+      .html-icon { color: #e44d26; }
+      .css-icon { color: #264de4; }
+      .js-icon { color: #f7df1e; }
+      .java-icon { color: #f89820; }
+    }
+  }
+
+  .monaco-container {
+    flex: 1;
+    position: relative;
+
+    .monaco-editor-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+  }
+}
+
+/* Right Output Pane */
+.output-pane {
+  display: flex;
+  flex-direction: column;
+  background: #0f172a;
+  overflow: hidden;
+}
+
+/* Web Output Preview */
+.web-preview-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+
+  .preview-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1rem;
+    background: #1e293b;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      &.red { background: #ef4444; }
+      &.yellow { background: #f59e0b; }
+      &.green { background: #10b981; }
+    }
+
+    .preview-title {
+      margin-left: 0.4rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05rem;
+    }
+  }
+
+  .preview-iframe {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #ffffff;
+  }
+}
+
+/* Terminal Console */
+.terminal-console-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #090d16;
+  font-family: 'Fira Code', Consolas, Monaco, monospace;
+
+  .terminal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.55rem 1rem;
+    background: #1e293b;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+    .terminal-title {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: #38bdf8;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .terminal-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+
+        &.running {
+          color: #fbbf24;
+          background: rgba(251, 191, 36, 0.15);
+        }
+        &.success {
+          color: #34d399;
+          background: rgba(52, 211, 153, 0.15);
+        }
+        &.error {
+          color: #f87171;
+          background: rgba(248, 113, 113, 0.15);
+        }
+      }
+
+      .clear-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.72rem;
+        color: #94a3b8;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+
+        &:hover {
+          color: #ef4444;
+        }
+      }
+    }
+  }
+
+  .terminal-body {
+    flex: 1;
+    padding: 1.25rem;
+    overflow-y: auto;
+    color: #e2e8f0;
+
+    .terminal-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #64748b;
+      font-size: 0.9rem;
+      gap: 0.5rem;
+
+      &.running {
+        color: #fbbf24;
+      }
+    }
+
+    .terminal-output {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      pre {
+        margin: 0;
+        font-size: 0.88rem;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        word-break: break-word;
+
+        &.stdout-text {
+          color: #4ade80;
+        }
+        &.stderr-text {
+          color: #f87171;
+        }
+      }
+    }
+  }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

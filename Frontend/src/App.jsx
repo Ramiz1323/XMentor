@@ -33,6 +33,7 @@ const TacticalShop = lazy(() => import('./pages/shop/TacticalShop'));
 const FeeDashboard = lazy(() => import('./pages/fee/FeeDashboard'));
 const ResourcesPage = lazy(() => import('./pages/resources/ResourcesPage'));
 const Sandbox = lazy(() => import('./pages/admin/Sandbox'));
+const CodeSpacePage = lazy(() => import('./pages/codespace/CodeSpacePage'));
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, authChecked } = useAuthStore();
@@ -94,7 +95,8 @@ function AppContent({ isAuthenticated }) {
   // Only show the landing page once we know the user is definitely NOT authenticated
   const isLandingPage = location.pathname === '/' && authChecked && !isAuthenticated;
 
-  const isFullscreenMode = isMCQTestPage || isPendingVerification || isLandingPage || !isAuthenticated;
+  const isCodeSpacePage = location.pathname === '/codespace';
+  const isFullscreenMode = isMCQTestPage || isPendingVerification || isLandingPage || isCodeSpacePage || !isAuthenticated;
 
   return (
     <div className={`app-container ${isAuthenticated && !isPendingVerification ? 'with-sidebar' : isLandingPage ? 'landing-mode' : 'auth-mode'} ${isSidebarOpen ? 'sidebar-open' : ''} ${isMCQTestPage || isPendingVerification ? 'tactical-mode' : ''} theme-${user?.theme || 'blue'}`}>
@@ -157,6 +159,7 @@ function AppContent({ isAuthenticated }) {
               <Route path="/shop" element={<ProtectedRoute><TacticalShop /></ProtectedRoute>} />
               <Route path="/fees" element={<ProtectedRoute><FeeDashboard /></ProtectedRoute>} />
               <Route path="/resources" element={<ProtectedRoute><ResourcesPage /></ProtectedRoute>} />
+              <Route path="/codespace" element={<ProtectedRoute><CodeSpacePage /></ProtectedRoute>} />
 
               {/* Catch-all route for 404 */}
               <Route path="*" element={<NotFoundPage />} />

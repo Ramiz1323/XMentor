@@ -153,6 +153,15 @@ const Sidebar = ({ isOpen, onClose }) => {
             <span>{user?.role === 'TEACHER' ? 'PDF Resources' : 'Study Resources'}</span>
           </NavLink>
 
+          <NavLink
+            to="/codespace"
+            onClick={handleLinkClick}
+            className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
+          >
+            <Code2 size={20} aria-hidden="true" />
+            <span>CodeSpace IDE</span>
+          </NavLink>
+
           <div className="sidebar-divider" role="presentation">Settings</div>
 
           {user?.isAdmin && (
@@ -195,7 +204,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             </button>
           )}
           <div className="watermark">
-            <span>© {new Date().getFullYear()} Ramiz. · v1.5.6</span>
+            <span>© {new Date().getFullYear()} Ramiz. · v1.5.7</span>
             <span>All Rights Reserved.</span>
           </div>
         </div>
