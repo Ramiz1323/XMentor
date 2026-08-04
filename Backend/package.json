@@ -1,6 +1,6 @@
 {
   "name": "xmentor",
-  "version": "1.5.7",
+  "version": "1.5.8",
   "type": "module",
   "main": "server.js",
   "scripts": {

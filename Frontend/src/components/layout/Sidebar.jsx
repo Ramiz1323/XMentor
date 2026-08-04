@@ -204,7 +204,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             </button>
           )}
           <div className="watermark">
-            <span>© {new Date().getFullYear()} Ramiz. · v1.5.7</span>
+            <span>© {new Date().getFullYear()} Ramiz. · v1.5.8</span>
             <span>All Rights Reserved.</span>
           </div>
         </div>

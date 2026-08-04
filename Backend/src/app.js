@@ -81,7 +81,7 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'success',
     message: 'Server running',
-    version: '1.5.7',
+    version: '1.5.8',
     database: dbStatus,
     timestamp: new Date().toISOString(),
   });
