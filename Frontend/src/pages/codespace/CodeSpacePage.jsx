@@ -244,11 +244,11 @@ const CodeSpacePage = () => {
             <button
               className={`lang-btn ${language === 'JAVA' ? 'active' : ''}`}
               onClick={() => setLanguage('JAVA')}
-              title="Java IDE (JDK 15)"
+              title="Java IDE (JDK 17)"
             >
               <Coffee size={14} />
               <span className="lang-name">Java</span>
-              <span className="lang-detail"> (JDK 15)</span>
+              <span className="lang-detail"> (JDK 17)</span>
             </button>
           </div>
         </div>

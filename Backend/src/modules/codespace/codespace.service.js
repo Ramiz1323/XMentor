@@ -42,7 +42,7 @@ export const executeJavaCode = async (code, stdin = '') => {
   try {
     const payload = {
       source_code: code,
-      language_id: 62, // Java (OpenJDK 13.0.1)
+      language_id: 91, // Java (JDK 17.0.6 - Latest LTS)
       stdin: stdin || '',
     };
 
