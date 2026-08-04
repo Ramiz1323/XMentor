@@ -11,8 +11,8 @@ const codespaceService = {
     return data;
   },
 
-  executeJava: async (code) => {
-    const { data } = await api.post('/codespace/execute-java', { code });
+  executeJava: async (code, stdin = '') => {
+    const { data } = await api.post('/codespace/execute-java', { code, stdin });
     return data;
   },
 };

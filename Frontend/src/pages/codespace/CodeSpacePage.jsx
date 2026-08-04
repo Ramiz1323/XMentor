@@ -42,6 +42,7 @@ const CodeSpacePage = () => {
   // Java Execution state
   const [isExecutingJava, setIsExecutingJava] = useState(false);
   const [javaResult, setJavaResult] = useState(null);
+  const [inputsList, setInputsList] = useState([]);
 
   // Mobile View Switcher State: 'code' | 'output' | 'split'
   const [mobileTab, setMobileTab] = useState('code');
@@ -143,14 +144,22 @@ const CodeSpacePage = () => {
   };
 
   // Execute Java Code
-  const handleRunJava = async () => {
+  const handleRunJava = async (overrideInputs) => {
     setIsExecutingJava(true);
     // Switch to output tab automatically on mobile screens
     if (window.innerWidth < 768) {
       setMobileTab('output');
     }
+
+    const activeInputs = Array.isArray(overrideInputs) ? overrideInputs : [];
+    if (!Array.isArray(overrideInputs)) {
+      setInputsList([]);
+    }
+
+    const stdinPayload = activeInputs.length > 0 ? activeInputs.join('\n') + '\n' : '';
+
     try {
-      const res = await codespaceService.executeJava(codes.java);
+      const res = await codespaceService.executeJava(codes.java, stdinPayload);
       if (res.success) {
         setJavaResult(res.data);
       } else {
@@ -167,6 +176,19 @@ const CodeSpacePage = () => {
     } finally {
       setIsExecutingJava(false);
     }
+  };
+
+  // Submit typed line from VS Code Terminal Console
+  const handleTerminalSubmitInput = (newInputLine) => {
+    const updatedInputs = [...inputsList, newInputLine];
+    setInputsList(updatedInputs);
+    handleRunJava(updatedInputs);
+  };
+
+  // Clear Terminal Window and Input State
+  const handleClearTerminal = () => {
+    setJavaResult(null);
+    setInputsList([]);
   };
 
   const activeCodeValue = language === 'JAVA' ? codes.java : codes[activeTab];
@@ -318,7 +340,9 @@ const CodeSpacePage = () => {
             <TerminalConsole
               result={javaResult}
               isRunning={isExecutingJava}
-              onClear={() => setJavaResult(null)}
+              onClear={handleClearTerminal}
+              inputsList={inputsList}
+              onSubmitInput={handleTerminalSubmitInput}
             />
           )}
         </section>

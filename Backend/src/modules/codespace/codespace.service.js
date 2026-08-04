@@ -38,11 +38,12 @@ export const saveUserCodeSpace = async (userId, data) => {
 /**
  * Execute Java code securely using Judge0 Engine API
  */
-export const executeJavaCode = async (code) => {
+export const executeJavaCode = async (code, stdin = '') => {
   try {
     const payload = {
       source_code: code,
       language_id: 62, // Java (OpenJDK 13.0.1)
+      stdin: stdin || '',
     };
 
     const response = await axios.post('https://ce.judge0.com/submissions?wait=true', payload, {
