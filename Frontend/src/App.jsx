@@ -32,6 +32,7 @@ const PendingVerificationPage = lazy(() => import('./pages/error/PendingVerifica
 const TacticalShop = lazy(() => import('./pages/shop/TacticalShop'));
 const FeeDashboard = lazy(() => import('./pages/fee/FeeDashboard'));
 const ResourcesPage = lazy(() => import('./pages/resources/ResourcesPage'));
+const Sandbox = lazy(() => import('./pages/admin/Sandbox'));
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, authChecked } = useAuthStore();
@@ -138,6 +139,12 @@ function AppContent({ isAuthenticated }) {
               <Route path="/admin" element={
                 isAuthenticated && user?.isAdmin
                 ? <AdminPanel />
+                : <Navigate to="/" />
+              } />
+              
+              <Route path="/admin/sandbox" element={
+                isAuthenticated && (user?.isAdmin || user?.role === 'TEACHER')
+                ? <Sandbox />
                 : <Navigate to="/" />
               } />
               

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Users, BookOpen, Settings, LayoutDashboard, X, Target, HelpCircle, Trophy, Download, CheckCircle2, ShieldCheck, Calendar, FileText } from 'lucide-react';
+import { Users, BookOpen, Settings, LayoutDashboard, X, Target, HelpCircle, Trophy, Download, CheckCircle2, ShieldCheck, Calendar, FileText, Code2 } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
 
 const Sidebar = ({ isOpen, onClose }) => {
@@ -166,6 +166,17 @@ const Sidebar = ({ isOpen, onClose }) => {
             </NavLink>
           )}
 
+          {(user?.isAdmin || user?.role === 'TEACHER') && (
+            <NavLink
+              to="/admin/sandbox"
+              onClick={handleLinkClick}
+              className={({ isActive }) => `sidebar-item admin-link ${isActive ? 'active' : ''}`}
+            >
+              <Code2 size={20} aria-hidden="true" />
+              <span>JSON Sandbox</span>
+            </NavLink>
+          )}
+
           <NavLink
             to="/profile"
             onClick={handleLinkClick}
@@ -184,7 +195,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             </button>
           )}
           <div className="watermark">
-            <span>© {new Date().getFullYear()} Ramiz. · v1.5.3</span>
+            <span>© {new Date().getFullYear()} Ramiz. · v1.5.6</span>
             <span>All Rights Reserved.</span>
           </div>
         </div>

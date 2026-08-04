@@ -130,11 +130,7 @@ const MCQCreator = () => {
       // ChatGPT often sends raw backslashes (e.g. \theta) which JSON.parse interprets as 
       // control characters (like \t for tab) instead of LaTeX commands.
       // We double the backslashes for any LaTeX-like command to ensure integrity.
-      let normalizedJson = cleanJson.replace(/\\([a-zA-Z])/g, (match, p1) => {
-        // Do not double escape standard JSON control characters
-        if (p1 === 'n' || p1 === 'r' || p1 === 't' || p1 === 'b' || p1 === 'f') {
-          return match;
-        }
+      let normalizedJson = cleanJson.replace(/\\+([^"])/g, (match, p1) => {
         return '\\\\' + p1;
       });
 
@@ -257,11 +253,12 @@ Instruction: ${complexityTxt}
 ${subjectSpecificRules}
 
 CRITICAL FORMATTING & ACCURACY RULES:
-1. Output MUST be a strictly valid JSON array of objects ONLY. Use SINGLE QUOTES for inner string quotes (e.g., "'example'"). NEVER use unescaped double quotes inside strings.
+1. Output MUST be a strictly valid JSON array of objects ONLY. If you need to quote text inside a string value, use single quotes (e.g., 'example'). DO NOT wrap the entire string value in single quotes. NEVER use unescaped double quotes inside strings.
 2. NO conversational text, NO intro, NO outro. DO NOT use physical newlines inside strings. If a newline is needed, use the escaped literal '\\n'.
-3. ALL mathematical expressions MUST be wrapped in LaTeX delimiters ($...$ for inline, $$...$$ for block). Write block math on the same single line, NO physical line breaks.
-4. **CRITICAL JSON ESCAPING**: ALL LaTeX backslashes MUST be escaped to be valid JSON. You MUST output \\\\\\\\frac instead of \\\\frac. For example, use \\\\\\\\times, \\\\\\\\sqrt, \\\\\\\\pi. A single backslash will break JSON parsing.
-5. **ELIMINATE POSITION BIAS**: Randomly distribute the correct answer across indices 0, 1, 2, and 3. DO NOT always make the first or second option correct.
+3. ALL mathematical expressions MUST be wrapped in LaTeX delimiters ($...$ for inline, $$...$$ for block). Ensure brackets are properly paired (e.g., \\left( MUST be closed with \\right), NEVER use \\) to close it).
+4. **CRITICAL JSON ESCAPING**: Use standard LaTeX notation (e.g., \\frac, \\times, \\sqrt, \\pi). Do not double escape backslashes; the system will automatically parse and escape them.
+5. JSON SCHEMA: [{"question": "string", "options": ["string", "string", "string", "string"], "answer": integer, "explanation": "string"}]
+6. **ELIMINATE POSITION BIAS**: Randomly distribute the correct answer across indices 0, 1, 2, and 3. DO NOT always make the first or second option correct.
 6. **DOUBLE-VERIFICATION MANDATE**: You MUST double-check every question and its corresponding answer for 100% accuracy. Perform a secondary mental "Chain of Thought" audit to ensure the "answer" index precisely matches the correct mathematical/scientific solution among the options. 
 7. **ZERO TOLERANCE**: No incorrect answers or logical fallacies will be entertained. The solution provided in the "explanation" MUST logically lead to the option at the specified "answer" index.
 8. Ensure options are exactly 4 unique, plausible, but distinct strings.
