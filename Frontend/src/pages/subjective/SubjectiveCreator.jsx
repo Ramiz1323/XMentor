@@ -222,10 +222,10 @@ CRITICAL FORMATTING & ACCURACY RULES:
 1. Output MUST be a valid JSON array of objects ONLY.
 2. NO conversational text, NO intro, NO outro, NO markdown code blocks.
 3. ALL mathematical expressions MUST be wrapped in LaTeX delimiters ($...$ for inline, $$...$$ for block).
-4. **JSON ESCAPING**: Use DOUBLE backslashes for all LaTeX commands in the JSON string (e.g., "\\\\frac{a}{b}", "\\\\sin", "\\\\theta").
+4. **CRITICAL JSON ESCAPING**: ALL LaTeX backslashes MUST be escaped to be valid JSON. You MUST output \\\\\\\\frac instead of \\\\frac. For example, use \\\\\\\\times, \\\\\\\\sqrt, \\\\\\\\pi. A single backslash will break JSON parsing.
 5. **DOUBLE-VERIFICATION MANDATE**: You MUST double-check every question for academic accuracy and relevance. Ensure the questions are pedagogically sound and match the specified difficulty.
 6. **ZERO TOLERANCE**: No incorrect facts, flawed logic, or grammatical errors will be entertained.
-7. Format: Return ONLY a JSON array of objects. Example: [{"text": "Question text with $\\\\frac{a}{b}$ math", "marks": ${importData.defaultMarks}}]`;
+7. Format: Return ONLY a JSON array of objects. Example: [{"text": "Question text with $\\\\\\\\frac{a}{b}$ math", "marks": ${importData.defaultMarks}}]`;
     
     navigator.clipboard.writeText(prompt);
     alert('Strategic Pro Prompt Copied!');

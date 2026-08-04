@@ -260,7 +260,7 @@ CRITICAL FORMATTING & ACCURACY RULES:
 1. Output MUST be a strictly valid JSON array of objects ONLY. Use SINGLE QUOTES for inner string quotes (e.g., "'example'"). NEVER use unescaped double quotes inside strings.
 2. NO conversational text, NO intro, NO outro. DO NOT use physical newlines inside strings. If a newline is needed, use the escaped literal '\\n'.
 3. ALL mathematical expressions MUST be wrapped in LaTeX delimiters ($...$ for inline, $$...$$ for block). Write block math on the same single line, NO physical line breaks.
-4. **JSON ESCAPING**: Use DOUBLE backslashes for all LaTeX commands in the JSON string (e.g., "\\\\frac{a}{b}", "\\\\sin", "\\\\theta").
+4. **CRITICAL JSON ESCAPING**: ALL LaTeX backslashes MUST be escaped to be valid JSON. You MUST output \\\\\\\\frac instead of \\\\frac. For example, use \\\\\\\\times, \\\\\\\\sqrt, \\\\\\\\pi. A single backslash will break JSON parsing.
 5. **ELIMINATE POSITION BIAS**: Randomly distribute the correct answer across indices 0, 1, 2, and 3. DO NOT always make the first or second option correct.
 6. **DOUBLE-VERIFICATION MANDATE**: You MUST double-check every question and its corresponding answer for 100% accuracy. Perform a secondary mental "Chain of Thought" audit to ensure the "answer" index precisely matches the correct mathematical/scientific solution among the options. 
 7. **ZERO TOLERANCE**: No incorrect answers or logical fallacies will be entertained. The solution provided in the "explanation" MUST logically lead to the option at the specified "answer" index.
