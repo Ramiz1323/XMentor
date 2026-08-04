@@ -109,7 +109,7 @@ const TerminalConsole = ({ result, isRunning, onClear, inputsList, onSubmitInput
       <div className="terminal-header" onClick={(e) => e.stopPropagation()}>
         <div className="terminal-title">
           <Terminal size={16} />
-          <span>Output Terminal (VS Code Style)</span>
+          <span>Output Terminal</span>
         </div>
         <div className="terminal-actions">
           {isRunning && (
