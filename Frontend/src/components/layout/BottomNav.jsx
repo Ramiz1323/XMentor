@@ -235,7 +235,7 @@ const BottomNav = () => {
           </div>
 
           <div className="sheet-watermark">
-            <span>© {new Date().getFullYear()} Ramiz. · v1.6.0</span>
+            <span>© {new Date().getFullYear()} Ramiz. · v1.7.0</span>
           </div>
         </div>
       </div>

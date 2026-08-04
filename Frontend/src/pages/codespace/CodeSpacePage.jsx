@@ -20,7 +20,7 @@ import WebOutputPreview from '../../components/codespace/WebOutputPreview';
 import TerminalConsole from '../../components/codespace/TerminalConsole';
 import codespaceService from '../../services/codespace.service';
 
-const LOCAL_STORAGE_KEY = 'xmentor_codespace_state_v1';
+const LOCAL_STORAGE_KEY = 'xmentor_codespace_state_v2';
 
 const DEFAULT_CODES = {
   html: `<!-- XMentor Web CodeSpace -->\n<div class="card">\n  <div class="badge">PRO IDE</div>\n  <h1>Welcome to CodeSpace 🚀</h1>\n  <p>Practice HTML, CSS, & JS seamlessly from any device!</p>\n  <button id="btn">Click Me!</button>\n</div>`,
