@@ -192,11 +192,12 @@ const CodeSpacePage = () => {
         toast.error('Execution failed');
       }
     } catch (err) {
-      toast.error('Failed to connect to execution engine');
+      const friendlyError = err.data?.message || err.data?.error || err.response?.data?.message || err.response?.data?.error || err.message || 'Runner server error';
+      toast.error(friendlyError);
       setJavaResult({
         success: false,
         output: '',
-        stderr: err.response?.data?.error || err.message || 'Runner server error',
+        stderr: friendlyError,
         exitCode: 1,
       });
     } finally {

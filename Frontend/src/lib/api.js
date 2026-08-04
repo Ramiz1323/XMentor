@@ -11,7 +11,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     // Preserve full axios error context while surfacing the friendly message
-    const message = error.response?.data?.message || error.message || 'Something went wrong';
+    const message = error.response?.data?.message || error.response?.data?.error || error.message || 'Something went wrong';
     
     const enrichedError = new Error(message);
     enrichedError.status = error.response?.status;
