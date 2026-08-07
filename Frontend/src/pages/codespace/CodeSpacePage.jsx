@@ -18,6 +18,7 @@ import toast from 'react-hot-toast';
 import MonacoCodeEditor from '../../components/codespace/MonacoCodeEditor';
 import WebOutputPreview from '../../components/codespace/WebOutputPreview';
 import TerminalConsole from '../../components/codespace/TerminalConsole';
+import CodeSpaceSkeleton from '../../components/skeletons/CodeSpaceSkeleton';
 import codespaceService from '../../services/codespace.service';
 
 const LOCAL_STORAGE_KEY = 'xmentor_codespace_state_v2';
@@ -276,6 +277,10 @@ const CodeSpacePage = () => {
 
   const activeCodeValue = language === 'JAVA' ? codes.java : codes[activeTab];
   const activeEditorLang = language === 'JAVA' ? 'java' : activeTab;
+
+  if (!isInitialized) {
+    return <CodeSpaceSkeleton />;
+  }
 
   return (
     <div className={`codespace-container ${isZenMode ? 'zen-mode-active' : ''}`}>
