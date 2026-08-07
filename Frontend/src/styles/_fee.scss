@@ -39,6 +39,40 @@
       }
     }
 
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+
+      .privacy-toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.6rem 1rem;
+        border-radius: 10px;
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: $text-secondary;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: $transition-smooth;
+
+        &:hover {
+          color: $text-primary;
+          background: rgba(255, 255, 255, 0.08);
+          border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        &.stealth-active {
+          background: rgba(239, 68, 68, 0.15);
+          color: #f87171;
+          border-color: rgba(239, 68, 68, 0.3);
+        }
+      }
+    }
+
     .tab-buttons {
       display: flex;
       padding: 0.25rem;

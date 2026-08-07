@@ -21,7 +21,9 @@ import {
   Wallet,
   Clock,
   AlertTriangle,
-  CheckCircle2
+  CheckCircle2,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import SEO from '../../components/common/SEO';
@@ -47,6 +49,32 @@ const FeeDashboard = () => {
 
   const [activeTab, setActiveTab] = useState('calendar'); // 'calendar' or 'rates'
   const [rosterFilter, setRosterFilter] = useState('ALL'); // 'ALL' | 'PAID' | 'PARTIAL' | 'UNPAID'
+  
+  // Stealth / Privacy mode state (persisted in localStorage)
+  const [hideAmounts, setHideAmounts] = useState(() => {
+    try {
+      return localStorage.getItem('xmentor_fee_stealth_mode') === 'true';
+    } catch (e) {
+      return false;
+    }
+  });
+
+  const toggleStealthMode = () => {
+    setHideAmounts(prev => {
+      const nextVal = !prev;
+      try {
+        localStorage.setItem('xmentor_fee_stealth_mode', String(nextVal));
+      } catch (e) {}
+      if (nextVal) toast.success('Privacy Mode Enabled (Amounts Hidden)');
+      else toast('Privacy Mode Disabled (Amounts Visible)');
+      return nextVal;
+    });
+  };
+
+  const formatAmount = (num) => {
+    if (hideAmounts) return '••••••';
+    return `₹${(num || 0).toLocaleString('en-IN')}`;
+  };
   
   // Date state for Calendar View
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -266,24 +294,37 @@ const FeeDashboard = () => {
           <h1 className="glow-text">Tactical Ledger</h1>
           <p>Record, manage, and audit monthly student cash flows.</p>
         </div>
-        {user?.role === 'TEACHER' && (
-          <div className="tab-buttons glass-card">
-            <button 
-              className={`tab-btn ${activeTab === 'calendar' ? 'active' : ''}`}
-              onClick={() => setActiveTab('calendar')}
-            >
-              <CalendarIcon size={16} />
-              <span>Calendar</span>
-            </button>
-            <button 
-              className={`tab-btn ${activeTab === 'rates' ? 'active' : ''}`}
-              onClick={() => setActiveTab('rates')}
-            >
-              <Settings size={16} />
-              <span>Configure Rates</span>
-            </button>
-          </div>
-        )}
+
+        <div className="header-actions">
+          <button 
+            type="button"
+            className={`privacy-toggle-btn ${hideAmounts ? 'stealth-active' : ''}`}
+            onClick={toggleStealthMode}
+            title={hideAmounts ? "Click to reveal amounts" : "Click to hide income & amounts (Privacy Mode)"}
+          >
+            {hideAmounts ? <EyeOff size={16} /> : <Eye size={16} />}
+            <span>{hideAmounts ? 'Stealth Mode On' : 'Privacy Mode'}</span>
+          </button>
+
+          {user?.role === 'TEACHER' && (
+            <div className="tab-buttons glass-card">
+              <button 
+                className={`tab-btn ${activeTab === 'calendar' ? 'active' : ''}`}
+                onClick={() => setActiveTab('calendar')}
+              >
+                <CalendarIcon size={16} />
+                <span>Calendar</span>
+              </button>
+              <button 
+                className={`tab-btn ${activeTab === 'rates' ? 'active' : ''}`}
+                onClick={() => setActiveTab('rates')}
+              >
+                <Settings size={16} />
+                <span>Configure Rates</span>
+              </button>
+            </div>
+          )}
+        </div>
       </header>
 
       {/* ── Financial Summary HUD Cards (Collection, Expected, Remaining, Status) ── */}
@@ -297,7 +338,7 @@ const FeeDashboard = () => {
               </div>
             </div>
             <div className="card-value green-text">
-              ₹{(overview?.summary?.totalCollected || 0).toLocaleString('en-IN')}
+              {formatAmount(overview?.summary?.totalCollected)}
             </div>
             <p className="card-subtext">Received in {monthNames[currentMonth]} {currentYear}</p>
           </div>
@@ -310,7 +351,7 @@ const FeeDashboard = () => {
               </div>
             </div>
             <div className="card-value blue-text">
-              ₹{(overview?.summary?.totalExpected || 0).toLocaleString('en-IN')}
+              {formatAmount(overview?.summary?.totalExpected)}
             </div>
             <p className="card-subtext">Total fees for {overview?.summary?.totalStudents || 0} recruits</p>
           </div>
@@ -323,7 +364,7 @@ const FeeDashboard = () => {
               </div>
             </div>
             <div className="card-value red-text">
-              ₹{(overview?.summary?.totalRemaining || 0).toLocaleString('en-IN')}
+              {formatAmount(overview?.summary?.totalRemaining)}
             </div>
             <p className="card-subtext">Pending collection this month</p>
           </div>
@@ -354,7 +395,7 @@ const FeeDashboard = () => {
               </div>
             </div>
             <div className="card-value green-text">
-              ₹{(overview?.summary?.totalPaid || 0).toLocaleString('en-IN')}
+              {formatAmount(overview?.summary?.totalPaid)}
             </div>
             <p className="card-subtext">Paid in {monthNames[currentMonth]} {currentYear}</p>
           </div>
@@ -367,7 +408,7 @@ const FeeDashboard = () => {
               </div>
             </div>
             <div className="card-value blue-text">
-              ₹{(overview?.summary?.totalExpected || 0).toLocaleString('en-IN')}
+              {formatAmount(overview?.summary?.totalExpected)}
             </div>
             <p className="card-subtext">Total across assigned teachers</p>
           </div>
@@ -380,7 +421,7 @@ const FeeDashboard = () => {
               </div>
             </div>
             <div className="card-value red-text">
-              ₹{(overview?.summary?.totalRemaining || 0).toLocaleString('en-IN')}
+              {formatAmount(overview?.summary?.totalRemaining)}
             </div>
             <p className="card-subtext">Outstanding balance due</p>
           </div>
@@ -679,16 +720,16 @@ const FeeDashboard = () => {
                         <div className="financial-split">
                           <div className="split-col">
                             <span className="label">Monthly Rate</span>
-                            <span className="val">₹{student.configuredRate}</span>
+                            <span className="val">{formatAmount(student.configuredRate)}</span>
                           </div>
                           <div className="split-col">
                             <span className="label">Paid</span>
-                            <span className="val green-text">₹{student.totalPaidThisMonth}</span>
+                            <span className="val green-text">{formatAmount(student.totalPaidThisMonth)}</span>
                           </div>
                           <div className="split-col">
                             <span className="label">Remaining</span>
                             <span className={`val ${student.remainingAmount > 0 ? 'red-text' : 'muted-text'}`}>
-                              ₹{student.remainingAmount}
+                              {formatAmount(student.remainingAmount)}
                             </span>
                           </div>
                         </div>
