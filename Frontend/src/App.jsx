@@ -7,6 +7,7 @@ import BottomNav from './components/layout/BottomNav';
 import useHUDNotifications from './hooks/useHUDNotifications';
 import { Toaster } from 'react-hot-toast';
 import LoadingOverlay from './components/ui/LoadingOverlay';
+import ErrorBoundary from './components/common/ErrorBoundary';
 
 const LoginPage = lazy(() => import('./pages/login/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/register/RegisterPage'));
@@ -111,60 +112,62 @@ function AppContent({ isAuthenticated }) {
       <div className="main-layout">
         {!isMCQTestPage && !isLandingPage && !isPendingVerification && <Navbar onMenuClick={toggleSidebar} />}
         <main className={`content ${isMCQTestPage || isPendingVerification ? 'full-width-tactical' : ''}`}>
-          <Suspense fallback={<LoadingOverlay message="Establishing Data Link..." />}>
-            <Routes>
-              <Route path="/login" element={<AuthRoute><LoginPage /></AuthRoute>} />
-              <Route path="/register" element={<AuthRoute><RegisterPage /></AuthRoute>} />
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingOverlay message="Establishing Data Link..." />}>
+              <Routes>
+                <Route path="/login" element={<AuthRoute><LoginPage /></AuthRoute>} />
+                <Route path="/register" element={<AuthRoute><RegisterPage /></AuthRoute>} />
 
-              <Route path="/" element={
-                !authChecked
-                  ? null
-                  : isAuthenticated
-                    ? <ProtectedRoute><Dashboard /></ProtectedRoute>
-                    : <LandingPage />
-              } />
-              <Route path="/communities" element={<ProtectedRoute><CommunityList /></ProtectedRoute>} />
-              <Route path="/communities/:id/chat" element={<ProtectedRoute><ChatRoom /></ProtectedRoute>} />
-              <Route path="/mcq" element={<ProtectedRoute><MCQDashboard /></ProtectedRoute>} />
-              <Route path="/mcq/create" element={<ProtectedRoute><MCQCreator /></ProtectedRoute>} />
-              <Route path="/mcq/:id" element={<ProtectedRoute><MCQTest /></ProtectedRoute>} />
-              <Route path="/mcq/:id/results" element={<ProtectedRoute><TaskResults /></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-              <Route path="/doubts" element={<ProtectedRoute><DoubtDashboard /></ProtectedRoute>} />
-              <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+                <Route path="/" element={
+                  !authChecked
+                    ? null
+                    : isAuthenticated
+                      ? <ProtectedRoute><Dashboard /></ProtectedRoute>
+                      : <LandingPage />
+                } />
+                <Route path="/communities" element={<ProtectedRoute><CommunityList /></ProtectedRoute>} />
+                <Route path="/communities/:id/chat" element={<ProtectedRoute><ChatRoom /></ProtectedRoute>} />
+                <Route path="/mcq" element={<ProtectedRoute><MCQDashboard /></ProtectedRoute>} />
+                <Route path="/mcq/create" element={<ProtectedRoute><MCQCreator /></ProtectedRoute>} />
+                <Route path="/mcq/:id" element={<ProtectedRoute><MCQTest /></ProtectedRoute>} />
+                <Route path="/mcq/:id/results" element={<ProtectedRoute><TaskResults /></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                <Route path="/doubts" element={<ProtectedRoute><DoubtDashboard /></ProtectedRoute>} />
+                <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
 
-              <Route path="/subjective" element={<ProtectedRoute><SubjectiveHub /></ProtectedRoute>} />
-              <Route path="/subjective/create" element={<ProtectedRoute><SubjectiveCreator /></ProtectedRoute>} />
-              <Route path="/subjective/:id" element={<ProtectedRoute><SubjectiveView /></ProtectedRoute>} />
-              <Route path="/subjective/review" element={<ProtectedRoute><ReviewCenter /></ProtectedRoute>} />
-              
-              <Route path="/admin" element={
-                isAuthenticated && user?.isAdmin
-                ? <AdminPanel />
-                : <Navigate to="/" />
-              } />
-              
-              <Route path="/admin/sandbox" element={
-                isAuthenticated && (user?.isAdmin || user?.role === 'TEACHER')
-                ? <Sandbox />
-                : <Navigate to="/" />
-              } />
-              
-              <Route path="/pending-verification" element={
-                isAuthenticated && user?.role === 'TEACHER' && !user?.isVerified
-                ? <PendingVerificationPage />
-                : <Navigate to="/" />
-              } />
+                <Route path="/subjective" element={<ProtectedRoute><SubjectiveHub /></ProtectedRoute>} />
+                <Route path="/subjective/create" element={<ProtectedRoute><SubjectiveCreator /></ProtectedRoute>} />
+                <Route path="/subjective/:id" element={<ProtectedRoute><SubjectiveView /></ProtectedRoute>} />
+                <Route path="/subjective/review" element={<ProtectedRoute><ReviewCenter /></ProtectedRoute>} />
+                
+                <Route path="/admin" element={
+                  isAuthenticated && user?.isAdmin
+                  ? <AdminPanel />
+                  : <Navigate to="/" />
+                } />
+                
+                <Route path="/admin/sandbox" element={
+                  isAuthenticated && (user?.isAdmin || user?.role === 'TEACHER')
+                  ? <Sandbox />
+                  : <Navigate to="/" />
+                } />
+                
+                <Route path="/pending-verification" element={
+                  isAuthenticated && user?.role === 'TEACHER' && !user?.isVerified
+                  ? <PendingVerificationPage />
+                  : <Navigate to="/" />
+                } />
 
-              <Route path="/shop" element={<ProtectedRoute><TacticalShop /></ProtectedRoute>} />
-              <Route path="/fees" element={<ProtectedRoute><FeeDashboard /></ProtectedRoute>} />
-              <Route path="/resources" element={<ProtectedRoute><ResourcesPage /></ProtectedRoute>} />
-              <Route path="/codespace" element={<ProtectedRoute><CodeSpacePage /></ProtectedRoute>} />
+                <Route path="/shop" element={<ProtectedRoute><TacticalShop /></ProtectedRoute>} />
+                <Route path="/fees" element={<ProtectedRoute><FeeDashboard /></ProtectedRoute>} />
+                <Route path="/resources" element={<ProtectedRoute><ResourcesPage /></ProtectedRoute>} />
+                <Route path="/codespace" element={<ProtectedRoute><CodeSpacePage /></ProtectedRoute>} />
 
-              {/* Catch-all route for 404 */}
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </Suspense>
+                {/* Catch-all route for 404 */}
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </Suspense>
+          </ErrorBoundary>
         </main>
       </div>
     </div>

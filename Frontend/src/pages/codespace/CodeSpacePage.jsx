@@ -178,16 +178,16 @@ const CodeSpacePage = () => {
   }, [codes, language, title, isInitialized]);
 
   // Handle Code Changes
-  const handleCodeChange = (val) => {
+  const handleCodeChange = useCallback((val) => {
     if (language === 'JAVA') {
       setCodes(prev => ({ ...prev, java: val }));
     } else {
       setCodes(prev => ({ ...prev, [activeTab]: val }));
     }
-  };
+  }, [language, activeTab]);
 
   // Manual Cloud Save
-  const handleCloudSave = async () => {
+  const handleCloudSave = useCallback(async () => {
     setIsSaving(true);
     try {
       await codespaceService.saveCodeSpace({
@@ -205,10 +205,10 @@ const CodeSpacePage = () => {
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [title, language, codes]);
 
   // Reset to default template
-  const handleResetTemplate = () => {
+  const handleResetTemplate = useCallback(() => {
     if (window.confirm('Reset current template to default code?')) {
       let updatedCodes;
       if (language === 'JAVA') {
@@ -224,7 +224,7 @@ const CodeSpacePage = () => {
       setCodes(updatedCodes);
       toast.success('Reset template!');
     }
-  };
+  }, [language, codes]);
 
   // Execute Java Code
   const handleRunJava = async (overrideInputs) => {

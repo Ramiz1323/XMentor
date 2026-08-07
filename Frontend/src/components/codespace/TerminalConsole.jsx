@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Terminal, Trash2, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
 
 const TerminalConsole = ({ result, isRunning, onClear, inputsList, onSubmitInput }) => {
@@ -25,42 +25,44 @@ const TerminalConsole = ({ result, isRunning, onClear, inputsList, onSubmitInput
   }, [result, isRunning, inputsList, inputValue]);
 
   // Focus input when user clicks anywhere in the terminal body
-  const handleBodyClick = () => {
+  const handleBodyClick = useCallback(() => {
     if (inputRef.current) {
       inputRef.current.focus();
     }
-  };
+  }, []);
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = useCallback((e) => {
     if (e.key === 'Enter' && inputValue.trim()) {
       e.preventDefault();
       const textToSubmit = inputValue.trim();
       setInputValue('');
       onSubmitInput(textToSubmit);
     }
-  };
+  }, [inputValue, onSubmitInput]);
 
-  // Helper to format output lines interleaved with user inputs like VS Code Terminal
-  const renderTerminalContent = () => {
-    if (!result) return null;
+  // Memoized terminal stream data to avoid string re-splitting on input changes
+  const { promptStdout, resultStdout } = useMemo(() => {
+    if (!result) return { promptStdout: [], resultStdout: [] };
 
-    // Split stdout into lines
     const stdoutLines = rawStdout ? rawStdout.split('\n').filter(line => line.trim() !== '') : [];
-
-    // Separate prompt output lines from final result output lines
-    let promptStdout = [];
-    let resultStdout = [];
+    let pStdout = [];
+    let rStdout = [];
 
     if (isNoSuchElementErr || inputsList.length === 0) {
-      // Program paused waiting for input -> all stdout lines so far are prompts
-      promptStdout = stdoutLines;
+      pStdout = stdoutLines;
     } else {
-      // Program finished or has output -> first line(s) before inputs are prompts, rest are results
       if (stdoutLines.length > 0) {
-        promptStdout = [stdoutLines[0]];
-        resultStdout = stdoutLines.slice(1);
+        pStdout = [stdoutLines[0]];
+        rStdout = stdoutLines.slice(1);
       }
     }
+
+    return { promptStdout: pStdout, resultStdout: rStdout };
+  }, [result, rawStdout, isNoSuchElementErr, inputsList.length]);
+
+  // Helper to format output lines interleaved with user inputs like VS Code Terminal
+  const renderTerminalContent = useCallback(() => {
+    if (!result) return null;
 
     return (
       <div className="terminal-stream">
@@ -101,7 +103,7 @@ const TerminalConsole = ({ result, isRunning, onClear, inputsList, onSubmitInput
         )}
       </div>
     );
-  };
+  }, [result, isNoSuchElementErr, promptStdout, inputsList, resultStdout, rawStderr]);
 
   return (
     <div className="terminal-console-wrapper" onClick={handleBodyClick}>

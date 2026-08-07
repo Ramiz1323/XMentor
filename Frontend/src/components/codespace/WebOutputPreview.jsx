@@ -37,7 +37,7 @@ const WebOutputPreview = ({ html = '', css = '', js = '' }) => {
       <iframe
         title="output-preview"
         srcDoc={combinedDoc}
-        sandbox="allow-scripts allow-modals allow-same-origin"
+        sandbox="allow-scripts allow-modals allow-forms"
         className="preview-iframe"
       />
     </div>
