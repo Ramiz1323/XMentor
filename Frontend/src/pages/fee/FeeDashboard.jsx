@@ -23,7 +23,8 @@ import {
   AlertTriangle,
   CheckCircle2,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Search
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import SEO from '../../components/common/SEO';
@@ -50,6 +51,17 @@ const FeeDashboard = () => {
   const [activeTab, setActiveTab] = useState('calendar'); // 'calendar' or 'rates'
   const [rosterFilter, setRosterFilter] = useState('ALL'); // 'ALL' | 'PAID' | 'PARTIAL' | 'UNPAID'
   
+  // Search state with 300ms debounce
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   // Toggle HUD Cards state (persisted in localStorage)
   const [showHud, setShowHud] = useState(() => {
     try {
@@ -269,8 +281,14 @@ const FeeDashboard = () => {
   const selectedDayTotal = selectedDayPayments.reduce((sum, p) => sum + p.amount, 0);
 
   const filteredStudents = (overview?.students || []).filter(s => {
-    if (rosterFilter === 'ALL') return true;
-    return s.status === rosterFilter;
+    if (rosterFilter !== 'ALL' && s.status !== rosterFilter) return false;
+    if (debouncedSearch.trim()) {
+      const q = debouncedSearch.toLowerCase().trim();
+      const matchName = s.name?.toLowerCase().includes(q);
+      const matchUser = s.username?.toLowerCase().includes(q);
+      return matchName || matchUser;
+    }
+    return true;
   });
 
   return (
@@ -658,7 +676,29 @@ const FeeDashboard = () => {
                     <h3><Users size={18} /> Recruit Payment Status ({monthNames[currentMonth]} {currentYear})</h3>
                     <p>Track who gave their monthly fee and who has remaining balance due.</p>
                   </div>
-                  
+                </div>
+
+                <div className="roster-controls-bar">
+                  <div className="roster-search-box">
+                    <Search size={16} className="search-icon" />
+                    <input
+                      type="text"
+                      placeholder="Search recruit by name or @username..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                    {searchTerm && (
+                      <button 
+                        type="button" 
+                        className="clear-btn" 
+                        onClick={() => setSearchTerm('')}
+                        aria-label="Clear search"
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+
                   <div className="filter-pills">
                     <button
                       type="button"
@@ -695,7 +735,11 @@ const FeeDashboard = () => {
                   {filteredStudents.length === 0 ? (
                     <div className="empty-roster-msg">
                       <Users size={32} />
-                      <p>No recruits found under the "{rosterFilter}" filter for {monthNames[currentMonth]} {currentYear}.</p>
+                      <p>
+                        {debouncedSearch 
+                          ? `No recruits matching "${debouncedSearch}" found.` 
+                          : `No recruits found under the "${rosterFilter}" filter for ${monthNames[currentMonth]} ${currentYear}.`}
+                      </p>
                     </div>
                   ) : (
                     filteredStudents.map(student => (
