@@ -22,8 +22,8 @@ import {
   Clock,
   AlertTriangle,
   CheckCircle2,
-  Eye,
-  EyeOff
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import SEO from '../../components/common/SEO';
@@ -50,30 +50,23 @@ const FeeDashboard = () => {
   const [activeTab, setActiveTab] = useState('calendar'); // 'calendar' or 'rates'
   const [rosterFilter, setRosterFilter] = useState('ALL'); // 'ALL' | 'PAID' | 'PARTIAL' | 'UNPAID'
   
-  // Stealth / Privacy mode state (persisted in localStorage)
-  const [hideAmounts, setHideAmounts] = useState(() => {
+  // Toggle HUD Cards state (persisted in localStorage)
+  const [showHud, setShowHud] = useState(() => {
     try {
-      return localStorage.getItem('xmentor_fee_stealth_mode') === 'true';
+      return localStorage.getItem('xmentor_fee_show_hud') !== 'false';
     } catch (e) {
-      return false;
+      return true;
     }
   });
 
-  const toggleStealthMode = () => {
-    setHideAmounts(prev => {
+  const toggleHud = () => {
+    setShowHud(prev => {
       const nextVal = !prev;
       try {
-        localStorage.setItem('xmentor_fee_stealth_mode', String(nextVal));
+        localStorage.setItem('xmentor_fee_show_hud', String(nextVal));
       } catch (e) {}
-      if (nextVal) toast.success('Privacy Mode Enabled (Amounts Hidden)');
-      else toast('Privacy Mode Disabled (Amounts Visible)');
       return nextVal;
     });
-  };
-
-  const formatAmount = (num) => {
-    if (hideAmounts) return '••••••';
-    return `₹${(num || 0).toLocaleString('en-IN')}`;
   };
   
   // Date state for Calendar View
@@ -298,12 +291,12 @@ const FeeDashboard = () => {
         <div className="header-actions">
           <button 
             type="button"
-            className={`privacy-toggle-btn ${hideAmounts ? 'stealth-active' : ''}`}
-            onClick={toggleStealthMode}
-            title={hideAmounts ? "Click to reveal amounts" : "Click to hide income & amounts (Privacy Mode)"}
+            className={`privacy-toggle-btn ${!showHud ? 'stealth-active' : ''}`}
+            onClick={toggleHud}
+            title={showHud ? "Collapse financial overview cards" : "Expand financial overview cards"}
           >
-            {hideAmounts ? <EyeOff size={16} /> : <Eye size={16} />}
-            <span>{hideAmounts ? 'Stealth Mode On' : 'Privacy Mode'}</span>
+            <span>{showHud ? 'Hide Financial Overview' : 'Show Financial Overview'}</span>
+            {showHud ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </button>
 
           {user?.role === 'TEACHER' && (
@@ -329,7 +322,7 @@ const FeeDashboard = () => {
 
       {/* ── Financial Summary HUD Cards (Collection, Expected, Remaining, Status) ── */}
       {user?.role === 'TEACHER' ? (
-        <div className="fee-summary-hud">
+        <div className={`fee-summary-hud ${!showHud ? 'collapsed' : ''}`}>
           <div className="summary-card glass-card collection">
             <div className="card-top">
               <span className="card-label">Recent Collection</span>
@@ -338,7 +331,7 @@ const FeeDashboard = () => {
               </div>
             </div>
             <div className="card-value green-text">
-              {formatAmount(overview?.summary?.totalCollected)}
+              ₹{(overview?.summary?.totalCollected || 0).toLocaleString('en-IN')}
             </div>
             <p className="card-subtext">Received in {monthNames[currentMonth]} {currentYear}</p>
           </div>
@@ -351,7 +344,7 @@ const FeeDashboard = () => {
               </div>
             </div>
             <div className="card-value blue-text">
-              {formatAmount(overview?.summary?.totalExpected)}
+              ₹{(overview?.summary?.totalExpected || 0).toLocaleString('en-IN')}
             </div>
             <p className="card-subtext">Total fees for {overview?.summary?.totalStudents || 0} recruits</p>
           </div>
@@ -364,7 +357,7 @@ const FeeDashboard = () => {
               </div>
             </div>
             <div className="card-value red-text">
-              {formatAmount(overview?.summary?.totalRemaining)}
+              ₹{(overview?.summary?.totalRemaining || 0).toLocaleString('en-IN')}
             </div>
             <p className="card-subtext">Pending collection this month</p>
           </div>
@@ -386,7 +379,7 @@ const FeeDashboard = () => {
           </div>
         </div>
       ) : (
-        <div className="fee-summary-hud">
+        <div className={`fee-summary-hud ${!showHud ? 'collapsed' : ''}`}>
           <div className="summary-card glass-card collection">
             <div className="card-top">
               <span className="card-label">My Payments</span>
@@ -395,7 +388,7 @@ const FeeDashboard = () => {
               </div>
             </div>
             <div className="card-value green-text">
-              {formatAmount(overview?.summary?.totalPaid)}
+              ₹{(overview?.summary?.totalPaid || 0).toLocaleString('en-IN')}
             </div>
             <p className="card-subtext">Paid in {monthNames[currentMonth]} {currentYear}</p>
           </div>
@@ -408,7 +401,7 @@ const FeeDashboard = () => {
               </div>
             </div>
             <div className="card-value blue-text">
-              {formatAmount(overview?.summary?.totalExpected)}
+              ₹{(overview?.summary?.totalExpected || 0).toLocaleString('en-IN')}
             </div>
             <p className="card-subtext">Total across assigned teachers</p>
           </div>
@@ -421,7 +414,7 @@ const FeeDashboard = () => {
               </div>
             </div>
             <div className="card-value red-text">
-              {formatAmount(overview?.summary?.totalRemaining)}
+              ₹{(overview?.summary?.totalRemaining || 0).toLocaleString('en-IN')}
             </div>
             <p className="card-subtext">Outstanding balance due</p>
           </div>
@@ -720,16 +713,16 @@ const FeeDashboard = () => {
                         <div className="financial-split">
                           <div className="split-col">
                             <span className="label">Monthly Rate</span>
-                            <span className="val">{formatAmount(student.configuredRate)}</span>
+                            <span className="val">₹{student.configuredRate}</span>
                           </div>
                           <div className="split-col">
                             <span className="label">Paid</span>
-                            <span className="val green-text">{formatAmount(student.totalPaidThisMonth)}</span>
+                            <span className="val green-text">₹{student.totalPaidThisMonth}</span>
                           </div>
                           <div className="split-col">
                             <span className="label">Remaining</span>
                             <span className={`val ${student.remainingAmount > 0 ? 'red-text' : 'muted-text'}`}>
-                              {formatAmount(student.remainingAmount)}
+                              ₹{student.remainingAmount}
                             </span>
                           </div>
                         </div>
