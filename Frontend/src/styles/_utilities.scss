@@ -829,3 +829,94 @@ select {
 .animate-spin {
     animation: spinHUD 1s linear infinite;
 }
+
+/* ── Error Boundary SCSS ── */
+.error-boundary-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #090d16;
+  color: #f8fafc;
+  padding: 2rem;
+  font-family: $font-family-base;
+
+  .error-card {
+    background: rgba(30, 41, 59, 0.75);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    backdrop-filter: blur(16px);
+    border-radius: 16px;
+    padding: 2.5rem;
+    max-width: 520px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+
+    .error-icon-box {
+      display: inline-flex;
+      padding: 1rem;
+      border-radius: 9999px;
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      margin-bottom: 1.25rem;
+    }
+
+    .error-heading {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0 0 0.5rem;
+      color: #f8fafc;
+    }
+
+    .error-msg {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    .error-actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+
+      .btn-reload {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.25rem;
+        border-radius: 8px;
+        background: #3b82f6;
+        color: white;
+        border: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+          background: #2563eb;
+        }
+      }
+
+      .btn-home {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.25rem;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        color: #e2e8f0;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.18);
+        }
+      }
+    }
+  }
+}
