@@ -26,7 +26,7 @@ const DEFAULT_CODES = {
   html: `<!-- XMentor Web CodeSpace -->\n<div class="card">\n  <div class="badge">PRO IDE</div>\n  <h1>Welcome to CodeSpace 🚀</h1>\n  <p>Practice HTML, CSS, & JS seamlessly from any device!</p>\n  <button id="btn">Click Me!</button>\n</div>`,
   css: `/* Custom Glassmorphic Styles */\nbody {\n  margin: 0;\n  padding: 0;\n  min-height: 100vh;\n  background: #090d16;\n  color: #e2e8f0;\n  font-family: 'Inter', system-ui, sans-serif;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n}\n\n.card {\n  background: rgba(30, 41, 59, 0.7);\n  border: 1px solid rgba(255, 255, 255, 0.1);\n  backdrop-filter: blur(16px);\n  border-radius: 16px;\n  padding: 2.5rem;\n  text-align: center;\n  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);\n  max-width: 400px;\n}\n\n.badge {\n  background: linear-gradient(135deg, #3b82f6, #8b5cf6);\n  color: white;\n  font-size: 0.75rem;\n  font-weight: 700;\n  padding: 0.25rem 0.75rem;\n  border-radius: 999px;\n  display: inline-block;\n  margin-bottom: 1rem;\n}\n\nh1 {\n  margin: 0 0 0.5rem;\n  font-size: 1.75rem;\n}\n\np {\n  color: #94a3b8;\n  font-size: 0.95rem;\n  line-height: 1.5;\n}\n\nbutton {\n  margin-top: 1.5rem;\n  background: #3b82f6;\n  color: white;\n  border: none;\n  padding: 0.75rem 1.5rem;\n  font-weight: 600;\n  border-radius: 8px;\n  cursor: pointer;\n  transition: all 0.2s;\n}\n\nbutton:hover {\n  background: #2563eb;\n  transform: translateY(-2px);\n}`,
   js: `// Interactive JavaScript\nconst btn = document.getElementById('btn');\n\nbtn.addEventListener('click', () => {\n  alert('🎉 Awesome! JavaScript is running live!');\n});`,
-  java: `public class Main {\n    public static void main(String[] args) {\n        System.out.println("========================================");\n        System.out.println(" Welcome to XMentor Java CodeSpace!");\n        System.out.println("========================================");\n        \n        int a = 15;\n        int b = 25;\n        int sum = a + b;\n        \n        System.out.println("Calculating: " + a + " + " + b + " = " + sum);\n    }\n}`
+  java: `public class Main {\n    public static void main(String[] args) {\n        System.out.println(" Welcome to XMentor Java CodeSpace!");\n    }\n}`
 };
 
 const CodeSpacePage = () => {
@@ -37,7 +37,8 @@ const CodeSpacePage = () => {
   const [title, setTitle] = useState('My Workspace');
   const [isZenMode, setIsZenMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [savedStatus, setSavedStatus] = useState('Saved locally');
+  const [savedStatus, setSavedStatus] = useState('Loading workspace...');
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Java Execution state
   const [isExecutingJava, setIsExecutingJava] = useState(false);
@@ -49,59 +50,92 @@ const CodeSpacePage = () => {
 
   // Rehydrate state from localStorage + Backend sync on mount
   useEffect(() => {
-    let hasLocalData = false;
-    try {
-      const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (parsed.codes) {
-          setCodes(parsed.codes);
-          hasLocalData = true;
-        }
-        if (parsed.language) setLanguage(parsed.language);
-        if (parsed.title) setTitle(parsed.title);
-      }
-    } catch (e) {
-      console.error('Failed to load local codespace state:', e);
-    }
+    let mounted = true;
 
-    // Fetch cloud saved version only if local cache is empty
-    codespaceService.getCodeSpace()
-      .then(res => {
-        if (res.success && res.data) {
+    const rehydrateState = async () => {
+      let localCache = null;
+      let localUpdatedAt = 0;
+
+      try {
+        const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (cached) {
+          localCache = JSON.parse(cached);
+          localUpdatedAt = localCache.updatedAt || 0;
+        }
+      } catch (e) {
+        console.error('Failed to load local codespace state:', e);
+      }
+
+      try {
+        const res = await codespaceService.getCodeSpace();
+        if (mounted && res?.success && res?.data) {
           const cloudData = res.data;
-          if (!hasLocalData) {
+          const cloudUpdatedAt = cloudData.updatedAt ? new Date(cloudData.updatedAt).getTime() : 0;
+
+          // If local cache exists and has newer changes (e.g. recent edits before refresh/offline), prefer local cache
+          if (localCache && localCache.codes && localUpdatedAt > cloudUpdatedAt) {
+            setCodes(localCache.codes);
+            if (localCache.language) setLanguage(localCache.language);
+            if (localCache.title) setTitle(localCache.title);
+            setSavedStatus('Saved locally');
+          } else {
+            // Restore from cloud DB
             setCodes({
-              html: cloudData.html || DEFAULT_CODES.html,
-              css: cloudData.css || DEFAULT_CODES.css,
-              js: cloudData.js || DEFAULT_CODES.js,
-              java: cloudData.java || DEFAULT_CODES.java,
+              html: cloudData.html ?? DEFAULT_CODES.html,
+              css: cloudData.css ?? DEFAULT_CODES.css,
+              js: cloudData.js ?? DEFAULT_CODES.js,
+              java: cloudData.java ?? DEFAULT_CODES.java,
             });
             if (cloudData.language) setLanguage(cloudData.language);
             if (cloudData.title) setTitle(cloudData.title);
+            setSavedStatus('Synced with cloud');
           }
-          setSavedStatus('Synced with cloud');
+          setIsInitialized(true);
+          return;
         }
-      })
-      .catch(err => {
+      } catch (err) {
         console.warn('Cloud sync load warning:', err.message);
-      });
+      }
+
+      // Fallback if cloud API was unavailable/empty
+      if (mounted) {
+        if (localCache && localCache.codes) {
+          setCodes(localCache.codes);
+          if (localCache.language) setLanguage(localCache.language);
+          if (localCache.title) setTitle(localCache.title);
+          setSavedStatus('Saved locally');
+        } else {
+          setSavedStatus('Saved locally');
+        }
+        setIsInitialized(true);
+      }
+    };
+
+    rehydrateState();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  // Sync to localStorage on every change + Debounced Cloud Auto-Save
+  // Sync to localStorage on every change + Debounced Cloud Auto-Save (only AFTER initialization)
   useEffect(() => {
+    if (!isInitialized) return;
+
+    const updatedAt = Date.now();
     try {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({
         codes,
         language,
-        title
+        title,
+        updatedAt
       }));
       setSavedStatus('Saved locally');
     } catch (e) {
       console.error('Local storage save error:', e);
     }
 
-    // Debounced Auto-Save to Cloud DB (1.5s delay)
+    // Debounced Auto-Save to Cloud DB (1s delay)
     const autoSaveTimer = setTimeout(() => {
       codespaceService.saveCodeSpace({
         title,
@@ -117,10 +151,31 @@ const CodeSpacePage = () => {
         .catch(err => {
           console.warn('Silent cloud auto-save warning:', err.message);
         });
-    }, 1500);
+    }, 1000);
 
     return () => clearTimeout(autoSaveTimer);
-  }, [codes, language, title]);
+  }, [codes, language, title, isInitialized]);
+
+  // Flush latest state to localStorage on beforeunload
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (isInitialized) {
+        try {
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({
+            codes,
+            language,
+            title,
+            updatedAt: Date.now()
+          }));
+        } catch (e) {
+          // ignore
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [codes, language, title, isInitialized]);
 
   // Handle Code Changes
   const handleCodeChange = (val) => {
@@ -155,16 +210,18 @@ const CodeSpacePage = () => {
   // Reset to default template
   const handleResetTemplate = () => {
     if (window.confirm('Reset current template to default code?')) {
+      let updatedCodes;
       if (language === 'JAVA') {
-        setCodes(prev => ({ ...prev, java: DEFAULT_CODES.java }));
+        updatedCodes = { ...codes, java: DEFAULT_CODES.java };
       } else {
-        setCodes(prev => ({
-          ...prev,
+        updatedCodes = {
+          ...codes,
           html: DEFAULT_CODES.html,
           css: DEFAULT_CODES.css,
           js: DEFAULT_CODES.js,
-        }));
+        };
       }
+      setCodes(updatedCodes);
       toast.success('Reset template!');
     }
   };
