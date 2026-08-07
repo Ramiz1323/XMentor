@@ -16,7 +16,12 @@ import {
   Check, 
   X,
   FileText,
-  DollarSign
+  DollarSign,
+  TrendingUp,
+  Wallet,
+  Clock,
+  AlertTriangle,
+  CheckCircle2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import SEO from '../../components/common/SEO';
@@ -41,6 +46,7 @@ const FeeDashboard = () => {
   } = useFeeStore();
 
   const [activeTab, setActiveTab] = useState('calendar'); // 'calendar' or 'rates'
+  const [rosterFilter, setRosterFilter] = useState('ALL'); // 'ALL' | 'PAID' | 'PARTIAL' | 'UNPAID'
   
   // Date state for Calendar View
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -65,6 +71,15 @@ const FeeDashboard = () => {
 
   // Selected calendar day detail state
   const [selectedDay, setSelectedDay] = useState(new Date().getDate());
+
+  const handleQuickLogPayment = (studentId, remainingAmt) => {
+    setSelectedStudent(studentId);
+    setPaymentAmount(remainingAmt > 0 ? remainingAmt : '');
+    const logCard = document.querySelector('.log-payment-card');
+    if (logCard) {
+      logCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
 
   useEffect(() => {
     fetchProfile();
@@ -232,6 +247,11 @@ const FeeDashboard = () => {
   const selectedDayPayments = getPaymentsForDay(selectedDay);
   const selectedDayTotal = selectedDayPayments.reduce((sum, p) => sum + p.amount, 0);
 
+  const filteredStudents = (overview?.students || []).filter(s => {
+    if (rosterFilter === 'ALL') return true;
+    return s.status === rosterFilter;
+  });
+
   return (
     <div className="fee-dashboard-container">
       <SEO 
@@ -266,234 +286,437 @@ const FeeDashboard = () => {
         )}
       </header>
 
+      {/* ── Financial Summary HUD Cards (Collection, Expected, Remaining, Status) ── */}
+      {user?.role === 'TEACHER' ? (
+        <div className="fee-summary-hud">
+          <div className="summary-card glass-card collection">
+            <div className="card-top">
+              <span className="card-label">Recent Collection</span>
+              <div className="icon-wrapper green-glow">
+                <TrendingUp size={20} />
+              </div>
+            </div>
+            <div className="card-value green-text">
+              ₹{(overview?.summary?.totalCollected || 0).toLocaleString('en-IN')}
+            </div>
+            <p className="card-subtext">Received in {monthNames[currentMonth]} {currentYear}</p>
+          </div>
+
+          <div className="summary-card glass-card expected">
+            <div className="card-top">
+              <span className="card-label">Total Expected</span>
+              <div className="icon-wrapper blue-glow">
+                <Wallet size={20} />
+              </div>
+            </div>
+            <div className="card-value blue-text">
+              ₹{(overview?.summary?.totalExpected || 0).toLocaleString('en-IN')}
+            </div>
+            <p className="card-subtext">Total fees for {overview?.summary?.totalStudents || 0} recruits</p>
+          </div>
+
+          <div className="summary-card glass-card remaining">
+            <div className="card-top">
+              <span className="card-label">Remaining Due</span>
+              <div className="icon-wrapper red-glow">
+                <Clock size={20} />
+              </div>
+            </div>
+            <div className="card-value red-text">
+              ₹{(overview?.summary?.totalRemaining || 0).toLocaleString('en-IN')}
+            </div>
+            <p className="card-subtext">Pending collection this month</p>
+          </div>
+
+          <div className="summary-card glass-card roster-status">
+            <div className="card-top">
+              <span className="card-label">Roster Status</span>
+              <div className="icon-wrapper purple-glow">
+                <Users size={20} />
+              </div>
+            </div>
+            <div className="card-value purple-text">
+              {overview?.summary?.paidCount || 0} / {overview?.summary?.totalStudents || 0}
+            </div>
+            <p className="card-subtext">
+              <span className="status-pill green">{overview?.summary?.paidCount || 0} Gave</span> •{' '}
+              <span className="status-pill red">{overview?.summary?.unpaidCount || 0} Remaining</span>
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="fee-summary-hud">
+          <div className="summary-card glass-card collection">
+            <div className="card-top">
+              <span className="card-label">My Payments</span>
+              <div className="icon-wrapper green-glow">
+                <TrendingUp size={20} />
+              </div>
+            </div>
+            <div className="card-value green-text">
+              ₹{(overview?.summary?.totalPaid || 0).toLocaleString('en-IN')}
+            </div>
+            <p className="card-subtext">Paid in {monthNames[currentMonth]} {currentYear}</p>
+          </div>
+
+          <div className="summary-card glass-card expected">
+            <div className="card-top">
+              <span className="card-label">Total Monthly Fee</span>
+              <div className="icon-wrapper blue-glow">
+                <Wallet size={20} />
+              </div>
+            </div>
+            <div className="card-value blue-text">
+              ₹{(overview?.summary?.totalExpected || 0).toLocaleString('en-IN')}
+            </div>
+            <p className="card-subtext">Total across assigned teachers</p>
+          </div>
+
+          <div className="summary-card glass-card remaining">
+            <div className="card-top">
+              <span className="card-label">Remaining Balance</span>
+              <div className="icon-wrapper red-glow">
+                <Clock size={20} />
+              </div>
+            </div>
+            <div className="card-value red-text">
+              ₹{(overview?.summary?.totalRemaining || 0).toLocaleString('en-IN')}
+            </div>
+            <p className="card-subtext">Outstanding balance due</p>
+          </div>
+        </div>
+      )}
+
       {user?.role === 'TEACHER' ? (
         /* ==================== TEACHER VIEW ==================== */
         <div className="fee-body">
           {activeTab === 'calendar' ? (
-            <div className="calendar-grid-layout">
-              {/* Calendar Block */}
-              <div className="calendar-card glass-card">
-                <div className="calendar-controls">
-                  <h2>{monthNames[currentMonth]} {currentYear}</h2>
-                  <div className="nav-arrows">
-                    <button className="nav-arrow" onClick={prevMonth} aria-label="Previous Month">
-                      <ChevronLeft size={20} />
-                    </button>
-                    <button className="nav-arrow" onClick={nextMonth} aria-label="Next Month">
-                      <ChevronRight size={20} />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="calendar-grid">
-                  {/* Days of Week */}
-                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-                    <div key={d} className="grid-header-day">{d}</div>
-                  ))}
-
-                  {/* Previous Month Padding */}
-                  {[...Array(startDayOfWeek)].map((_, i) => {
-                    const dayNum = prevMonthDays - startDayOfWeek + i + 1;
-                    return (
-                      <div key={`prev-${i}`} className="grid-day empty-day">
-                        <span className="day-number">{dayNum}</span>
-                      </div>
-                    );
-                  })}
-
-                  {/* Active Month Days */}
-                  {[...Array(totalDays)].map((_, i) => {
-                    const dayNum = i + 1;
-                    const dayPayments = getPaymentsForDay(dayNum);
-                    const daySum = dayPayments.reduce((sum, p) => sum + p.amount, 0);
-                    const isSelected = selectedDay === dayNum;
-
-                    return (
-                      <div 
-                        key={`day-${dayNum}`} 
-                        className={`grid-day ${isSelected ? 'selected' : ''} ${daySum > 0 ? 'has-payments' : ''}`}
-                        onClick={() => setSelectedDay(dayNum)}
-                      >
-                        <span className="day-number">{dayNum}</span>
-                        {daySum > 0 && (
-                          <div className="day-badge">
-                            <span className="badge-currency">₹</span>{daySum}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Day Details and Logging Panel */}
-              <div className="ledger-details-sidebar">
-                {/* selected day logs */}
-                <div className="day-details-card glass-card">
-                  <div className="card-header">
-                    <h3>Day Ledger: {selectedDay} {monthNames[currentMonth]}</h3>
-                    {selectedDayTotal > 0 && (
-                      <span className="total-indicator success-glow">
-                        Total: ₹{selectedDayTotal}
-                      </span>
-                    )}
+            <>
+              <div className="calendar-grid-layout">
+                {/* Calendar Block */}
+                <div className="calendar-card glass-card">
+                  <div className="calendar-controls">
+                    <h2>{monthNames[currentMonth]} {currentYear}</h2>
+                    <div className="nav-arrows">
+                      <button className="nav-arrow" onClick={prevMonth} aria-label="Previous Month">
+                        <ChevronLeft size={20} />
+                      </button>
+                      <button className="nav-arrow" onClick={nextMonth} aria-label="Next Month">
+                        <ChevronRight size={20} />
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="payments-list">
-                    {selectedDayPayments.length === 0 ? (
-                      <div className="empty-payments">
-                        <FileText size={32} />
-                        <p>No cash logged on this date.</p>
-                      </div>
-                    ) : (
-                      selectedDayPayments.map(p => {
-                        const studentName = p.studentId?.name || 'Unknown Student';
-                        const studentUsername = p.studentId?.username || '';
-                        const avatar = p.studentId?.profilePic;
+                  <div className="calendar-grid">
+                    {/* Days of Week */}
+                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+                      <div key={d} className="grid-header-day">{d}</div>
+                    ))}
 
-                        return (
-                          <div key={p._id} className="payment-row glass-card">
-                            {editingPaymentId === p._id ? (
-                              /* Inline Edit Form */
-                              <div className="inline-edit-form">
-                                <div className="input-group">
-                                  <label>Amount (₹)</label>
-                                  <input 
-                                    type="number" 
-                                    value={editAmount} 
-                                    onChange={(e) => setEditAmount(e.target.value)} 
-                                  />
-                                </div>
-                                <div className="input-group">
-                                  <label>Date</label>
-                                  <input 
-                                    type="date" 
-                                    value={editDateStr} 
-                                    onChange={(e) => setEditDateStr(e.target.value)} 
-                                  />
-                                </div>
-                                <div className="input-group">
-                                  <label>Remarks</label>
-                                  <input 
-                                    type="text" 
-                                    value={editRemarks} 
-                                    onChange={(e) => setEditRemarks(e.target.value)} 
-                                  />
-                                </div>
-                                <div className="action-buttons">
-                                  <button className="btn-small success" onClick={saveEditedPayment}>
-                                    <Check size={14} /> Save
-                                  </button>
-                                  <button className="btn-small danger" onClick={() => setEditingPaymentId(null)}>
-                                    <X size={14} /> Cancel
-                                  </button>
-                                </div>
-                              </div>
-                            ) : (
-                              /* Normal View */
-                              <>
-                                <div className="student-profile-mini">
-                                  <div className="avatar">
-                                    {avatar ? <img src={avatar} alt="" /> : studentName.charAt(0)}
-                                  </div>
-                                  <div className="details">
-                                    <span className="name">{studentName}</span>
-                                    <span className="username">@{studentUsername}</span>
-                                  </div>
-                                </div>
-                                <div className="payment-amount-info">
-                                  <span className="amount">₹{p.amount}</span>
-                                  {p.remarks && <span className="remarks">{p.remarks}</span>}
-                                </div>
-                                <div className="payment-actions">
-                                  <button 
-                                    className="action-btn edit" 
-                                    onClick={() => startEditPayment(p)}
-                                    aria-label="Edit Payment"
-                                  >
-                                    <Edit2 size={14} />
-                                  </button>
-                                  <button 
-                                    className="action-btn delete" 
-                                    onClick={() => handleDeletePayment(p._id)}
-                                    aria-label="Delete Payment"
-                                  >
-                                    <Trash2 size={14} />
-                                  </button>
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
+                    {/* Previous Month Padding */}
+                    {[...Array(startDayOfWeek)].map((_, i) => {
+                      const dayNum = prevMonthDays - startDayOfWeek + i + 1;
+                      return (
+                        <div key={`prev-${i}`} className="grid-day empty-day">
+                          <span className="day-number">{dayNum}</span>
+                        </div>
+                      );
+                    })}
 
-                {/* Log Payment Form */}
-                <div className="log-payment-card glass-card">
-                  <h3>Log Cash Receipt</h3>
-                  <form onSubmit={handleLogPayment}>
-                    <div className="input-group">
-                      <label htmlFor="student-select">Select Recruit</label>
-                      <div className="select-wrapper">
-                        <select 
-                          id="student-select"
-                          value={selectedStudent} 
-                          onChange={(e) => handleStudentSelect(e.target.value)}
+                    {/* Active Month Days */}
+                    {[...Array(totalDays)].map((_, i) => {
+                      const dayNum = i + 1;
+                      const dayPayments = getPaymentsForDay(dayNum);
+                      const daySum = dayPayments.reduce((sum, p) => sum + p.amount, 0);
+                      const isSelected = selectedDay === dayNum;
+
+                      return (
+                        <div 
+                          key={`day-${dayNum}`} 
+                          className={`grid-day ${isSelected ? 'selected' : ''} ${daySum > 0 ? 'has-payments' : ''}`}
+                          onClick={() => setSelectedDay(dayNum)}
                         >
-                          <option value="">-- Choose Student --</option>
-                          {overview?.students?.map(s => (
-                            <option key={s._id} value={s._id}>
-                              {s.name} (@{s.username})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                          <span className="day-number">{dayNum}</span>
+                          {daySum > 0 && (
+                            <div className="day-badge">
+                              <span className="badge-currency">₹</span>{daySum}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Day Details and Logging Panel */}
+                <div className="ledger-details-sidebar">
+                  {/* selected day logs */}
+                  <div className="day-details-card glass-card">
+                    <div className="card-header">
+                      <h3>Day Ledger: {selectedDay} {monthNames[currentMonth]}</h3>
+                      {selectedDayTotal > 0 && (
+                        <span className="total-indicator success-glow">
+                          Total: ₹{selectedDayTotal}
+                        </span>
+                      )}
                     </div>
 
-                    <div className="input-row">
+                    <div className="payments-list">
+                      {selectedDayPayments.length === 0 ? (
+                        <div className="empty-payments">
+                          <FileText size={32} />
+                          <p>No cash logged on this date.</p>
+                        </div>
+                      ) : (
+                        selectedDayPayments.map(p => {
+                          const studentName = p.studentId?.name || 'Unknown Student';
+                          const studentUsername = p.studentId?.username || '';
+                          const avatar = p.studentId?.profilePic;
+
+                          return (
+                            <div key={p._id} className="payment-row glass-card">
+                              {editingPaymentId === p._id ? (
+                                /* Inline Edit Form */
+                                <div className="inline-edit-form">
+                                  <div className="input-group">
+                                    <label>Amount (₹)</label>
+                                    <input 
+                                      type="number" 
+                                      value={editAmount} 
+                                      onChange={(e) => setEditAmount(e.target.value)} 
+                                    />
+                                  </div>
+                                  <div className="input-group">
+                                    <label>Date</label>
+                                    <input 
+                                      type="date" 
+                                      value={editDateStr} 
+                                      onChange={(e) => setEditDateStr(e.target.value)} 
+                                    />
+                                  </div>
+                                  <div className="input-group">
+                                    <label>Remarks</label>
+                                    <input 
+                                      type="text" 
+                                      value={editRemarks} 
+                                      onChange={(e) => setEditRemarks(e.target.value)} 
+                                    />
+                                  </div>
+                                  <div className="action-buttons">
+                                    <button className="btn-small success" onClick={saveEditedPayment}>
+                                      <Check size={14} /> Save
+                                    </button>
+                                    <button className="btn-small danger" onClick={() => setEditingPaymentId(null)}>
+                                      <X size={14} /> Cancel
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                /* Normal View */
+                                <>
+                                  <div className="student-profile-mini">
+                                    <div className="avatar">
+                                      {avatar ? <img src={avatar} alt="" /> : studentName.charAt(0)}
+                                    </div>
+                                    <div className="details">
+                                      <span className="name">{studentName}</span>
+                                      <span className="username">@{studentUsername}</span>
+                                    </div>
+                                  </div>
+                                  <div className="payment-amount-info">
+                                    <span className="amount">₹{p.amount}</span>
+                                    {p.remarks && <span className="remarks">{p.remarks}</span>}
+                                  </div>
+                                  <div className="payment-actions">
+                                    <button 
+                                      className="action-btn edit" 
+                                      onClick={() => startEditPayment(p)}
+                                      aria-label="Edit Payment"
+                                    >
+                                      <Edit2 size={14} />
+                                    </button>
+                                    <button 
+                                      className="action-btn delete" 
+                                      onClick={() => handleDeletePayment(p._id)}
+                                      aria-label="Delete Payment"
+                                    >
+                                      <Trash2 size={14} />
+                                    </button>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Log Payment Form */}
+                  <div className="log-payment-card glass-card">
+                    <h3>Log Cash Receipt</h3>
+                    <form onSubmit={handleLogPayment}>
                       <div className="input-group">
-                        <label htmlFor="payment-amount">Amount (₹)</label>
+                        <label htmlFor="student-select">Select Recruit</label>
+                        <div className="select-wrapper">
+                          <select 
+                            id="student-select"
+                            value={selectedStudent} 
+                            onChange={(e) => handleStudentSelect(e.target.value)}
+                          >
+                            <option value="">-- Choose Student --</option>
+                            {overview?.students?.map(s => (
+                              <option key={s._id} value={s._id}>
+                                {s.name} (@{s.username})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="input-row">
+                        <div className="input-group">
+                          <label htmlFor="payment-amount">Amount (₹)</label>
+                          <input 
+                            id="payment-amount"
+                            type="number" 
+                            value={paymentAmount} 
+                            onChange={(e) => setPaymentAmount(e.target.value)} 
+                            placeholder="Rate"
+                          />
+                        </div>
+
+                        <div className="input-group">
+                          <label htmlFor="payment-date">Date Received</label>
+                          <input 
+                            id="payment-date"
+                            type="date" 
+                            value={paymentDateStr} 
+                            onChange={(e) => setPaymentDateStr(e.target.value)} 
+                          />
+                        </div>
+                      </div>
+
+                      <div className="input-group">
+                        <label htmlFor="payment-remarks">Remarks (optional)</label>
                         <input 
-                          id="payment-amount"
-                          type="number" 
-                          value={paymentAmount} 
-                          onChange={(e) => setPaymentAmount(e.target.value)} 
-                          placeholder="Rate"
+                          id="payment-remarks"
+                          type="text" 
+                          value={paymentRemarks} 
+                          onChange={(e) => setPaymentRemarks(e.target.value)} 
+                          placeholder="e.g. For Month of July"
                         />
                       </div>
 
-                      <div className="input-group">
-                        <label htmlFor="payment-date">Date Received</label>
-                        <input 
-                          id="payment-date"
-                          type="date" 
-                          value={paymentDateStr} 
-                          onChange={(e) => setPaymentDateStr(e.target.value)} 
-                        />
-                      </div>
-                    </div>
-
-                    <div className="input-group">
-                      <label htmlFor="payment-remarks">Remarks (optional)</label>
-                      <input 
-                        id="payment-remarks"
-                        type="text" 
-                        value={paymentRemarks} 
-                        onChange={(e) => setPaymentRemarks(e.target.value)} 
-                        placeholder="e.g. For Month of July"
-                      />
-                    </div>
-
-                    <button type="submit" className="btn-primary glow-button">
-                      <Plus size={18} />
-                      <span>Record Payment</span>
-                    </button>
-                  </form>
+                      <button type="submit" className="btn-primary glow-button">
+                        <Plus size={18} />
+                        <span>Record Payment</span>
+                      </button>
+                    </form>
+                  </div>
                 </div>
               </div>
-            </div>
+
+              {/* ── Student Payment Status Tracker ("Who Gave & Who is Remaining") ── */}
+              <div className="roster-status-section glass-card">
+                <div className="section-header">
+                  <div className="title-group">
+                    <h3><Users size={18} /> Recruit Payment Status ({monthNames[currentMonth]} {currentYear})</h3>
+                    <p>Track who gave their monthly fee and who has remaining balance due.</p>
+                  </div>
+                  
+                  <div className="filter-pills">
+                    <button
+                      type="button"
+                      className={`filter-pill ${rosterFilter === 'ALL' ? 'active' : ''}`}
+                      onClick={() => setRosterFilter('ALL')}
+                    >
+                      All ({overview?.students?.length || 0})
+                    </button>
+                    <button
+                      type="button"
+                      className={`filter-pill paid ${rosterFilter === 'PAID' ? 'active' : ''}`}
+                      onClick={() => setRosterFilter('PAID')}
+                    >
+                      <CheckCircle2 size={14} /> Who Gave ({overview?.summary?.paidCount || 0})
+                    </button>
+                    <button
+                      type="button"
+                      className={`filter-pill partial ${rosterFilter === 'PARTIAL' ? 'active' : ''}`}
+                      onClick={() => setRosterFilter('PARTIAL')}
+                    >
+                      <Clock size={14} /> Partial ({overview?.summary?.partialCount || 0})
+                    </button>
+                    <button
+                      type="button"
+                      className={`filter-pill unpaid ${rosterFilter === 'UNPAID' ? 'active' : ''}`}
+                      onClick={() => setRosterFilter('UNPAID')}
+                    >
+                      <AlertTriangle size={14} /> Who is Remaining ({overview?.summary?.unpaidCount || 0})
+                    </button>
+                  </div>
+                </div>
+
+                <div className="roster-grid">
+                  {filteredStudents.length === 0 ? (
+                    <div className="empty-roster-msg">
+                      <Users size={32} />
+                      <p>No recruits found under the "{rosterFilter}" filter for {monthNames[currentMonth]} {currentYear}.</p>
+                    </div>
+                  ) : (
+                    filteredStudents.map(student => (
+                      <div key={student._id} className={`student-status-card ${student.status.toLowerCase()}`}>
+                        <div className="student-info">
+                          <div className="avatar">
+                            {student.profilePic ? <img src={student.profilePic} alt="" /> : student.name.charAt(0)}
+                          </div>
+                          <div className="details">
+                            <span className="name">{student.name}</span>
+                            <span className="username">@{student.username}</span>
+                          </div>
+                        </div>
+
+                        <div className="financial-split">
+                          <div className="split-col">
+                            <span className="label">Monthly Rate</span>
+                            <span className="val">₹{student.configuredRate}</span>
+                          </div>
+                          <div className="split-col">
+                            <span className="label">Paid</span>
+                            <span className="val green-text">₹{student.totalPaidThisMonth}</span>
+                          </div>
+                          <div className="split-col">
+                            <span className="label">Remaining</span>
+                            <span className={`val ${student.remainingAmount > 0 ? 'red-text' : 'muted-text'}`}>
+                              ₹{student.remainingAmount}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="card-actions">
+                          <span className={`status-badge-pill ${student.status.toLowerCase()}`}>
+                            {student.status === 'PAID' && <CheckCircle2 size={13} />}
+                            {student.status === 'PARTIAL' && <Clock size={13} />}
+                            {student.status === 'UNPAID' && <AlertTriangle size={13} />}
+                            {student.status === 'PAID' ? 'GAVE (PAID)' : student.status === 'PARTIAL' ? 'PARTIAL' : 'REMAINING'}
+                          </span>
+
+                          {student.remainingAmount > 0 && (
+                            <button
+                              type="button"
+                              className="btn-quick-log"
+                              onClick={() => handleQuickLogPayment(student._id, student.remainingAmount)}
+                            >
+                              <Plus size={14} /> Record Payment
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </>
           ) : (
             /* Rate overrides tab */
             <div className="rates-configuration-layout">

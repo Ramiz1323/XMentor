@@ -176,15 +176,29 @@ export const getFeeOverview = async (userId, role, monthStr) => {
       paymentsMap.get(p.studentId.toString()).push(p);
     });
 
+    let totalExpected = 0;
+    let totalCollected = 0;
+    let paidCount = 0;
+    let partialCount = 0;
+    let unpaidCount = 0;
+
     // Compile student list with rates and payment status
     const studentsOverview = (teacher.students || []).map(student => {
       const studentIdStr = student._id.toString();
       const customRate = configsMap.get(studentIdStr);
-      const rate = customRate !== undefined ? customRate : teacher.defaultMonthlyFee;
+      const rate = customRate !== undefined ? customRate : (teacher.defaultMonthlyFee || 0);
 
       const studentPayments = paymentsMap.get(studentIdStr) || [];
       const totalPaidThisMonth = studentPayments.reduce((sum, p) => sum + p.amount, 0);
-      const isPaid = totalPaidThisMonth >= rate && rate > 0;
+      const remainingAmount = Math.max(0, rate - totalPaidThisMonth);
+      const status = totalPaidThisMonth >= rate && rate > 0 ? 'PAID' : (totalPaidThisMonth > 0 ? 'PARTIAL' : 'UNPAID');
+
+      totalExpected += rate;
+      totalCollected += totalPaidThisMonth;
+
+      if (status === 'PAID') paidCount++;
+      else if (status === 'PARTIAL') partialCount++;
+      else unpaidCount++;
 
       return {
         _id: student._id,
@@ -195,12 +209,24 @@ export const getFeeOverview = async (userId, role, monthStr) => {
         isCustomRate: customRate !== undefined,
         paymentsThisMonth: studentPayments,
         totalPaidThisMonth,
-        status: isPaid ? 'PAID' : (totalPaidThisMonth > 0 ? 'PARTIAL' : 'UNPAID')
+        remainingAmount,
+        status
       };
     });
 
+    const totalRemaining = Math.max(0, totalExpected - totalCollected);
+
     return {
       defaultMonthlyFee: teacher.defaultMonthlyFee,
+      summary: {
+        totalExpected,
+        totalCollected,
+        totalRemaining,
+        paidCount,
+        partialCount,
+        unpaidCount,
+        totalStudents: studentsOverview.length
+      },
       students: studentsOverview
     };
   } else {
@@ -232,14 +258,21 @@ export const getFeeOverview = async (userId, role, monthStr) => {
       paymentsMap.get(p.teacherId.toString()).push(p);
     });
 
+    let totalExpected = 0;
+    let totalPaid = 0;
+
     const teachersOverview = (student.teachers || []).map(teacher => {
       const teacherIdStr = teacher._id.toString();
       const customRate = configsMap.get(teacherIdStr);
-      const rate = customRate !== undefined ? customRate : teacher.defaultMonthlyFee;
+      const rate = customRate !== undefined ? customRate : (teacher.defaultMonthlyFee || 0);
 
       const teacherPayments = paymentsMap.get(teacherIdStr) || [];
       const totalPaidThisMonth = teacherPayments.reduce((sum, p) => sum + p.amount, 0);
-      const isPaid = totalPaidThisMonth >= rate && rate > 0;
+      const remainingAmount = Math.max(0, rate - totalPaidThisMonth);
+      const status = totalPaidThisMonth >= rate && rate > 0 ? 'PAID' : (totalPaidThisMonth > 0 ? 'PARTIAL' : 'UNPAID');
+
+      totalExpected += rate;
+      totalPaid += totalPaidThisMonth;
 
       return {
         _id: teacher._id,
@@ -249,11 +282,19 @@ export const getFeeOverview = async (userId, role, monthStr) => {
         rate,
         paymentsThisMonth: teacherPayments,
         totalPaidThisMonth,
-        status: isPaid ? 'PAID' : (totalPaidThisMonth > 0 ? 'PARTIAL' : 'UNPAID')
+        remainingAmount,
+        status
       };
     });
 
+    const totalRemaining = Math.max(0, totalExpected - totalPaid);
+
     return {
+      summary: {
+        totalExpected,
+        totalPaid,
+        totalRemaining
+      },
       teachers: teachersOverview
     };
   }
