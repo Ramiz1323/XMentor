@@ -6,12 +6,16 @@ const TerminalConsole = ({ result, isRunning, onClear, inputsList, onSubmitInput
   const inputRef = useRef(null);
   const terminalBodyRef = useRef(null);
 
+  const rawStdout = result?.output || '';
+  const rawStderr = result?.stderr || '';
+  const isNoSuchElementErr = rawStderr.includes('NoSuchElementException') || rawStderr.includes('InputMismatchException');
+
   // Auto-focus prompt input when terminal mounts, result updates, or execution finishes
   useEffect(() => {
-    if (!isRunning && inputRef.current) {
+    if (!isRunning && isNoSuchElementErr && inputRef.current) {
       inputRef.current.focus();
     }
-  }, [isRunning, result]);
+  }, [isRunning, result, isNoSuchElementErr]);
 
   // Auto-scroll terminal to bottom when new content or prompt is rendered
   useEffect(() => {
@@ -39,10 +43,6 @@ const TerminalConsole = ({ result, isRunning, onClear, inputsList, onSubmitInput
   // Helper to format output lines interleaved with user inputs like VS Code Terminal
   const renderTerminalContent = () => {
     if (!result) return null;
-
-    const rawStdout = result.output || '';
-    const rawStderr = result.stderr || '';
-    const isNoSuchElementErr = rawStderr.includes('NoSuchElementException');
 
     // Split stdout into lines
     const stdoutLines = rawStdout ? rawStdout.split('\n').filter(line => line.trim() !== '') : [];
@@ -144,8 +144,8 @@ const TerminalConsole = ({ result, isRunning, onClear, inputsList, onSubmitInput
           renderTerminalContent()
         )}
 
-        {/* Interactive VS Code Terminal Prompt Line */}
-        {!isRunning && (
+        {/* Interactive VS Code Terminal Prompt Line - Only shown when program is actively waiting for Scanner/stdin input */}
+        {!isRunning && result && isNoSuchElementErr && (
           <div className="terminal-prompt-row">
             <span className="prompt-symbol">❯ </span>
             <input
@@ -155,11 +155,7 @@ const TerminalConsole = ({ result, isRunning, onClear, inputsList, onSubmitInput
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={
-                result?.stderr?.includes('NoSuchElementException')
-                  ? "Type input (e.g. 5 or numbers) and press Enter..."
-                  : "Type input and press Enter..."
-              }
+              placeholder="Type input and press Enter..."
               spellCheck="false"
               autoComplete="off"
             />
